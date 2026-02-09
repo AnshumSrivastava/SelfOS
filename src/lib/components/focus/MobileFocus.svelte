@@ -1,12 +1,29 @@
 <script>
-    import { Play, Pause, RotateCcw, Volume2 } from "lucide-svelte";
+    import {
+        Play,
+        Pause,
+        RotateCcw,
+        Volume2,
+        Pencil,
+        Check,
+    } from "lucide-svelte";
     import { focusStore } from "$lib/stores/focus.svelte";
 
     let { timeLeft, isRunning, formattedTime, mode } = $derived(focusStore);
+
+    let isEditing = $state(false);
+    let editMinutes = $state(25);
+
+    function saveDuration() {
+        if (editMinutes > 0) {
+            focusStore.setDuration(editMinutes);
+        }
+        isEditing = false;
+    }
 </script>
 
 <div class="flex flex-col items-center justify-between h-[70vh] py-8">
-    <div class="text-center mt-12">
+    <div class="text-center mt-12 relative group">
         <h2 class="text-gray-500 uppercase tracking-widest text-sm mb-4">
             {focusStore.mode === "shortBreak"
                 ? "Short Break"
@@ -14,11 +31,42 @@
                   ? "Long Break"
                   : "Focus"}
         </h2>
-        <div
-            class="text-[90px] font-bold text-white leading-none tracking-tighter"
-        >
-            {focusStore.formattedTime}
-        </div>
+
+        {#if isEditing}
+            <div class="flex items-center justify-center gap-2">
+                <input
+                    type="number"
+                    bind:value={editMinutes}
+                    min="1"
+                    max="180"
+                    class="text-[90px] font-bold text-white leading-none tracking-tighter bg-transparent border-b-2 border-primary w-[200px] text-center focus:outline-none"
+                    autofocus
+                />
+                <button
+                    class="p-4 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                    onclick={saveDuration}
+                >
+                    <Check size={32} />
+                </button>
+            </div>
+        {:else}
+            <div class="relative inline-block">
+                <div
+                    class="text-[90px] font-bold text-white leading-none tracking-tighter"
+                >
+                    {focusStore.formattedTime}
+                </div>
+                <button
+                    class="absolute -right-12 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                    onclick={() => {
+                        editMinutes = Math.floor(focusStore.timeLeft / 60);
+                        isEditing = true;
+                    }}
+                >
+                    <Pencil size={20} />
+                </button>
+            </div>
+        {/if}
     </div>
 
     <!-- Minimal Controls -->

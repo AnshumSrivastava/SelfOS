@@ -23,7 +23,7 @@
     <div class="flex items-end justify-between">
         <div>
             <h1
-                class="text-3xl font-bold text-white mb-2 flex items-center gap-3"
+                class="text-3xl font-bold text-[var(--color-text)] mb-2 flex items-center gap-3"
             >
                 {today.toLocaleDateString("en-US", {
                     weekday: "short",
@@ -54,7 +54,7 @@
     <!-- Weekly Progress Strip -->
     <div class="card">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-white">Weekly Overview</h3>
+            <h3 class="font-bold text-[var(--color-text)]">Weekly Overview</h3>
             <div class="flex items-center gap-2 text-sm text-muted">
                 <Flame size={16} class="text-primary" />
                 <span
@@ -71,7 +71,7 @@
                     <span class="text-xs text-muted">{day.name}</span>
                     <div
                         class="w-full aspect-square rounded-lg {day.isToday
-                            ? 'bg-surface border-2 border-primary text-white'
+                            ? 'bg-surface border-2 border-primary text-[var(--color-text)]'
                             : 'bg-surface border border-line'} flex items-center justify-center font-bold relative overflow-hidden group"
                     >
                         <!-- Mock checkmarks for past days -->
@@ -102,7 +102,7 @@
                 >
                     <div>
                         <h3
-                            class="font-bold text-lg text-white group-hover:text-primary transition-colors"
+                            class="font-bold text-lg text-[var(--color-text)] group-hover:text-primary transition-colors"
                         >
                             {habit.name}
                         </h3>
@@ -130,8 +130,10 @@
                                 ? "text-orange-500"
                                 : "text-muted"}
                         />
-                        <span class={isCompleted ? "text-white" : ""}
-                            >{habit.streak} day streak</span
+                        <span
+                            class={isCompleted
+                                ? "text-[var(--color-text)]"
+                                : ""}>{habit.streak} day streak</span
                         >
                     </div>
                     {#if habit.streak > 10}

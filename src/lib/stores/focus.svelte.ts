@@ -40,7 +40,11 @@ export class FocusStore {
                 this.timeLeft--;
             } else {
                 this.pause();
-                // Play check sound?
+                this.sessionComplete = true; // Trigger completion
+                this.zenMode = true; // Ensure zen mode stays or re-activates if we want the overlay? Actually overlay is separate. 
+                // Wait, if session complete, we likely want to show the overlay.
+                // Zen mode overlay shows timer. 
+                // Session complete overlay will be handled in layout.
             }
         }, 1000);
     }
@@ -68,6 +72,26 @@ export class FocusStore {
 
     toggleZenMode() {
         this.zenMode = !this.zenMode;
+    }
+
+    exitZen() {
+        this.pause();
+        this.zenMode = false;
+    }
+
+    sessionComplete = $state(false);
+
+    setDuration(minutes: number) {
+        this.pause();
+        this.timeLeft = minutes * 60;
+        // If mode is custom, we might want to track that, but for now just updating time is enough
+    }
+
+    logSession(subject: string) {
+        // Here we would typically save to a database or local storage
+        console.log(`Session completed: ${subject} (${this.formattedTime})`);
+        this.sessionComplete = false;
+        this.reset();
     }
 }
 

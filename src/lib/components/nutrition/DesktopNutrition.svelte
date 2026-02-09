@@ -14,7 +14,9 @@
 <div class="space-y-8 pb-12">
     <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Macro Tracker</h1>
+            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+                Macro Tracker
+            </h1>
             <p class="text-muted">Fuel your body efficiently.</p>
         </div>
         <button class="btn btn-primary flex items-center gap-2">
@@ -53,7 +55,8 @@
                     />
                 </svg>
                 <div class="absolute text-center">
-                    <span class="text-3xl font-bold text-white block"
+                    <span
+                        class="text-3xl font-bold text-[var(--color-text)] block"
                         >1,240</span
                     >
                     <span class="text-xs text-muted">Kcal left</span>
@@ -63,7 +66,9 @@
         </div>
 
         <div class="card md:col-span-2 space-y-6 flex flex-col justify-center">
-            <h3 class="font-bold text-white mb-2">Macronutrients</h3>
+            <h3 class="font-bold text-[var(--color-text)] mb-2">
+                Macronutrients
+            </h3>
             <div>
                 <div class="flex justify-between text-sm mb-2">
                     <span class="text-blue-400 font-bold">Protein</span>
@@ -108,7 +113,9 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="card">
-            <h3 class="font-bold text-white mb-6">Today's Meals</h3>
+            <h3 class="font-bold text-[var(--color-text)] mb-6">
+                Today's Meals
+            </h3>
             <div class="space-y-4">
                 {#each [{ name: "Breakfast", cal: 450, time: "8:00 AM", items: "Oatmeal, Eggs, Coffee" }, { name: "Lunch", cal: 850, time: "1:00 PM", items: "Chicken Salad, Rice" }, { name: "Snack", cal: 200, time: "4:30 PM", items: "Protein Bar" }] as meal}
                     <div
@@ -116,14 +123,15 @@
                     >
                         <div>
                             <h4
-                                class="font-bold text-white group-hover:text-primary transition-colors"
+                                class="font-bold text-[var(--color-text)] group-hover:text-primary transition-colors"
                             >
                                 {meal.name}
                             </h4>
                             <p class="text-xs text-muted mt-1">{meal.items}</p>
                         </div>
                         <div class="text-right">
-                            <span class="block font-bold text-white"
+                            <span
+                                class="block font-bold text-[var(--color-text)]"
                                 >{meal.cal} kcal</span
                             >
                             <span class="text-xs text-muted">{meal.time}</span>
@@ -132,7 +140,7 @@
                 {/each}
 
                 <button
-                    class="w-full border-t border-line pt-4 text-center text-sm text-muted hover:text-white transition-colors"
+                    class="w-full border-t border-line pt-4 text-center text-sm text-muted hover:text-[var(--color-text)] transition-colors"
                 >
                     + Add Dinner
                 </button>
@@ -143,7 +151,9 @@
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <Apple size={160} />
             </div>
-            <h3 class="font-bold text-white mb-4">Water Tracker</h3>
+            <h3 class="font-bold text-[var(--color-text)] mb-4">
+                Water Tracker
+            </h3>
 
             <div class="flex items-center justify-center gap-2 mb-8">
                 {#each Array(8) as _, i}
@@ -163,7 +173,8 @@
             </div>
 
             <div class="text-center">
-                <span class="text-4xl font-bold text-white block mb-1"
+                <span
+                    class="text-4xl font-bold text-[var(--color-text)] block mb-1"
                     >1,250ml</span
                 >
                 <span class="text-sm text-muted">Goal: 2,500ml</span>

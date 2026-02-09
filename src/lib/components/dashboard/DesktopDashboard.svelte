@@ -81,13 +81,13 @@
             <div class="card min-h-[400px]">
                 <div class="flex justify-between items-center mb-6">
                     <h2
-                        class="text-xl font-bold text-white flex items-center gap-2"
+                        class="text-xl font-bold text-[var(--color-text)] flex items-center gap-2"
                     >
                         <Activity class="text-primary" />
                         Activity Overview
                     </h2>
                     <select
-                        class="bg-background border border-line rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-primary"
+                        class="bg-background border border-line rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-primary text-[var(--color-text)]"
                     >
                         <option>This Week</option>
                         <option>This Month</option>
@@ -121,7 +121,7 @@
                     class="card hover:border-primary/50 transition-colors cursor-pointer group"
                 >
                     <h3
-                        class="font-bold text-lg mb-4 text-white group-hover:text-primary transition-colors"
+                        class="font-bold text-lg mb-4 text-[var(--color-text)] group-hover:text-primary transition-colors"
                     >
                         Today's Habits
                     </h3>
@@ -147,7 +147,8 @@
                                 <span
                                     class="text-sm font-medium transition-colors {isCompleted
                                         ? 'text-muted line-through'
-                                        : 'text-white'}">{habit.name}</span
+                                        : 'text-[var(--color-text)]'}"
+                                    >{habit.name}</span
                                 >
                             </button>
                         {/each}
@@ -158,7 +159,7 @@
                     class="card hover:border-primary/50 transition-colors cursor-pointer group"
                 >
                     <h3
-                        class="font-bold text-lg mb-4 text-white group-hover:text-primary transition-colors"
+                        class="font-bold text-lg mb-4 text-[var(--color-text)] group-hover:text-primary transition-colors"
                     >
                         Upcoming Tasks
                     </h3>
@@ -172,7 +173,7 @@
                                     <p
                                         class="text-sm font-medium transition-colors {task.completed
                                             ? 'text-muted line-through'
-                                            : 'text-white'}"
+                                            : 'text-[var(--color-text)]'}"
                                     >
                                         {task.title}
                                     </p>
@@ -199,7 +200,9 @@
         <!-- Side Panel / Quick Access -->
         <div class="space-y-6">
             <div class="card bg-surface border-primary/20">
-                <h3 class="font-bold text-white mb-4">Daily Progress</h3>
+                <h3 class="font-bold text-[var(--color-text)] mb-4">
+                    Daily Progress
+                </h3>
                 <div class="space-y-6">
                     <ProgressBar label="Tasks Completed" value={8} max={12} />
                     <ProgressBar
@@ -219,16 +222,22 @@
 
             <div class="card relative overflow-hidden">
                 <div class="absolute top-0 right-0 p-4 opacity-10">
-                    <Calendar size={120} />
+                    <Calendar size={120} class="text-[var(--color-text)]" />
                 </div>
-                <h3 class="font-bold text-white mb-2">Upcoming Events</h3>
+                <h3 class="font-bold text-[var(--color-text)] mb-2">
+                    Upcoming Events
+                </h3>
                 <div class="relative z-10 space-y-4">
                     <div class="border-l-2 border-primary pl-4 py-1">
-                        <p class="font-bold text-white">Team Meeting</p>
+                        <p class="font-bold text-[var(--color-text)]">
+                            Team Meeting
+                        </p>
                         <p class="text-xs text-muted">10:00 AM - 11:30 AM</p>
                     </div>
                     <div class="border-l-2 border-secondary pl-4 py-1">
-                        <p class="font-bold text-white">Dentist Appt</p>
+                        <p class="font-bold text-[var(--color-text)]">
+                            Dentist Appt
+                        </p>
                         <p class="text-xs text-muted">Tomorrow, 3:00 PM</p>
                     </div>
                     <button

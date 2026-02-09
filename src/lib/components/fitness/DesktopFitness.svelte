@@ -44,7 +44,9 @@
 <div class="space-y-8 pb-12">
     <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Fitness & Health</h1>
+            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+                Fitness & Health
+            </h1>
             <p class="text-muted">Train like an athlete. Recover like a pro.</p>
         </div>
         <button class="btn btn-primary flex items-center gap-2">
@@ -81,7 +83,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
             <div class="card">
-                <h3 class="font-bold text-white mb-6">Recent Activity</h3>
+                <h3 class="font-bold text-[var(--color-text)] mb-6">
+                    Recent Activity
+                </h3>
                 <div class="space-y-4">
                     {#each workouts as w}
                         <div
@@ -95,7 +99,7 @@
                                 </div>
                                 <div>
                                     <h4
-                                        class="font-bold text-white group-hover:text-primary transition-colors"
+                                        class="font-bold text-[var(--color-text)] group-hover:text-primary transition-colors"
                                     >
                                         {w.title}
                                     </h4>
@@ -138,7 +142,10 @@
                 <div class="card bg-surface flex flex-col justify-between">
                     <h3 class="text-sm font-medium text-muted">Steps Today</h3>
                     <div class="mt-4">
-                        <span class="text-3xl font-bold text-white">8,432</span>
+                        <span
+                            class="text-3xl font-bold text-[var(--color-text)]"
+                            >8,432</span
+                        >
                         <p class="text-xs text-muted mt-1">Goal: 10,000</p>
                         <div
                             class="mt-2 h-1.5 w-full bg-background rounded-full overflow-hidden"
@@ -152,7 +159,10 @@
                 <div class="card bg-surface flex flex-col justify-between">
                     <h3 class="text-sm font-medium text-muted">Water Intake</h3>
                     <div class="mt-4">
-                        <span class="text-3xl font-bold text-white">1.2L</span>
+                        <span
+                            class="text-3xl font-bold text-[var(--color-text)]"
+                            >1.2L</span
+                        >
                         <p class="text-xs text-muted mt-1">Goal: 2.5L</p>
                         <div
                             class="mt-2 h-1.5 w-full bg-background rounded-full overflow-hidden"
@@ -168,7 +178,9 @@
 
         <!-- Workout Plan -->
         <div class="card relative overflow-hidden bg-surface border-primary/20">
-            <h3 class="font-bold text-white mb-4">Training Plan</h3>
+            <h3 class="font-bold text-[var(--color-text)] mb-4">
+                Training Plan
+            </h3>
             <div class="space-y-4 relative z-10">
                 <div
                     class="p-3 rounded-lg bg-primary/10 border border-primary/20"
@@ -176,7 +188,9 @@
                     <p class="text-xs text-primary font-bold mb-1">
                         Current Focus
                     </p>
-                    <p class="text-sm text-white">Hypertrophy Phase 2</p>
+                    <p class="text-sm text-[var(--color-text)]">
+                        Hypertrophy Phase 2
+                    </p>
                 </div>
 
                 <div class="space-y-3 pt-2">
@@ -185,7 +199,7 @@
                         class="p-4 rounded-xl bg-background border border-line"
                     >
                         <div class="flex justify-between items-start mb-2">
-                            <span class="text-white font-bold"
+                            <span class="text-[var(--color-text)] font-bold"
                                 >Pull Day (Back & Bi)</span
                             >
                         </div>

@@ -14,7 +14,7 @@
     {#if label || showValue}
         <div class="flex justify-between items-center mb-2 text-sm">
             {#if label}<span class="font-medium text-muted">{label}</span>{/if}
-            {#if showValue}<span class="font-bold text-white"
+            {#if showValue}<span class="font-bold text-[var(--color-text)]"
                     >{value}/{max}</span
                 >{/if}
         </div>

@@ -27,7 +27,7 @@
 
     <div>
         <h3
-            class="text-3xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform"
+            class="text-3xl font-bold text-[var(--color-text)] mb-1 group-hover:translate-x-1 transition-transform"
         >
             {value}
         </h3>

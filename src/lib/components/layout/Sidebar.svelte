@@ -14,22 +14,80 @@
         PenTool,
         Clock,
         Activity,
+        Settings,
     } from "lucide-svelte";
 
+    import { settings } from "$lib/stores/settings.svelte";
+
     const menuItems = [
-        { label: "Dashboard", icon: LayoutDashboard, href: `${base}/` },
-        { label: "Habits", icon: Activity, href: `${base}/habits` },
-        { label: "Finance", icon: Wallet, href: `${base}/finance` },
-        { label: "Fitness", icon: Dumbbell, href: `${base}/fitness` },
-        { label: "Nutrition", icon: Utensils, href: `${base}/nutrition` },
-        { label: "Tasks", icon: CheckSquare, href: `${base}/tasks` },
-        { label: "Notes", icon: Brain, href: `${base}/notes` },
-        { label: "Library", icon: Book, href: `${base}/library` },
-        { label: "Goals", icon: Target, href: `${base}/goals` },
-        { label: "Projects", icon: Folder, href: `${base}/para` },
-        { label: "Journal", icon: PenTool, href: `${base}/journal` },
-        { label: "Focus", icon: Clock, href: `${base}/focus` },
+        {
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            href: `${base}/`,
+            key: "dashboard",
+        },
+        {
+            label: "Habits",
+            icon: Activity,
+            href: `${base}/habits`,
+            key: "habits",
+        },
+        {
+            label: "Finance",
+            icon: Wallet,
+            href: `${base}/finance`,
+            key: "finance",
+        },
+        {
+            label: "Fitness",
+            icon: Dumbbell,
+            href: `${base}/fitness`,
+            key: "fitness",
+        },
+        {
+            label: "Nutrition",
+            icon: Utensils,
+            href: `${base}/nutrition`,
+            key: "nutrition",
+        },
+        {
+            label: "Tasks",
+            icon: CheckSquare,
+            href: `${base}/tasks`,
+            key: "tasks",
+        },
+        { label: "Notes", icon: Brain, href: `${base}/notes`, key: "notes" },
+        {
+            label: "Library",
+            icon: Book,
+            href: `${base}/library`,
+            key: "library",
+        },
+        { label: "Goals", icon: Target, href: `${base}/goals`, key: "goals" },
+        {
+            label: "Projects",
+            icon: Folder,
+            href: `${base}/para`,
+            key: "projects",
+        },
+        {
+            label: "Journal",
+            icon: PenTool,
+            href: `${base}/journal`,
+            key: "journal",
+        },
+        { label: "Focus", icon: Clock, href: `${base}/focus`, key: "focus" },
+        {
+            label: "Settings",
+            icon: Settings,
+            href: `${base}/settings`,
+            key: "settings",
+        }, // Added Settings
     ];
+
+    let filteredMenuItems = $derived(
+        menuItems.filter((item) => settings.features[item.key]),
+    );
 </script>
 
 <aside
@@ -41,11 +99,13 @@
         >
             <div class="w-4 h-4 bg-primary rounded-full animate-pulse"></div>
         </div>
-        <span class="text-xl font-bold tracking-tight text-white">SelfOS</span>
+        <span class="text-xl font-bold tracking-tight text-[var(--color-text)]"
+            >SelfOS</span
+        >
     </div>
 
     <nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-        {#each menuItems as item}
+        {#each filteredMenuItems as item}
             {@const isActive = $page.url.pathname === item.href}
             <!-- svelte-ignore a11y-missing-attribute -->
             <a

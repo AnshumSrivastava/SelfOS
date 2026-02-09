@@ -34,13 +34,15 @@
 <div class="space-y-8 pb-12">
     <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Finance OS</h1>
+            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+                Finance OS
+            </h1>
             <p class="text-muted">Track your wealth and manage expenses.</p>
         </div>
 
         <div class="flex gap-3">
             <button
-                class="btn border border-line text-white hover:bg-surface flex items-center gap-2"
+                class="btn border border-line text-[var(--color-text)] hover:bg-surface flex items-center gap-2"
             >
                 <PieChart size={18} /> Reports
             </button>
@@ -81,7 +83,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Transactions List -->
         <div class="lg:col-span-2 card">
-            <h3 class="font-bold text-white mb-6">Recent Transactions</h3>
+            <h3 class="font-bold text-[var(--color-text)] mb-6">
+                Recent Transactions
+            </h3>
             <div class="space-y-4">
                 {#each financeStore.transactions as t}
                     <div
@@ -102,7 +106,7 @@
                             </div>
                             <div>
                                 <p
-                                    class="font-medium text-white group-hover:text-primary transition-colors"
+                                    class="font-medium text-[var(--color-text)] group-hover:text-primary transition-colors"
                                 >
                                     {t.title}
                                 </p>
@@ -119,7 +123,7 @@
                         <span
                             class="font-bold {t.type === 'income'
                                 ? 'text-primary'
-                                : 'text-white'}"
+                                : 'text-[var(--color-text)]'}"
                         >
                             {t.type === "income" ? "+" : "-"}{formatCurrency(
                                 t.amount,
@@ -133,11 +137,15 @@
         <!-- Budgets / subscriptions -->
         <div class="space-y-6">
             <div class="card">
-                <h3 class="font-bold text-white mb-4">Monthly Budgets</h3>
+                <h3 class="font-bold text-[var(--color-text)] mb-4">
+                    Monthly Budgets
+                </h3>
                 <div class="space-y-6">
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-white">Food & Dining</span>
+                            <span class="text-[var(--color-text)]"
+                                >Food & Dining</span
+                            >
                             <span class="text-muted">₹450 / ₹600</span>
                         </div>
                         <div
@@ -150,7 +158,9 @@
                     </div>
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-white">Entertainment</span>
+                            <span class="text-[var(--color-text)]"
+                                >Entertainment</span
+                            >
                             <span class="text-muted">₹80 / ₹100</span>
                         </div>
                         <div
@@ -163,7 +173,9 @@
                     </div>
                     <div>
                         <div class="flex justify-between text-sm mb-2">
-                            <span class="text-white">Transport</span>
+                            <span class="text-[var(--color-text)]"
+                                >Transport</span
+                            >
                             <span class="text-muted">₹120 / ₹200</span>
                         </div>
                         <div
@@ -191,7 +203,9 @@
                 </div>
                 <div class="mt-6">
                     <div class="flex items-end gap-1 mb-2">
-                        <span class="text-2xl font-bold text-white">₹1,500</span
+                        <span
+                            class="text-2xl font-bold text-[var(--color-text)]"
+                            >₹1,500</span
                         >
                         <span class="text-sm text-muted mb-1">/ ₹2,500</span>
                     </div>
