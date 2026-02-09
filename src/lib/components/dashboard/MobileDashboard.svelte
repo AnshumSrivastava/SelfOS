@@ -155,6 +155,7 @@
                     </div>
                     <button
                         onclick={() => tasksStore.toggle(task.id)}
+                        aria-label="Toggle task status"
                         class="w-4 h-4 rounded-full border-2 {task.completed
                             ? 'bg-red-500 border-red-500'
                             : 'border-neutral-700'}"

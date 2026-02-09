@@ -55,7 +55,6 @@
                 bind:value={title}
                 placeholder="What's on your mind?"
                 class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none"
-                autoFocus
             />
 
             <div class="flex items-center gap-2 overflow-x-auto py-2">

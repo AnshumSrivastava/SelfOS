@@ -54,6 +54,7 @@
                 class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex items-start gap-4"
             >
                 <button
+                    aria-label="Toggle task status"
                     class="mt-1 w-6 h-6 rounded-full border-2 border-neutral-700 flex items-center justify-center hover:border-white transition-colors"
                 >
                 </button>

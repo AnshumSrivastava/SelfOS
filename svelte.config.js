@@ -15,6 +15,13 @@ const config = {
 		}),
 		paths: {
 			base: process.env.NODE_ENV === 'production' ? '/SelfOS' : '',
+		},
+		prerender: {
+			handleHttpError: ({ path, message }) => {
+				// Ignore favicon 404s during build
+				if (path.includes('favicon.png')) return;
+				throw new Error(message);
+			}
 		}
 	}
 };
