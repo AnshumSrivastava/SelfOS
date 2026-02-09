@@ -1,5 +1,6 @@
 <script>
     import { page } from "$app/stores";
+    import { base } from "$app/paths";
     import {
         House,
         Layers,
@@ -13,10 +14,10 @@
     let isMenuOpen = $state(false);
 
     const links = [
-        { name: "Home", icon: House, href: "/" },
-        { name: "Projects", icon: Layers, href: "/para" },
+        { name: "Home", icon: House, href: `${base}/` },
+        { name: "Projects", icon: Layers, href: `${base}/para` },
         // Middle button is handled separately
-        { name: "Tasks", icon: CheckSquare, href: "/tasks" },
+        { name: "Tasks", icon: CheckSquare, href: `${base}/tasks` },
         // Notes removed from here, added to menu
     ];
 </script>

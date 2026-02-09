@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { page } from "$app/stores";
+    import { base } from "$app/paths";
 
     let scrolled = false;
     let isQuickCaptureOpen = false;
@@ -14,18 +15,18 @@
     });
 
     const links = [
-        { name: "Hub", icon: "◈", href: "/" },
-        { name: "Habits", icon: "↺", href: "/habits" },
-        { name: "Finance", icon: "₹", href: "/finance" },
-        { name: "Fitness", icon: "♥", href: "/fitness" },
-        { name: "Nutrition", icon: "🥗", href: "/nutrition" },
-        { name: "Tasks", icon: "✓", href: "/tasks" },
-        { name: "Notes", icon: "✎", href: "/notes" },
-        { name: "Library", icon: "📚", href: "/library" },
-        { name: "Goals", icon: "🎯", href: "/goals" },
-        { name: "Projects", icon: "◰", href: "/para" },
-        { name: "Journal", icon: "📖", href: "/journal" },
-        { name: "Focus", icon: "⏱", href: "/focus" },
+        { name: "Hub", icon: "◈", href: `${base}/` },
+        { name: "Habits", icon: "↺", href: `${base}/habits` },
+        { name: "Finance", icon: "₹", href: `${base}/finance` },
+        { name: "Fitness", icon: "♥", href: `${base}/fitness` },
+        { name: "Nutrition", icon: "🥗", href: `${base}/nutrition` },
+        { name: "Tasks", icon: "✓", href: `${base}/tasks` },
+        { name: "Notes", icon: "✎", href: `${base}/notes` },
+        { name: "Library", icon: "📚", href: `${base}/library` },
+        { name: "Goals", icon: "🎯", href: `${base}/goals` },
+        { name: "Projects", icon: "◰", href: `${base}/para` },
+        { name: "Journal", icon: "📖", href: `${base}/journal` },
+        { name: "Focus", icon: "⏱", href: `${base}/focus` },
     ];
 </script>
 

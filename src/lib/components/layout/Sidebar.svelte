@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
+    import { base } from "$app/paths";
     import {
         LayoutDashboard,
         CheckSquare,
@@ -16,18 +17,18 @@
     } from "lucide-svelte";
 
     const menuItems = [
-        { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-        { label: "Habits", icon: Activity, href: "/habits" },
-        { label: "Finance", icon: Wallet, href: "/finance" },
-        { label: "Fitness", icon: Dumbbell, href: "/fitness" },
-        { label: "Nutrition", icon: Utensils, href: "/nutrition" },
-        { label: "Tasks", icon: CheckSquare, href: "/tasks" },
-        { label: "Notes", icon: Brain, href: "/notes" },
-        { label: "Library", icon: Book, href: "/library" },
-        { label: "Goals", icon: Target, href: "/goals" },
-        { label: "Projects", icon: Folder, href: "/para" },
-        { label: "Journal", icon: PenTool, href: "/journal" },
-        { label: "Focus", icon: Clock, href: "/focus" },
+        { label: "Dashboard", icon: LayoutDashboard, href: `${base}/` },
+        { label: "Habits", icon: Activity, href: `${base}/habits` },
+        { label: "Finance", icon: Wallet, href: `${base}/finance` },
+        { label: "Fitness", icon: Dumbbell, href: `${base}/fitness` },
+        { label: "Nutrition", icon: Utensils, href: `${base}/nutrition` },
+        { label: "Tasks", icon: CheckSquare, href: `${base}/tasks` },
+        { label: "Notes", icon: Brain, href: `${base}/notes` },
+        { label: "Library", icon: Book, href: `${base}/library` },
+        { label: "Goals", icon: Target, href: `${base}/goals` },
+        { label: "Projects", icon: Folder, href: `${base}/para` },
+        { label: "Journal", icon: PenTool, href: `${base}/journal` },
+        { label: "Focus", icon: Clock, href: `${base}/focus` },
     ];
 </script>
 

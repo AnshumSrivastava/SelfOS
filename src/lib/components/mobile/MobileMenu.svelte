@@ -16,6 +16,7 @@
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
     import { page } from "$app/stores";
+    import { base } from "$app/paths";
 
     let { isOpen = $bindable(false) } = $props();
 
@@ -23,84 +24,84 @@
         {
             name: "Hub",
             icon: House,
-            href: "/",
+            href: `${base}/`,
             color: "text-white",
             bg: "bg-white/10",
         },
         {
             name: "Tasks",
             icon: CheckSquare,
-            href: "/tasks",
+            href: `${base}/tasks`,
             color: "text-blue-400",
             bg: "bg-blue-400/10",
         },
         {
             name: "Habits",
             icon: RotateCw,
-            href: "/habits",
+            href: `${base}/habits`,
             color: "text-orange-400",
             bg: "bg-orange-400/10",
         },
         {
             name: "Finance",
             icon: DollarSign,
-            href: "/finance",
+            href: `${base}/finance`,
             color: "text-green-400",
             bg: "bg-green-400/10",
         },
         {
             name: "Fitness",
             icon: Heart,
-            href: "/fitness",
+            href: `${base}/fitness`,
             color: "text-red-400",
             bg: "bg-red-400/10",
         },
         {
             name: "Nutrition",
             icon: Salad,
-            href: "/nutrition",
+            href: `${base}/nutrition`,
             color: "text-emerald-400",
             bg: "bg-emerald-400/10",
         },
         {
             name: "Notes",
             icon: Edit3,
-            href: "/notes",
+            href: `${base}/notes`,
             color: "text-yellow-400",
             bg: "bg-yellow-400/10",
         },
         {
             name: "Library",
             icon: Library,
-            href: "/library",
+            href: `${base}/library`,
             color: "text-purple-400",
             bg: "bg-purple-400/10",
         },
         {
             name: "Goals",
             icon: Target,
-            href: "/goals",
+            href: `${base}/goals`,
             color: "text-pink-400",
             bg: "bg-pink-400/10",
         },
         {
             name: "Projects",
             icon: Layers,
-            href: "/para",
+            href: `${base}/para`,
             color: "text-cyan-400",
             bg: "bg-cyan-400/10",
         },
         {
             name: "Journal",
             icon: BookOpen,
-            href: "/journal",
+            href: `${base}/journal`,
             color: "text-indigo-400",
             bg: "bg-indigo-400/10",
         },
         {
             name: "Focus",
             icon: Zap,
-            href: "/focus",
+            href: `${base}/focus`,
             color: "text-amber-400",
             bg: "bg-amber-400/10",
         },
