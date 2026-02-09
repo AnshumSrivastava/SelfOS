@@ -19,7 +19,7 @@ const config = {
 		prerender: {
 			handleHttpError: ({ path, message }) => {
 				// Ignore favicon 404s during build
-				if (path.includes('favicon.png')) return;
+				if (path.includes('favicon')) return;
 				throw new Error(message);
 			}
 		}
