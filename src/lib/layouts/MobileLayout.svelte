@@ -3,25 +3,7 @@
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import { uiState } from "$lib/stores/ui.svelte";
     let { children } = $props();
-
-    function handleKeydown(e: KeyboardEvent) {
-        if (e.key === "Tab") {
-            const active = document.activeElement as HTMLElement | null;
-            const isInput =
-                active &&
-                (active.tagName === "INPUT" ||
-                    active.tagName === "TEXTAREA" ||
-                    active.isContentEditable);
-
-            if (!isInput) {
-                e.preventDefault();
-                uiState.toggleChrome();
-            }
-        }
-    }
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 <div
     class="flex flex-col min-h-screen bg-black text-white font-sans {uiState.showChrome
