@@ -1,21 +1,18 @@
 <script>
     import { Bell, Search } from "lucide-svelte";
+    import { searchStore } from "$lib/stores/search.svelte";
 </script>
 
 <header
     class="h-16 flex items-center justify-between px-6 sticky top-0 z-40 bg-black/80 backdrop-blur-sm"
 >
-    <div class="flex items-center gap-3">
-        <div
-            class="w-8 h-8 rounded-full bg-white text-black font-bold flex items-center justify-center text-xs"
-        >
-            S
-        </div>
-        <span class="font-bold text-lg tracking-tight">SelfOS</span>
-    </div>
+    <div class="flex items-center gap-3"></div>
 
     <div class="flex items-center gap-4">
-        <button class="text-gray-400 hover:text-white transition-colors">
+        <button
+            onclick={() => searchStore.open()}
+            class="text-gray-400 hover:text-white transition-colors"
+        >
             <Search size={22} />
         </button>
         <button

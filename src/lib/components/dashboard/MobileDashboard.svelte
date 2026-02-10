@@ -1,10 +1,14 @@
-<script>
+<script lang="ts">
     import { Flame, Check, ArrowRight, Plus } from "lucide-svelte";
     import { habitsStore } from "$lib/stores/habits.svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
+    import ConsistencyChart from "$lib/components/habits/ConsistencyChart.svelte";
+    import StreakFire from "$lib/components/ui/StreakFire.svelte";
+    import NumberTicker from "$lib/components/ui/NumberTicker.svelte";
 
     let showQuickCapture = $state(false);
+    let fire: StreakFire;
 
     // Derived stats
     let totalHabits = $derived(habitsStore.totalCount);
@@ -25,6 +29,7 @@
 </script>
 
 <div class="space-y-6 pb-20 relative">
+    <StreakFire bind:this={fire} />
     <!-- Greeting & Status -->
     <div class="space-y-1 mt-2">
         <h1 class="text-3xl font-light tracking-tight text-white">
@@ -70,7 +75,7 @@
             <Flame class="text-orange-500" size={24} />
             <div>
                 <span class="text-2xl font-bold text-white block"
-                    >{maxStreak}</span
+                    ><NumberTicker value={maxStreak} /></span
                 >
                 <span class="text-xs text-gray-500">Day Streak</span>
             </div>
@@ -79,7 +84,7 @@
             class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between h-32"
         >
             <div class="text-emerald-500 text-lg font-bold">
-                {taskCompletionRate}%
+                <NumberTicker value={taskCompletionRate} />%
             </div>
             <div>
                 <span class="text-2xl font-bold text-white block"
@@ -99,11 +104,23 @@
             >
         </div>
 
+        <!-- Consistency Graph -->
+        <div
+            class="px-4 py-4 bg-[#0A0A0A] rounded-2xl border border-neutral-900 mb-2"
+        >
+            <ConsistencyChart height="h-24" showLabels={false} />
+        </div>
+
         <div class="space-y-2">
             {#each habitsStore.habits.slice(0, 3) as habit}
                 {@const isCompleted = habitsStore.isCompleted(habit.id)}
                 <button
-                    onclick={() => habitsStore.toggle(habit.id)}
+                    onclick={(e) => {
+                        if (!isCompleted) {
+                            fire.ignite(e.clientX, e.clientY);
+                        }
+                        habitsStore.toggle(habit.id);
+                    }}
                     class="w-full p-4 rounded-xl bg-[#0A0A0A] border border-neutral-900 flex items-center justify-between group active:scale-[0.99] transition-all"
                 >
                     <span
@@ -154,7 +171,12 @@
                         </p>
                     </div>
                     <button
-                        onclick={() => tasksStore.toggle(task.id)}
+                        onclick={(e) => {
+                            if (!task.completed) {
+                                fire.ignite(e.clientX, e.clientY);
+                            }
+                            tasksStore.toggle(task.id);
+                        }}
                         aria-label="Toggle task status"
                         class="w-4 h-4 rounded-full border-2 {task.completed
                             ? 'bg-red-500 border-red-500'

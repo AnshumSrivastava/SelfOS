@@ -1,25 +1,31 @@
 <script lang="ts">
-    import { Check, Flame, Trophy, Plus } from "lucide-svelte";
+    import { Check, Flame, Trophy, Plus, Trash2, X } from "lucide-svelte";
     import { habitsStore } from "$lib/stores/habits.svelte";
+    import { scale, fade } from "svelte/transition";
+    import ConsistencyChart from "./ConsistencyChart.svelte";
+    import StreakFire from "$lib/components/ui/StreakFire.svelte";
 
     let todayProgress = $derived(
-        (habitsStore.completedCount / habitsStore.totalCount) * 100 || 0,
+        (habitsStore.completedCount / (habitsStore.totalCount || 1)) * 100 || 0,
     );
 
-    // Helper for weekly overview (mock data relative to today)
     const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(today);
-        d.setDate(today.getDate() - today.getDay() + i + 1); // Start Monday
-        return {
-            name: d.toLocaleDateString("en-US", { weekday: "short" }),
-            date: d.getDate(),
-            isToday: d.toDateString() === today.toDateString(),
-        };
-    });
+
+    let isAdding = $state(false);
+    let newHabitName = $state("");
+
+    function addHabit() {
+        if (newHabitName.trim()) {
+            habitsStore.add(newHabitName.trim());
+            isAdding = false;
+        }
+    }
+
+    let fire: StreakFire;
 </script>
 
-<div class="space-y-8 pb-12">
+<div class="space-y-8 pb-12 relative">
+    <StreakFire bind:this={fire} />
     <div class="flex items-end justify-between">
         <div>
             <h1
@@ -43,18 +49,17 @@
         </div>
 
         <button
-            onclick={() =>
-                habitsStore.add("New Habit " + (habitsStore.totalCount + 1))}
+            onclick={() => (isAdding = true)}
             class="btn btn-primary flex items-center gap-2"
         >
             <Plus size={18} /> New Habit
         </button>
     </div>
 
-    <!-- Weekly Progress Strip -->
+    <!-- Consistency Graph -->
     <div class="card">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-[var(--color-text)]">Weekly Overview</h3>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-[var(--color-text)]">Consistency</h3>
             <div class="flex items-center gap-2 text-sm text-muted">
                 <Flame size={16} class="text-primary" />
                 <span
@@ -65,42 +70,28 @@
                 >
             </div>
         </div>
-        <div class="grid grid-cols-7 gap-4">
-            {#each days as day, i}
-                <div class="flex flex-col items-center gap-2">
-                    <span class="text-xs text-muted">{day.name}</span>
-                    <div
-                        class="w-full aspect-square rounded-lg {day.isToday
-                            ? 'bg-surface border-2 border-primary text-[var(--color-text)]'
-                            : 'bg-surface border border-line'} flex items-center justify-center font-bold relative overflow-hidden group"
-                    >
-                        <!-- Mock checkmarks for past days -->
-                        {#if i < days.findIndex((d) => d.isToday)}
-                            <Check size={20} class="text-muted" />
-                        {/if}
-                        <span class="relative z-10">{day.date}</span>
-                        {#if day.isToday}
-                            <div
-                                class="absolute inset-0 bg-primary/20 animate-pulse"
-                            ></div>
-                        {/if}
-                    </div>
-                </div>
-            {/each}
-        </div>
+
+        <ConsistencyChart height="h-48" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {#each habitsStore.habits as habit}
+        {#each habitsStore.habits as habit (habit.id)}
             {@const isCompleted = habitsStore.isCompleted(habit.id)}
-            <button
-                onclick={() => habitsStore.toggle(habit.id)}
-                class="card group hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden text-left"
+            <div
+                class="card group hover:border-primary/50 transition-all relative overflow-hidden text-left"
             >
                 <div
                     class="flex justify-between items-start mb-4 relative z-10"
                 >
-                    <div>
+                    <button
+                        onclick={(e) => {
+                            if (!isCompleted) {
+                                fire.ignite(e.clientX, e.clientY);
+                            }
+                            habitsStore.toggle(habit.id);
+                        }}
+                        class="text-left flex-1"
+                    >
                         <h3
                             class="font-bold text-lg text-[var(--color-text)] group-hover:text-primary transition-colors"
                         >
@@ -110,13 +101,31 @@
                             class="text-xs text-muted border border-line px-2 py-0.5 rounded-full"
                             >Daily</span
                         >
-                    </div>
-                    <div
-                        class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all {isCompleted
-                            ? 'bg-primary border-primary text-black'
-                            : 'border-line hover:border-primary'}"
-                    >
-                        {#if isCompleted}<Check size={16} />{/if}
+                    </button>
+                    <div class="flex gap-2 items-center">
+                        <button
+                            onclick={(e) => {
+                                e.stopPropagation();
+                                habitsStore.remove(habit.id);
+                            }}
+                            class="w-8 h-8 rounded-full border border-line flex items-center justify-center text-muted hover:text-red-500 hover:border-red-500 transition-colors bg-surface"
+                            title="Delete Habit"
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                        <button
+                            onclick={(e) => {
+                                if (!isCompleted) {
+                                    fire.ignite(e.clientX, e.clientY);
+                                }
+                                habitsStore.toggle(habit.id);
+                            }}
+                            class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all {isCompleted
+                                ? 'bg-primary border-primary text-black'
+                                : 'border-line hover:border-primary bg-surface'}"
+                        >
+                            {#if isCompleted}<Check size={16} />{/if}
+                        </button>
                     </div>
                 </div>
 
@@ -150,7 +159,56 @@
                         class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
                     ></div>
                 {/if}
-            </button>
+            </div>
         {/each}
     </div>
 </div>
+
+{#if isAdding}
+    <div
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        transition:fade={{ duration: 200 }}
+    >
+        <div
+            class="bg-surface border border-line rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            transition:scale={{ duration: 200, start: 0.95 }}
+        >
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-[var(--color-text)]">
+                    New Habit
+                </h3>
+                <button
+                    onclick={() => (isAdding = false)}
+                    class="text-muted hover:text-[var(--color-text)] transition-colors"
+                >
+                    <X size={20} />
+                </button>
+            </div>
+
+            <input
+                type="text"
+                bind:value={newHabitName}
+                placeholder="What habit do you want to build?"
+                class="w-full bg-background border border-line rounded-xl px-4 py-3 text-[var(--color-text)] placeholder:text-muted focus:outline-none focus:border-primary mb-6"
+                onkeydown={(e) => e.key === "Enter" && addHabit()}
+                autofocus
+            />
+
+            <div class="flex gap-3 justify-end">
+                <button
+                    onclick={() => (isAdding = false)}
+                    class="px-4 py-2 text-muted hover:text-[var(--color-text)] transition-colors"
+                >
+                    Cancel
+                </button>
+                <button
+                    onclick={addHabit}
+                    disabled={!newHabitName.trim()}
+                    class="btn btn-primary px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Create Habit
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}

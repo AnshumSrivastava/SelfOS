@@ -1,6 +1,13 @@
 <script>
     import { settings } from "$lib/stores/settings.svelte";
-    import { Palette, LayoutGrid, Moon, Sun, Monitor } from "lucide-svelte";
+    import {
+        Palette,
+        LayoutGrid,
+        Moon,
+        Sun,
+        Monitor,
+        Plus,
+    } from "lucide-svelte";
     import { fade } from "svelte/transition";
 
     const themes = [
@@ -76,6 +83,16 @@
             label: "Focus Mode",
             description: "Pomodoro timer and focus sessions",
         },
+        {
+            id: "calendar",
+            label: "Calendar & Schedule",
+            description: "Appointments and daily time-blocking",
+        },
+        {
+            id: "lifeBalance",
+            label: "Life Balance",
+            description: "Health, Family, Fun, and Spiritual goals",
+        },
     ];
 </script>
 
@@ -146,6 +163,44 @@
                             aria-label="Select {color.label} accent"
                         ></button>
                     {/each}
+
+                    <!-- Custom Color Picker -->
+                    <div class="relative group">
+                        <input
+                            type="color"
+                            value={settings.accentColor}
+                            oninput={(e) =>
+                                settings.setAccentColor(e.currentTarget.value)}
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            title="Custom Color"
+                            aria-label="Select custom accent color"
+                        />
+                        <div
+                            class="w-10 h-10 rounded-full border-2 transition-all group-hover:scale-110 group-active:scale-95 flex items-center justify-center overflow-hidden
+                            {!accentColors.some(
+                                (c) => c.value === settings.accentColor,
+                            )
+                                ? 'border-white ring-2 ring-primary ring-offset-2 ring-offset-background'
+                                : 'border-transparent'}"
+                            style={!accentColors.some(
+                                (c) => c.value === settings.accentColor,
+                            )
+                                ? `background-color: ${settings.accentColor}`
+                                : "background: conic-gradient(from 180deg, #ec4899, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ec4899)"}
+                        >
+                            {#if accentColors.some((c) => c.value === settings.accentColor)}
+                                <div
+                                    class="absolute inset-0.5 rounded-full bg-background flex items-center justify-center"
+                                >
+                                    <Plus
+                                        size={16}
+                                        class="text-muted-foreground group-hover:text-foreground transition-colors"
+                                    />
+                                </div>
+                            {/if}
+                            <span class="sr-only">Custom Color</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -185,7 +240,7 @@
                                 .features[feature.id]
                                 ? 'translate-x-6'
                                 : 'translate-x-1'}"
-                        />
+                        ></span>
                     </button>
                 </div>
             {/each}

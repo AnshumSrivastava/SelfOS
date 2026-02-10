@@ -15,11 +15,14 @@ class SettingsStore {
         projects: true,
         journal: true,
         focus: true,
+        calendar: true,
+        lifeBalance: true,
         settings: true
     });
 
     theme = $state('dark'); // 'dark', 'light', 'amoled'
     accentColor = $state('#00ff9d'); // Default green
+    mobileNavItems = $state(['dashboard', 'projects', 'tasks']); // Keys of items to show on mobile nav
 
     constructor() {
         if (browser) {
@@ -29,23 +32,36 @@ class SettingsStore {
                 this.features = { ...this.features, ...parsed.features };
                 this.theme = parsed.theme || 'dark';
                 this.accentColor = parsed.accentColor || '#00ff9d';
+                this.mobileNavItems = parsed.mobileNavItems || ['dashboard', 'projects', 'tasks'];
             }
             // Apply theme immediately on load
             this.applyTheme();
+
+            // Auto-save effect
+            $effect.root(() => {
+                $effect(() => {
+                    localStorage.setItem('selfos-settings', JSON.stringify({
+                        features: this.features,
+                        theme: this.theme,
+                        accentColor: this.accentColor,
+                        mobileNavItems: this.mobileNavItems
+                    }));
+                });
+            });
         }
     }
 
-    toggleFeature(feature) {
+    toggleFeature(feature: keyof typeof this.features) {
         if (this.features[feature] !== undefined) {
             this.features[feature] = !this.features[feature];
         }
     }
 
-    setTheme(newTheme) {
+    setTheme(newTheme: string) {
         this.theme = newTheme;
     }
 
-    setAccentColor(color) {
+    setAccentColor(color: string) {
         this.accentColor = color;
     }
 

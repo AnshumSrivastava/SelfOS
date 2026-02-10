@@ -1,22 +1,6 @@
 <script>
     import { Book, Plus, Star } from "lucide-svelte";
-
-    const books = [
-        {
-            title: "Atomic Habits",
-            author: "James Clear",
-            status: "Reading",
-            progress: 45,
-            cover: "bg-blue-500",
-        },
-        {
-            title: "Deep Work",
-            author: "Cal Newport",
-            status: "Completed",
-            rating: 5,
-            cover: "bg-yellow-500",
-        },
-    ];
+    import { libraryStore } from "$lib/stores/library.svelte";
 </script>
 
 <div class="space-y-6 pb-20">
@@ -34,24 +18,33 @@
         <h3 class="text-sm text-gray-500 uppercase tracking-widest mb-3">
             Reading
         </h3>
-        <div
-            class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex gap-4"
-        >
-            <div
-                class="w-20 aspect-[2/3] bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-500 border border-blue-900/30"
-            >
-                <Book size={24} />
-            </div>
-            <div class="flex-1 flex flex-col justify-center">
-                <h4 class="font-bold text-white">Atomic Habits</h4>
-                <p class="text-xs text-gray-500 mb-3">James Clear</p>
+        <div class="space-y-4">
+            {#each libraryStore.reading as book}
                 <div
-                    class="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden"
+                    class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex gap-4"
                 >
-                    <div class="h-full bg-white w-[45%]"></div>
+                    <div
+                        class="w-20 aspect-[2/3] bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-500 border border-blue-900/30"
+                    >
+                        <Book size={24} />
+                    </div>
+                    <div class="flex-1 flex flex-col justify-center">
+                        <h4 class="font-bold text-white">{book.title}</h4>
+                        <p class="text-xs text-gray-500 mb-3">{book.author}</p>
+                        <div
+                            class="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden"
+                        >
+                            <div
+                                class="h-full bg-white w-[{book.progress}%]"
+                                style="width: {book.progress}%"
+                            ></div>
+                        </div>
+                        <span class="text-xs text-gray-400 mt-1"
+                            >{book.progress}% Complete</span
+                        >
+                    </div>
                 </div>
-                <span class="text-xs text-gray-400 mt-1">45% Complete</span>
-            </div>
+            {/each}
         </div>
     </div>
 
@@ -61,7 +54,7 @@
             All Books
         </h3>
         <div class="grid grid-cols-2 gap-4">
-            {#each books as book}
+            {#each libraryStore.books as book}
                 <div
                     class="p-3 rounded-xl bg-[#0A0A0A] border border-neutral-900"
                 >

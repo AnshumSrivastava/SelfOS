@@ -33,10 +33,21 @@
             date: "Sep 28",
         },
         {
-            title: "Weekly Reflection",
             folder: "Journal",
             type: "note",
             date: "Sep 25",
+        },
+        {
+            title: "Call insurance about renewal",
+            folder: "Calls / Emails",
+            type: "note",
+            date: "Today",
+        },
+        {
+            title: "Plan for Tomorrow",
+            folder: "Tomorrow",
+            type: "note",
+            date: "Today",
         },
     ];
 
@@ -44,6 +55,8 @@
         "All Notes",
         "Work",
         "Personal",
+        "Calls / Emails",
+        "Tomorrow",
         "Learning",
         "Tech",
         "Journal",

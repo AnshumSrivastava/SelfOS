@@ -6,6 +6,7 @@
         Archive,
         ChevronRight,
     } from "lucide-svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
 
     const sections = [
         {
@@ -84,32 +85,24 @@
             Active Projects
         </h3>
         <div class="space-y-3">
-            <div
-                class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-900"
-            >
-                <div class="flex justify-between text-sm text-white mb-2">
-                    <span>SelfOS Remake</span>
-                    <span>75%</span>
-                </div>
+            {#each projectsStore.projects as project}
                 <div
-                    class="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden"
+                    class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-900"
                 >
-                    <div class="h-full bg-emerald-500 w-[75%]"></div>
+                    <div class="flex justify-between text-sm text-white mb-2">
+                        <span>{project.name}</span>
+                        <span>{project.progress}%</span>
+                    </div>
+                    <div
+                        class="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full {project.color} w-[{project.progress}%]"
+                            style="width: {project.progress}%"
+                        ></div>
+                    </div>
                 </div>
-            </div>
-            <div
-                class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-900"
-            >
-                <div class="flex justify-between text-sm text-white mb-2">
-                    <span>Q4 Fitness</span>
-                    <span>30%</span>
-                </div>
-                <div
-                    class="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden"
-                >
-                    <div class="h-full bg-emerald-500 w-[30%]"></div>
-                </div>
-            </div>
+            {/each}
         </div>
     </div>
 </div>

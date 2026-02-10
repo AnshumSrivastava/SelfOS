@@ -1,7 +1,12 @@
 <script>
+    import NumberTicker from "$lib/components/ui/NumberTicker.svelte";
+
     let {
         title,
-        value,
+        value = undefined,
+        animatedValue = undefined,
+        prefix = "",
+        suffix = "",
         subtext = "",
         icon: Icon,
         trend,
@@ -29,7 +34,11 @@
         <h3
             class="text-3xl font-bold text-[var(--color-text)] mb-1 group-hover:translate-x-1 transition-transform"
         >
-            {value}
+            {#if animatedValue !== undefined}
+                {prefix}<NumberTicker value={animatedValue} />{suffix}
+            {:else}
+                {value}
+            {/if}
         </h3>
         <p class="text-sm text-muted font-medium">{title}</p>
         {#if subtext}

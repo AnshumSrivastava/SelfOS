@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         X,
         House,
@@ -14,6 +14,7 @@
         BookOpen,
         Zap,
         Settings, // Import Settings
+        Calendar,
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
     import { page } from "$app/stores";
@@ -120,6 +121,22 @@
             key: "focus",
         },
         {
+            name: "Calendar",
+            icon: Calendar,
+            href: `${base}/calendar`,
+            color: "text-sky-400",
+            bg: "bg-sky-400/10",
+            key: "calendar",
+        },
+        {
+            name: "Balance",
+            icon: Heart,
+            href: `${base}/life-balance`,
+            color: "text-rose-400",
+            bg: "bg-rose-400/10",
+            key: "lifeBalance",
+        },
+        {
             name: "Settings",
             icon: Settings,
             href: `${base}/settings`,
@@ -130,8 +147,26 @@
     ];
 
     let filteredLinks = $derived(
-        links.filter((link) => settings.features[link.key]),
+        links.filter(
+            (link) =>
+                settings.features[link.key as keyof typeof settings.features],
+        ),
     );
+    let isEditing = $state(false);
+
+    function togglePin(key: string) {
+        if (settings.mobileNavItems.includes(key)) {
+            // Remove
+            settings.mobileNavItems = settings.mobileNavItems.filter(
+                (k) => k !== key,
+            );
+        } else {
+            // Add if less than 4
+            if (settings.mobileNavItems.length < 4) {
+                settings.mobileNavItems = [...settings.mobileNavItems, key];
+            }
+        }
+    }
 </script>
 
 {#if isOpen}
@@ -143,9 +178,19 @@
         <div
             class="flex items-center justify-between px-6 py-4 border-b border-[var(--color-line)]"
         >
-            <span class="text-lg font-medium text-[var(--color-text)]"
-                >Menu</span
-            >
+            <div class="flex items-center gap-3">
+                <span class="text-lg font-medium text-[var(--color-text)]"
+                    >Menu</span
+                >
+                <button
+                    onclick={() => (isEditing = !isEditing)}
+                    class="text-xs px-2 py-1 rounded bg-neutral-800 text-neutral-400 font-medium uppercase tracking-wider {isEditing
+                        ? 'text-primary bg-primary/10'
+                        : ''}"
+                >
+                    {isEditing ? "Done" : "Customize"}
+                </button>
+            </div>
             <button
                 onclick={() => (isOpen = false)}
                 class="p-2 rounded-full bg-[var(--color-text)]/10 text-[var(--color-text)]"
@@ -154,19 +199,51 @@
             </button>
         </div>
 
+        {#if isEditing}
+            <div class="px-6 py-2 bg-neutral-900 border-b border-neutral-800">
+                <p class="text-xs text-neutral-400 text-center">
+                    Select up to 4 items to pin to the bottom bar ({settings
+                        .mobileNavItems.length}/4)
+                </p>
+            </div>
+        {/if}
+
         <!-- Grid -->
         <div
             class="flex-1 overflow-y-auto p-6 grid grid-cols-3 gap-4 content-start"
         >
             {#each filteredLinks as link}
-                {@const isActive = $page.url.pathname === link.href}
-                <a
-                    href={link.href}
-                    onclick={() => (isOpen = false)}
-                    class="flex flex-col items-center gap-3 p-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] active:scale-95 transition-all {isActive
-                        ? 'ring-1 ring-primary/50 bg-primary/5'
-                        : ''}"
+                {@const isActive =
+                    link.href === `${base}/`
+                        ? $page.url.pathname === link.href
+                        : $page.url.pathname.startsWith(link.href)}
+                {@const isPinned = settings.mobileNavItems.includes(link.key)}
+
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                    onclick={() => {
+                        if (isEditing) {
+                            togglePin(link.key);
+                        } else {
+                            isOpen = false;
+                            window.location.href = link.href;
+                        }
+                    }}
+                    class="relative flex flex-col items-center gap-3 p-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] active:scale-95 transition-all cursor-pointer
+                    {isActive ? 'ring-1 ring-primary/50 bg-primary/5' : ''}
+                    {isEditing && isPinned
+                        ? 'ring-2 ring-primary border-primary'
+                        : ''}
+                    {isEditing && !isPinned ? 'opacity-50' : ''}
+                    "
                 >
+                    {#if isEditing && isPinned}
+                        <div
+                            class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]"
+                        ></div>
+                    {/if}
+
                     <div
                         class="w-12 h-12 rounded-full {link.bg} {link.color} flex items-center justify-center"
                     >
@@ -175,7 +252,7 @@
                     <span class="text-xs font-medium text-muted text-center"
                         >{link.name}</span
                     >
-                </a>
+                </div>
             {/each}
         </div>
     </div>

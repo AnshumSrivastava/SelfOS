@@ -15,6 +15,8 @@
         Clock,
         Activity,
         Settings,
+        Calendar,
+        Heart,
     } from "lucide-svelte";
 
     import { settings } from "$lib/stores/settings.svelte";
@@ -78,6 +80,18 @@
         },
         { label: "Focus", icon: Clock, href: `${base}/focus`, key: "focus" },
         {
+            label: "Calendar",
+            icon: Calendar,
+            href: `${base}/calendar`,
+            key: "calendar",
+        },
+        {
+            label: "Life Balance",
+            icon: Heart,
+            href: `${base}/life-balance`,
+            key: "lifeBalance",
+        },
+        {
             label: "Settings",
             icon: Settings,
             href: `${base}/settings`,
@@ -86,7 +100,10 @@
     ];
 
     let filteredMenuItems = $derived(
-        menuItems.filter((item) => settings.features[item.key]),
+        menuItems.filter(
+            (item) =>
+                settings.features[item.key as keyof typeof settings.features],
+        ),
     );
 </script>
 
@@ -106,8 +123,11 @@
 
     <nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
         {#each filteredMenuItems as item}
-            {@const isActive = $page.url.pathname === item.href}
-            <!-- svelte-ignore a11y-missing-attribute -->
+            {@const isActive =
+                item.href === `${base}/`
+                    ? $page.url.pathname === item.href
+                    : $page.url.pathname.startsWith(item.href)}
+            <!-- svelte-ignore a11y_missing_attribute -->
             <a
                 href={item.href}
                 class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group {isActive

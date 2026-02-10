@@ -41,13 +41,46 @@ class HabitsStore {
         if (habit) {
             if (habit.completedDates.includes(today)) {
                 habit.completedDates = habit.completedDates.filter(d => d !== today);
-                // Simple streak logic: decrease if unchecking today? 
-                // For now, just keep it simple. Real streak calc is complex.
             } else {
                 habit.completedDates.push(today);
-                habit.streak += 1; // Increment streak on completion
+            }
+            habit.streak = this.calculateStreak(habit.completedDates);
+        }
+    }
+
+    calculateStreak(completedDates: string[]): number {
+        if (completedDates.length === 0) return 0;
+
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        // Start checking from today
+        let checkDate = new Date(today);
+
+        // If today is NOT completed, start checking from yesterday.
+        if (!completedDates.includes(todayStr)) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        // Double check: if yesterday is also not in main list (and today wasn't), streak is 0.
+        // We need to sync checkDate with ISO string logic
+        let checkDateStr = checkDate.toISOString().split('T')[0];
+        if (!completedDates.includes(checkDateStr)) {
+            return 0;
+        }
+
+        let currentStreak = 0;
+        while (true) {
+            const dateStr = checkDate.toISOString().split('T')[0];
+            if (completedDates.includes(dateStr)) {
+                currentStreak++;
+                // Move to previous day
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
             }
         }
+        return currentStreak;
     }
 
     isCompleted(id: string) {

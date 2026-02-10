@@ -147,6 +147,40 @@
             </div>
         </div>
 
+        <div class="card bg-surface/50 border-primary/10">
+            <div class="flex items-center justify-between mb-4">
+                <h3
+                    class="font-bold text-[var(--color-text)] flex items-center gap-2"
+                >
+                    <Utensils size={18} class="text-primary" /> Meal Planner
+                </h3>
+                <button class="text-xs text-primary hover:underline"
+                    >View Week</button
+                >
+            </div>
+            <div class="space-y-3">
+                <div class="p-3 bg-surface rounded-lg border border-line">
+                    <span class="text-xs text-muted block mb-1"
+                        >Tomorrow • Breakfast</span
+                    >
+                    <span class="font-bold text-[var(--color-text)]"
+                        >Avocado Toast & Eggs</span
+                    >
+                </div>
+                <div class="p-3 bg-surface rounded-lg border border-line">
+                    <span class="text-xs text-muted block mb-1"
+                        >Tomorrow • Lunch</span
+                    >
+                    <span class="font-bold text-[var(--color-text)]"
+                        >Grilled Salmon & Quinoa</span
+                    >
+                </div>
+            </div>
+            <button class="w-full btn btn-sm btn-secondary mt-4"
+                >Plan Next Meal</button
+            >
+        </div>
+
         <div class="card relative overflow-hidden">
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <Apple size={160} />

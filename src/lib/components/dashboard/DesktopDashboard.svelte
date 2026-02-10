@@ -1,4 +1,5 @@
 <script lang="ts">
+    // Force reload for dashboard chart update
     import WelcomeWidget from "$lib/components/dashboard/WelcomeWidget.svelte";
     import StatCard from "$lib/components/ui/StatCard.svelte";
     import ProgressBar from "$lib/components/ui/ProgressBar.svelte";
@@ -16,8 +17,11 @@
         Check,
         Plus,
     } from "lucide-svelte";
+    import StreakFire from "$lib/components/ui/StreakFire.svelte";
+    import ConsistencyChart from "$lib/components/habits/ConsistencyChart.svelte";
 
     let showQuickCapture = $state(false);
+    let fire: StreakFire;
 
     // Derived stats
     let totalHabits = $derived(habitsStore.totalCount);
@@ -30,6 +34,7 @@
 </script>
 
 <div class="space-y-8 relative">
+    <StreakFire bind:this={fire} />
     <!-- Quick Capture Modal -->
     <QuickCapture bind:isOpen={showQuickCapture} />
 
@@ -48,14 +53,16 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
             title="Habit Streak"
-            value="{maxStreak} Days"
+            animatedValue={maxStreak}
+            suffix=" Days"
             icon={Flame}
             trend={10}
             subtext="Best: 24 days"
         />
         <StatCard
             title="Net Worth"
-            value="₹{financeStore.balance}"
+            animatedValue={financeStore.balance}
+            prefix="₹"
             icon={Wallet}
             trend={2.5}
             color="secondary"
@@ -94,25 +101,8 @@
                     </select>
                 </div>
 
-                <div class="h-64 flex items-end gap-4 px-2">
-                    <!-- Placeholder Chart Bars -->
-                    {#each Array(7) as _, i}
-                        <div
-                            class="flex-1 flex flex-col justify-end gap-2 group cursor-pointer"
-                        >
-                            <div
-                                class="w-full bg-surface rounded-t-lg relative h-full overflow-hidden"
-                            >
-                                <div
-                                    class="absolute bottom-0 w-full bg-primary/20 group-hover:bg-primary/40 transition-all duration-300 rounded-t-lg"
-                                    style="height: {Math.random() * 80 + 20}%"
-                                ></div>
-                            </div>
-                            <span class="text-center text-xs text-muted"
-                                >Thinking...</span
-                            >
-                        </div>
-                    {/each}
+                <div class="h-64 flex items-end justify-center px-2">
+                    <ConsistencyChart height="h-full" />
                 </div>
             </div>
 
@@ -131,7 +121,12 @@
                                 habit.id,
                             )}
                             <button
-                                onclick={() => habitsStore.toggle(habit.id)}
+                                onclick={(e) => {
+                                    if (!isCompleted) {
+                                        fire.ignite(e.clientX, e.clientY);
+                                    }
+                                    habitsStore.toggle(habit.id);
+                                }}
                                 class="flex items-center gap-3 w-full text-left"
                             >
                                 <div
@@ -166,7 +161,12 @@
                     <div class="space-y-3">
                         {#each tasksStore.tasks.slice(0, 3) as task}
                             <button
-                                onclick={() => tasksStore.toggle(task.id)}
+                                onclick={(e) => {
+                                    if (!task.completed) {
+                                        fire.ignite(e.clientX, e.clientY);
+                                    }
+                                    tasksStore.toggle(task.id);
+                                }}
                                 class="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors w-full text-left"
                             >
                                 <div>
