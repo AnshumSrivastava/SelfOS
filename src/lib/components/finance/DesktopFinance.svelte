@@ -28,6 +28,7 @@
     }
 
     function formatDate(dateString: string) {
+        if (!dateString) return "";
         const date = new Date(dateString);
         return date.toLocaleDateString("en-US", {
             month: "short",
@@ -36,7 +37,23 @@
         });
     }
 
-    let showAddModal = $state(false);
+    let showGoalModal = $state(false);
+    let showBudgetModal = $state(false);
+    let showAddModal = $state(false); // Make sure this is defined as it is used in template!
+    let newGoal = $state({
+        name: "",
+        targetAmount: "",
+        deadline: "",
+    });
+    let newBudget = $state({
+        category: "",
+        amount: "",
+    });
+
+    // Minimal transaction state for "Add Transaction" button if needed,
+    // although Desktop usually uses a different flow or modal.
+    // The previous code had `showAddModal` logic in template but maybe missing state in script?
+    // Let's add it to be safe as the template used it.
     let newTransaction = $state({
         title: "",
         amount: "",
@@ -44,6 +61,34 @@
         category: "General",
         tags: "",
     });
+
+    function handleAddGoal() {
+        if (!newGoal.name || !newGoal.targetAmount) return;
+
+        financeStore.addGoal({
+            name: newGoal.name,
+            targetAmount: parseFloat(newGoal.targetAmount),
+            deadline: newGoal.deadline || undefined,
+            color: "#00BCD4", // Default to cyan for now
+        });
+
+        newGoal = { name: "", targetAmount: "", deadline: "" };
+        showGoalModal = false;
+    }
+
+    function handleAddBudget() {
+        if (!newBudget.category || !newBudget.amount) return;
+
+        financeStore.addBudget({
+            category: newBudget.category,
+            amount: parseFloat(newBudget.amount),
+            period: "monthly",
+            color: "#" + Math.floor(Math.random() * 16777215).toString(16), // Random color for now
+        });
+
+        newBudget = { category: "", amount: "" };
+        showBudgetModal = false;
+    }
 
     function handleAddTransaction() {
         if (!newTransaction.title || !newTransaction.amount) return;
@@ -55,12 +100,11 @@
             category: newTransaction.category,
             tags: newTransaction.tags
                 .split(",")
-                .map((tag) => tag.trim())
+                .map((t) => t.trim())
                 .filter(Boolean),
             date: new Date().toISOString(),
         });
 
-        // Reset
         newTransaction = {
             title: "",
             amount: "",
@@ -73,6 +117,119 @@
 </script>
 
 <div class="space-y-8 pb-12 relative">
+    {#if showBudgetModal}
+        <div
+            class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+        >
+            <div
+                class="card w-full max-w-md bg-[#1E1E1E] border border-white/10 p-6 shadow-2xl rounded-2xl"
+            >
+                <h3 class="text-xl font-bold mb-6 text-white">Add Budget</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label
+                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            >Category</label
+                        >
+                        <input
+                            type="text"
+                            bind:value={newBudget.category}
+                            placeholder="e.g. Dining Out"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            >Amount</label
+                        >
+                        <input
+                            type="number"
+                            bind:value={newBudget.amount}
+                            placeholder="e.g. 5000"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                        />
+                    </div>
+
+                    <div class="flex gap-3 pt-6">
+                        <button
+                            class="flex-1 py-3 rounded-xl font-medium border border-white/10 hover:bg-white/5 transition-colors text-white"
+                            onclick={() => (showBudgetModal = false)}
+                            >Cancel</button
+                        >
+                        <button
+                            class="flex-1 py-3 rounded-xl font-bold bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 transition-colors shadow-[0_0_20px_rgba(0,188,212,0.3)]"
+                            onclick={handleAddBudget}>Save Budget</button
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
+    {#if showGoalModal}
+        <div
+            class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+        >
+            <div
+                class="card w-full max-w-md bg-[#1E1E1E] border border-white/10 p-6 shadow-2xl rounded-2xl"
+            >
+                <h3 class="text-xl font-bold mb-6 text-white">
+                    Add Savings Goal
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label
+                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            >Goal Name</label
+                        >
+                        <input
+                            type="text"
+                            bind:value={newGoal.name}
+                            placeholder="e.g. New Laptop"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            >Target Amount</label
+                        >
+                        <input
+                            type="number"
+                            bind:value={newGoal.targetAmount}
+                            placeholder="e.g. 50000"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            >Deadline (Optional)</label
+                        >
+                        <input
+                            type="date"
+                            bind:value={newGoal.deadline}
+                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                        />
+                    </div>
+
+                    <div class="flex gap-3 pt-6">
+                        <button
+                            class="flex-1 py-3 rounded-xl font-medium border border-white/10 hover:bg-white/5 transition-colors text-white"
+                            onclick={() => (showGoalModal = false)}
+                            >Cancel</button
+                        >
+                        <button
+                            class="flex-1 py-3 rounded-xl font-bold bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 transition-colors shadow-[0_0_20px_rgba(0,188,212,0.3)]"
+                            onclick={handleAddGoal}>Save Goal</button
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    {/if}
+
     {#if showAddModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
@@ -501,25 +658,38 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-bold text-white text-lg">Budgets</h3>
                     <button
-                        class="text-xs text-[#00BCD4] font-medium hover:text-[#00BCD4]/80 transition-colors uppercase tracking-wider"
-                        >Manage</button
+                        class="text-xs text-[#00BCD4] font-medium hover:text-[#00BCD4]/80 transition-colors uppercase tracking-wider flex items-center gap-1"
+                        onclick={() => (showBudgetModal = true)}
                     >
+                        <Plus size={14} /> Add
+                    </button>
                 </div>
 
                 <div class="space-y-6">
                     {#each financeStore.budgets as budget}
-                        <div>
+                        <div class="group">
                             <div
                                 class="flex justify-between text-sm mb-2 font-medium"
                             >
                                 <span class="text-gray-300"
                                     >{budget.category}</span
                                 >
-                                <span class="text-gray-500"
-                                    >{formatCurrency(budget.spent)}
-                                    <span class="text-gray-600">/</span>
-                                    {formatCurrency(budget.amount)}</span
-                                >
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500"
+                                        >{formatCurrency(budget.spent)}
+                                        <span class="text-gray-600">/</span>
+                                        {formatCurrency(budget.amount)}</span
+                                    >
+                                    <button
+                                        class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                        onclick={() =>
+                                            financeStore.removeBudget(
+                                                budget.id,
+                                            )}
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
                             <div
                                 class="h-2 w-full bg-black/40 rounded-full overflow-hidden border border-white/5"
@@ -547,6 +717,20 @@
             </div>
 
             <!-- Savings Goals -->
+            <div class="flex items-center justify-between mb-2">
+                <h3
+                    class="text-sm text-gray-400 font-medium uppercase tracking-wider"
+                >
+                    Savings Goals
+                </h3>
+                <button
+                    onclick={() => (showGoalModal = true)}
+                    class="text-xs text-[#00BCD4] hover:text-[#00BCD4]/80 transition-colors flex items-center gap-1 font-bold"
+                >
+                    <Plus size={14} /> Add Goal
+                </button>
+            </div>
+
             {#each financeStore.goals as goal}
                 <div
                     class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E] relative overflow-hidden group"
@@ -566,10 +750,13 @@
                                 Target: {formatCurrency(goal.targetAmount)}
                             </p>
                         </div>
-                        <div
-                            class="bg-[#00BCD4]/10 p-2 rounded-xl text-[#00BCD4]"
-                        >
-                            <Target size={24} />
+                        <div class="flex gap-2">
+                            <button
+                                class="text-gray-600 hover:text-red-400 transition-colors"
+                                onclick={() => financeStore.removeGoal(goal.id)}
+                            >
+                                <Trash2 size={16} />
+                            </button>
                         </div>
                     </div>
                     <div class="mt-8 relative z-10">
@@ -579,9 +766,19 @@
                             >
                             <span
                                 class="text-sm text-gray-500 mb-1.5 font-medium"
-                                >/ 100%</span
+                                >/ {(
+                                    (goal.currentAmount / goal.targetAmount) *
+                                    100
+                                ).toFixed(0)}%</span
                             >
                         </div>
+                        {#if goal.deadline}
+                            <p class="text-xs text-gray-500 mb-3">
+                                Deadline: {new Date(
+                                    goal.deadline,
+                                ).toLocaleDateString()}
+                            </p>
+                        {/if}
                         <div
                             class="h-3 w-full bg-black/40 rounded-full overflow-hidden border border-white/5"
                         >
@@ -594,7 +791,7 @@
                                 )}%"
                             ></div>
                         </div>
-                        <div class="flex justify-between mt-6 gap-2">
+                        <div class="flex mt-6 gap-2">
                             <button
                                 class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/5 hover:bg-[#00BCD4]/10 hover:text-[#00BCD4] transition-colors"
                                 onclick={() =>
@@ -622,7 +819,7 @@
                     <Bell size={20} /> Upcoming Bills
                 </h3>
                 <div class="space-y-3">
-                    {#if financeStore.reminders && financeStore.reminders.length > 0}
+                    {#if (financeStore.reminders || []).length > 0}
                         {#each financeStore.reminders as reminder}
                             <div
                                 class="flex items-center gap-3 p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer group"
@@ -639,9 +836,11 @@
                                         {reminder.title}
                                     </p>
                                     <p class="text-xs text-gray-400">
-                                        {new Date(
-                                            reminder.dueDate,
-                                        ).toLocaleDateString()}
+                                        {reminder.dueDate
+                                            ? new Date(
+                                                  reminder.dueDate,
+                                              ).toLocaleDateString()
+                                            : ""}
                                     </p>
                                 </div>
                                 <span class="font-bold text-sm text-white"

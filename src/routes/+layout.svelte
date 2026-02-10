@@ -5,6 +5,7 @@
   import { focusStore } from "$lib/stores/focus.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { searchStore } from "$lib/stores/search.svelte";
+  import { uiState } from "$lib/stores/ui.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
 
   let { children } = $props();
@@ -31,13 +32,20 @@
     lastTap = currentTime;
   }
   function handleKeydown(e) {
-    if (
-      e.key === "s" &&
-      !["INPUT", "TEXTAREA"].includes(e.target.tagName) &&
-      !e.target.isContentEditable
-    ) {
-      e.preventDefault(); // Prevent 's' from being typed if there's a focusable generic element? Actually safer not to prevent default unless we are sure. But user asked to trigger "if not already typing".
+    const target = e.target;
+    // Check if user is typing in an input
+    const isInput =
+      ["INPUT", "TEXTAREA"].includes(target.tagName) ||
+      target.isContentEditable;
+
+    if (e.key === "s" && !isInput) {
+      e.preventDefault();
       searchStore.open();
+    }
+
+    if (e.key === "Tab" && !isInput) {
+      e.preventDefault();
+      uiState.toggleChrome();
     }
   }
 </script>

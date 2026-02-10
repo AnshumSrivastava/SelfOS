@@ -1,67 +1,39 @@
-<script>
-    import { Folder, FileText, Search, Plus, Grid, List } from "lucide-svelte";
+<script lang="ts">
+    import { Folder, FileText, Search, Plus, Hash } from "lucide-svelte";
+    import { notesStore, type Note } from "$lib/stores/notes.svelte";
+    import NoteModal from "./NoteModal.svelte";
 
-    const notes = [
-        {
-            title: "Project Ideas 2026",
-            folder: "Work",
-            type: "note",
-            date: "2h ago",
-        },
-        {
-            title: "Book Summary: Atomic Habits",
-            folder: "Learning",
-            type: "note",
-            date: "Yesterday",
-        },
-        {
-            title: "Travel Itinerary: Japan",
-            folder: "Personal",
-            type: "note",
-            date: "Oct 5",
-        },
-        {
-            title: "Meeting Notes: Q4 Strategy",
-            folder: "Work",
-            type: "note",
-            date: "Oct 2",
-        },
-        {
-            title: "React vs Svelte",
-            folder: "Tech",
-            type: "note",
-            date: "Sep 28",
-        },
-        {
-            folder: "Journal",
-            type: "note",
-            date: "Sep 25",
-        },
-        {
-            title: "Call insurance about renewal",
-            folder: "Calls / Emails",
-            type: "note",
-            date: "Today",
-        },
-        {
-            title: "Plan for Tomorrow",
-            folder: "Tomorrow",
-            type: "note",
-            date: "Today",
-        },
-    ];
+    let selectedFilter = $state("All");
+    let searchQuery = $state("");
+    let isModalOpen = $state(false);
+    let currentNote = $state<Note | null>(null);
 
-    const folders = [
-        "All Notes",
-        "Work",
-        "Personal",
-        "Calls / Emails",
-        "Tomorrow",
-        "Learning",
-        "Tech",
-        "Journal",
-    ];
+    let filters = $derived(notesStore.allTags);
+
+    let filteredNotes = $derived(
+        notesStore.notes.filter((note) => {
+            const matchesFilter =
+                selectedFilter === "All" || note.tags?.includes(selectedFilter);
+
+            const matchesSearch =
+                note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                note.content?.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesFilter && matchesSearch;
+        }),
+    );
+
+    function openNewNote() {
+        currentNote = null;
+        isModalOpen = true;
+    }
+
+    function openNote(note: Note) {
+        currentNote = note;
+        isModalOpen = true;
+    }
 </script>
+
+<NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
 <div class="space-y-8 pb-12">
     <div class="flex items-end justify-between">
@@ -78,21 +50,26 @@
                 />
                 <input
                     type="text"
+                    bind:value={searchQuery}
                     placeholder="Search notes..."
                     class="bg-surface border border-line rounded-lg pl-10 pr-4 py-2 text-sm text-white w-64 focus:outline-none focus:border-primary placeholder:text-muted/50"
                 />
             </div>
-            <button class="btn btn-primary flex items-center gap-2">
+            <button
+                onclick={openNewNote}
+                class="btn btn-primary flex items-center gap-2"
+            >
                 <Plus size={18} /> New Note
             </button>
         </div>
     </div>
 
     <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {#each folders as f}
+        {#each filters as f}
             <button
+                onclick={() => (selectedFilter = f)}
                 class="px-4 py-1.5 rounded-lg text-sm border border-transparent hover:bg-surface hover:text-white transition-colors {f ===
-                'All Notes'
+                selectedFilter
                     ? 'bg-surface text-white border-line'
                     : 'text-muted'}"
             >
@@ -105,7 +82,8 @@
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
     >
         <!-- Quick Add Card -->
-        <div
+        <button
+            onclick={openNewNote}
             class="border border-dashed border-line rounded-xl flex flex-col items-center justify-center p-8 text-muted hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group h-full min-h-[200px]"
         >
             <Plus
@@ -113,11 +91,12 @@
                 class="mb-4 group-hover:scale-110 transition-transform"
             />
             <span class="font-medium">Create New Note</span>
-        </div>
+        </button>
 
-        {#each notes as note}
-            <div
-                class="card group cursor-pointer hover:-translate-y-1 transition-transform h-full flex flex-col justify-between min-h-[200px]"
+        {#each filteredNotes as note (note.id)}
+            <button
+                onclick={() => openNote(note)}
+                class="card group cursor-pointer hover:-translate-y-1 transition-transform h-full flex flex-col justify-between min-h-[200px] text-left"
             >
                 <div>
                     <div class="flex justify-between items-start mb-4">
@@ -125,28 +104,37 @@
                             size={20}
                             class="text-primary/50 group-hover:text-primary transition-colors"
                         />
-                        <span
-                            class="text-xs text-muted border border-line px-2 py-1 rounded-full"
-                            >{note.folder}</span
-                        >
+                        <span class="text-xs text-muted">{note.date}</span>
                     </div>
-                    <h3
-                        class="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-2"
-                    >
-                        {note.title}
-                    </h3>
-                    <p class="text-sm text-muted mt-2 line-clamp-3">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Sed do eiusmod tempor incididunt ut labore...
-                    </p>
+                    <div class="w-full">
+                        <h3
+                            class="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-2"
+                        >
+                            {note.title}
+                        </h3>
+                        <p class="text-sm text-muted mt-2 line-clamp-3">
+                            {note.content}
+                        </p>
+                    </div>
                 </div>
                 <div
-                    class="pt-4 mt-4 border-t border-line/50 flex items-center gap-2 text-xs text-muted"
+                    class="pt-4 mt-4 border-t border-line/50 flex flex-wrap gap-1 w-full min-h-[24px] items-end"
                 >
-                    <FileText size={12} />
-                    <span>{note.date}</span>
+                    {#if note.tags}
+                        {#each note.tags.slice(0, 3) as tag}
+                            <span
+                                class="text-[10px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
+                                >#{tag}</span
+                            >
+                        {/each}
+                        {#if note.tags.length > 3}
+                            <span class="text-[10px] text-muted pl-1"
+                                >+{note.tags.length - 3}</span
+                            >
+                        {/if}
+                    {/if}
                 </div>
-            </div>
+            </button>
         {/each}
     </div>
 </div>

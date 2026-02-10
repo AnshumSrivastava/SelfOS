@@ -1,17 +1,26 @@
-<script>
+<script lang="ts">
     import Sidebar from "$lib/components/layout/Sidebar.svelte";
     import Header from "$lib/components/layout/Header.svelte";
+    import { uiState } from "$lib/stores/ui.svelte";
     let { children } = $props();
 </script>
 
 <div
     class="flex min-h-screen bg-background text-text font-sans selection:bg-primary selection:text-black overflow-hidden"
 >
-    <Sidebar />
+    {#if uiState.showChrome}
+        <Sidebar />
+    {/if}
+
     <div
-        class="flex-1 flex flex-col ml-64 relative transition-all duration-300"
+        class="flex-1 flex flex-col relative transition-all duration-300 {uiState.showChrome
+            ? 'ml-64'
+            : 'ml-0'}"
     >
-        <Header />
+        {#if uiState.showChrome}
+            <Header />
+        {/if}
+
         <main class="flex-1 overflow-y-auto p-8 relative scroll-smooth">
             <div
                 class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden"
