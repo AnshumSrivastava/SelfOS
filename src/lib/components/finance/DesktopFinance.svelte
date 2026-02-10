@@ -215,7 +215,7 @@
                 </p>
                 <div class="text-3xl font-bold text-white">
                     {formatCurrency(
-                        financeStore.incomeReminders.reduce(
+                        (financeStore.incomeReminders || []).reduce(
                             (acc, r) => acc + r.amount,
                             0,
                         ),
@@ -225,9 +225,9 @@
                     {financeStore.incomeReminders.length} payments expected
                 </p>
                 <!-- Quick List of expected payments -->
-                {#if financeStore.incomeReminders.length > 0}
+                {#if (financeStore.incomeReminders || []).length > 0}
                     <div class="mt-4 space-y-2">
-                        {#each financeStore.incomeReminders.slice(0, 2) as item}
+                        {#each (financeStore.incomeReminders || []).slice(0, 2) as item}
                             <div class="flex justify-between text-xs">
                                 <span class="text-gray-300">{item.title}</span>
                                 <span class="text-emerald-500 font-bold"
@@ -257,7 +257,7 @@
                 </p>
                 <div class="text-3xl font-bold text-white">
                     {formatCurrency(
-                        financeStore.expenseReminders.reduce(
+                        (financeStore.expenseReminders || []).reduce(
                             (acc, r) => acc + r.amount,
                             0,
                         ),
@@ -267,9 +267,9 @@
                     {financeStore.expenseReminders.length} bills due
                 </p>
                 <!-- Quick List of bills -->
-                {#if financeStore.expenseReminders.length > 0}
+                {#if (financeStore.expenseReminders || []).length > 0}
                     <div class="mt-4 space-y-2">
-                        {#each financeStore.expenseReminders.slice(0, 2) as item}
+                        {#each (financeStore.expenseReminders || []).slice(0, 2) as item}
                             <div class="flex justify-between text-xs">
                                 <span class="text-gray-300">{item.title}</span>
                                 <span class="text-red-500 font-bold"
