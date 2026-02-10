@@ -48,6 +48,7 @@ export interface Reminder {
     isPaid: boolean;
     recurring: boolean;
     frequency?: 'monthly' | 'yearly';
+    type: 'income' | 'expense';
 }
 
 const DEFAULT_TRANSACTIONS: Transaction[] = [
@@ -115,6 +116,14 @@ class FinanceStore {
     get goals() { return this.goalsStore.value || []; }
     get investments() { return this.investmentsStore.value || []; }
     get reminders() { return this.remindersStore.value || []; }
+
+    get incomeReminders() {
+        return this.reminders.filter(r => r.type === 'income' && !r.isPaid);
+    }
+
+    get expenseReminders() {
+        return this.reminders.filter(r => r.type === 'expense' && !r.isPaid);
+    }
 
     // --- Transactions ---
     addTransaction(transaction: Omit<Transaction, 'id'>) {
