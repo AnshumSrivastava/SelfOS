@@ -9,7 +9,7 @@
   --color-muted: var(--theme-muted);
   --color-line: var(--theme-line);
 
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Roboto', sans-serif;
 
   --animate-fade-in: fadeIn 0.5s ease-out;
   --animate-slide-up: slideUp 0.5s ease-out;

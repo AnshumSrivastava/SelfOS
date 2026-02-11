@@ -34,6 +34,7 @@ class NotesStore {
             date: 'Just now'
         };
         this.#store.value = [newNote, ...this.#store.value];
+        return newNote;
     }
 
     updateNote(id: string, updates: Partial<Note>) {

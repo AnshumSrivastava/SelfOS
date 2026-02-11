@@ -1,7 +1,9 @@
 <script lang="ts">
-    import { Search, Plus, Folder } from "lucide-svelte";
+    import { Search, Plus, Folder, Trash2 } from "lucide-svelte";
+
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
     import NoteModal from "./NoteModal.svelte";
+    import { confirmState } from "$lib/stores/confirm.svelte";
 
     let selectedFilter = $state("All");
     let searchQuery = $state("");
@@ -86,40 +88,59 @@
         </button>
 
         {#each filteredNotes as note (note.id)}
-            <button
-                onclick={() => openNote(note)}
-                class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between aspect-square text-left active:scale-95 transition-transform"
-            >
-                <div class="w-full">
-                    <div class="flex justify-between items-start mb-2">
-                        <Folder size={16} class="text-gray-500" />
-                        <span class="text-[10px] text-gray-600"
-                            >{note.date}</span
+            <div class="relative group">
+                <button
+                    onclick={() => openNote(note)}
+                    class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between aspect-square text-left w-full h-full active:scale-95 transition-transform"
+                >
+                    <div class="w-full">
+                        <div class="flex justify-between items-start mb-2">
+                            <Folder size={16} class="text-gray-500" />
+                            <span class="text-[10px] text-gray-600"
+                                >{note.date}</span
+                            >
+                        </div>
+                        <h3
+                            class="font-medium text-white line-clamp-3 leading-tight"
                         >
+                            {note.title}
+                        </h3>
                     </div>
-                    <h3
-                        class="font-medium text-white line-clamp-3 leading-tight"
-                    >
-                        {note.title}
-                    </h3>
-                </div>
 
-                <div class="flex flex-wrap gap-1 mt-auto w-full">
-                    {#if note.tags && note.tags.length > 0}
-                        {#each note.tags.slice(0, 2) as tag}
-                            <span
-                                class="text-[9px] text-gray-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded-md"
-                                >#{tag}</span
-                            >
-                        {/each}
-                        {#if note.tags.length > 2}
-                            <span class="text-[9px] text-gray-500 px-1"
-                                >+{note.tags.length - 2}</span
-                            >
+                    <div class="flex flex-wrap gap-1 mt-auto w-full">
+                        {#if note.tags && note.tags.length > 0}
+                            {#each note.tags.slice(0, 2) as tag}
+                                <span
+                                    class="text-[9px] text-gray-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded-md"
+                                    >#{tag}</span
+                                >
+                            {/each}
+                            {#if note.tags.length > 2}
+                                <span class="text-[9px] text-gray-500 px-1"
+                                    >+{note.tags.length - 2}</span
+                                >
+                            {/if}
                         {/if}
-                    {/if}
-                </div>
-            </button>
+                    </div>
+                </button>
+                <button
+                    onclick={async (e) => {
+                        e.stopPropagation();
+                        if (
+                            await confirmState.confirm(
+                                "Delete Note",
+                                "Are you sure you want to delete this note?",
+                            )
+                        ) {
+                            notesStore.deleteNote(note.id);
+                        }
+                    }}
+                    class="absolute top-2 right-2 p-2 text-neutral-600 hover:text-red-400 z-10"
+                    title="Delete Note"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
         {/each}
     </div>
 </div>

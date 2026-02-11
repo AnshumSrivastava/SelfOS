@@ -1,108 +1,144 @@
-<script>
-    import {
-        Layers,
-        Folder,
-        BookOpen,
-        Archive,
-        ChevronRight,
-    } from "lucide-svelte";
+<script lang="ts">
+    import { Plus, ChevronRight, Folder } from "lucide-svelte";
     import { projectsStore } from "$lib/stores/projects.svelte";
+    import ProjectDetailModal from "./ProjectDetailModal.svelte";
+    import type { Project } from "$lib/stores/projects.svelte";
 
-    const sections = [
-        {
-            id: "projects",
-            name: "Projects",
-            icon: Layers,
-            count: 3,
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
-        },
-        {
-            id: "areas",
-            name: "Areas",
-            icon: Folder,
-            count: 4,
-            color: "text-blue-400",
-            bg: "bg-blue-400/10",
-        },
-        {
-            id: "resources",
-            name: "Resources",
-            icon: BookOpen,
-            count: 4,
-            color: "text-yellow-400",
-            bg: "bg-yellow-400/10",
-        },
-        {
-            id: "archives",
-            name: "Archives",
-            icon: Archive,
-            count: 2,
-            color: "text-gray-400",
-            bg: "bg-gray-800",
-        },
-    ];
+    let selectedProject: Project | null = $state(null);
+
+    function handleAdd() {
+        projectsStore.addProject({ name: "New Project", type: "project" });
+    }
+
+    function openProject(project: Project) {
+        selectedProject = project;
+    }
 </script>
 
-<div class="space-y-6 pb-20">
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-light text-white">PARA</h1>
-        <div
-            class="text-xs font-bold px-2 py-1 rounded bg-neutral-900 border border-neutral-800 text-gray-500"
+{#if selectedProject}
+    <ProjectDetailModal
+        project={selectedProject}
+        onClose={() => (selectedProject = null)}
+    />
+{/if}
+
+<div class="space-y-6 pb-24 px-4 pt-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-3xl font-light text-white tracking-tight">Projects</h1>
+        <button
+            onclick={handleAdd}
+            class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
-            SYSTEM
-        </div>
+            <Plus size={20} />
+        </button>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
-        {#each sections as section}
-            <div
-                class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex items-center justify-between group active:scale-[0.98] transition-all"
-            >
-                <div class="flex items-center gap-4">
-                    <div
-                        class="w-12 h-12 rounded-xl {section.bg} {section.color} flex items-center justify-center"
-                    >
-                        <svelte:component this={section.icon} size={24} />
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-white text-lg">
-                            {section.name}
-                        </h3>
-                        <p class="text-xs text-gray-500">
-                            {section.count} Items
-                        </p>
-                    </div>
-                </div>
-                <ChevronRight size={20} class="text-neutral-800" />
+    <!-- Stats / System Status (Optional - keeping it minimal) -->
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4">
+            <div class="text-2xl font-bold text-white">
+                {projectsStore.activeProjects.length}
             </div>
-        {/each}
+            <div class="text-xs text-gray-500 uppercase tracking-widest">
+                Active
+            </div>
+        </div>
+        <div class="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4">
+            <div class="text-2xl font-bold text-white">
+                {projectsStore.projects.filter((p) => p.status === "Archived")
+                    .length}
+            </div>
+            <div class="text-xs text-gray-500 uppercase tracking-widest">
+                Archived
+            </div>
+        </div>
     </div>
 
-    <!-- Active Projects Preview -->
-    <div>
-        <h3 class="text-sm text-gray-500 uppercase tracking-widest mb-3">
-            Active Projects
-        </h3>
-        <div class="space-y-3">
-            {#each projectsStore.projects as project}
+    <!-- Active Projects List -->
+    <div class="space-y-3">
+        {#each projectsStore.activeProjects as project}
+            <button
+                class="w-full text-left p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 active:scale-[0.98] transition-all group relative overflow-hidden"
+                onclick={() => openProject(project)}
+            >
+                <!-- Color Indicator Bar -->
                 <div
-                    class="p-4 rounded-xl bg-neutral-900/50 border border-neutral-900"
-                >
-                    <div class="flex justify-between text-sm text-white mb-2">
-                        <span>{project.name}</span>
-                        <span>{project.progress}%</span>
-                    </div>
-                    <div
-                        class="h-1.5 w-full bg-neutral-800 rounded-full overflow-hidden"
-                    >
-                        <div
-                            class="h-full {project.color} w-[{project.progress}%]"
-                            style="width: {project.progress}%"
-                        ></div>
+                    class="absolute left-0 top-0 bottom-0 w-1.5 {project.color ||
+                        'bg-gray-500'}"
+                ></div>
+
+                <div class="flex justify-between items-start pl-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3
+                                class="font-bold text-white text-lg leading-tight truncate"
+                            >
+                                {project.name}
+                            </h3>
+                            {#if projectsStore.isDormant(project)}
+                                <span
+                                    class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                >
+                                    Dormant
+                                </span>
+                            {/if}
+                        </div>
+                        {#if project.intent}
+                            <p class="text-sm text-gray-500 line-clamp-1">
+                                {project.intent}
+                            </p>
+                        {:else}
+                            <p class="text-sm text-gray-600 italic">
+                                No intent set
+                            </p>
+                        {/if}
                     </div>
                 </div>
-            {/each}
-        </div>
+
+                <!-- Last Updated / Metadata -->
+                <div
+                    class="mt-4 pt-3 border-t border-neutral-900 flex items-center justify-between pl-2"
+                >
+                    <div class="flex items-center gap-3 text-xs text-gray-500">
+                        <div class="flex items-center gap-1">
+                            <span class="font-medium text-gray-400"
+                                >{project.scratchpad.filter(
+                                    (e) => e.type === "task" && !e.isCompleted,
+                                ).length}</span
+                            > tasks
+                        </div>
+                        <div class="w-1 h-1 bg-neutral-800 rounded-full"></div>
+                        <div class="flex items-center gap-1">
+                            <span class="font-medium text-gray-400"
+                                >{project.resources.length}</span
+                            > links
+                        </div>
+                    </div>
+                    <div class="text-xs text-neutral-600">
+                        {new Date(project.updatedAt).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric" },
+                        )}
+                    </div>
+                </div>
+            </button>
+        {/each}
+
+        {#if projectsStore.activeProjects.length === 0}
+            <div class="text-center py-12">
+                <div
+                    class="w-16 h-16 rounded-full bg-neutral-900 flex items-center justify-center mx-auto mb-4 text-neutral-700"
+                >
+                    <Folder size={32} />
+                </div>
+                <h3 class="text-lg font-medium text-gray-500">
+                    No active projects
+                </h3>
+                <p class="text-sm text-gray-600 mt-2">
+                    Tap the + button to create one.
+                </p>
+            </div>
+        {/if}
     </div>
 </div>

@@ -7,6 +7,7 @@
   import { searchStore } from "$lib/stores/search.svelte";
   import { uiState } from "$lib/stores/ui.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
+  import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
 
   let { children } = $props();
 
@@ -132,3 +133,4 @@
 {/if}
 
 <SearchModal />
+<ConfirmModal />

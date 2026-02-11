@@ -1,70 +1,80 @@
-<script>
+<script lang="ts">
     import {
         Folder,
         Layers,
         BookOpen,
         Archive,
-        ChevronRight,
         MoreHorizontal,
     } from "lucide-svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
+    import type { Project } from "$lib/stores/projects.svelte";
+    import ProjectDetailModal from "./ProjectDetailModal.svelte";
 
-    /** @type {any[]} */
-    const paraSections = [
-        {
-            id: "projects",
-            title: "Projects",
-            subtitle: "Goal-oriented efforts with a deadline.",
-            icon: Layers,
-            color: "text-primary",
-            bg: "bg-primary/10",
-            items: [
-                { name: "SelfOS Remake", status: "Active", progress: 75 },
-                { name: "Q4 Fitness Plan", status: "Active", progress: 30 },
-                { name: "Home Office Setup", status: "Paused", progress: 50 },
-            ],
-        },
-        {
-            id: "areas",
-            title: "Areas",
-            subtitle: "Responsibilities with no end date.",
-            icon: Folder,
-            color: "text-blue-400",
-            bg: "bg-blue-400/10",
-            items: [
-                { name: "Health & Fitness", items: 12 },
-                { name: "Finances", items: 45 },
-                { name: "Career Development", items: 8 },
-                { name: "Home Maintenance", items: 5 },
-            ],
-        },
-        {
-            id: "resources",
-            title: "Resources",
-            subtitle: "Topics of ongoing interest.",
-            icon: BookOpen,
-            color: "text-yellow-400",
-            bg: "bg-yellow-400/10",
-            items: [
-                { name: "Coding Tutorials", items: 156 },
-                { name: "Recipes", items: 42 },
-                { name: "Book Notes", items: 28 },
-                { name: "Design Inspiration", items: 90 },
-            ],
-        },
-        {
-            id: "archives",
-            title: "Archives",
-            subtitle: "Inactive items for reference.",
-            icon: Archive,
-            color: "text-muted",
-            bg: "bg-surface",
-            items: [
-                { name: "Old Client Projects", date: "2025" },
-                { name: "Travel logs", date: "2024" },
-            ],
-        },
-    ];
+    const iconMap: Record<string, any> = {
+        Layers,
+        Folder,
+        BookOpen,
+        Archive,
+    };
+
+    let selectedProject: Project | null = $state(null);
+
+    function getSectionItems(type: string) {
+        switch (type) {
+            case "project":
+                return projectsStore.activeProjects;
+            case "area":
+                return projectsStore.areas;
+            case "resource":
+                return projectsStore.resources;
+            case "archive":
+                return projectsStore.archives;
+            default:
+                return [];
+        }
+    }
+
+    function handleAdd(type: string) {
+        if (type === "project") {
+            projectsStore.addProject({ name: "New Project", type: "project" });
+        } else if (type === "area") {
+            projectsStore.addProject({
+                name: "New Area",
+                type: "area",
+                color: "text-blue-400",
+                bg: "bg-blue-400/10",
+            });
+        } else if (type === "resource") {
+            projectsStore.addProject({
+                name: "New Resource",
+                type: "resource",
+                color: "text-yellow-400",
+                bg: "bg-yellow-400/10",
+            });
+        }
+    }
+
+    function deleteItem(id: string) {
+        if (confirm("Are you sure you want to delete this item?")) {
+            projectsStore.deleteProject(id);
+        }
+    }
+
+    function getItemCount(item: Project) {
+        return (item.scratchpad?.length || 0) + (item.resources?.length || 0);
+    }
+
+    function openProject(item: Project) {
+        selectedProject = item;
+    }
 </script>
+
+{#if selectedProject}
+    <ProjectDetailModal
+        project={selectedProject}
+        onClose={() => (selectedProject = null)}
+    />
+{/if}
 
 <div class="space-y-8 pb-12">
     <div class="mb-8">
@@ -73,66 +83,108 @@
     </div>
 
     <div class="grid grid-cols-1 gap-8">
-        {#each paraSections as section}
+        {#each projectsStore.sections as section}
+            {@const items = getSectionItems(section.type)}
             <div class="card relative overflow-hidden group">
                 <div class="flex items-start gap-4 mb-6">
                     <div class="p-3 rounded-lg {section.bg} {section.color}">
-                        <svelte:component this={section.icon} size={24} />
+                        <svelte:component
+                            this={iconMap[section.icon] || Folder}
+                            size={24}
+                        />
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white">
-                            {section.title}
+                            {section.name}
                         </h2>
-                        <p class="text-sm text-muted">{section.subtitle}</p>
+                        <p class="text-sm text-muted">{section.description}</p>
                     </div>
                 </div>
 
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                 >
-                    {#each section.items as item}
+                    {#each items as item}
                         <div
                             class="p-4 rounded-xl bg-background border border-line hover:border-{section.id ===
                             'archives'
                                 ? 'white'
-                                : 'primary'}/50 transition-all cursor-pointer group/item flex flex-col justify-between h-24"
+                                : 'primary'}/50 transition-all cursor-pointer group/item flex flex-col justify-between h-32 relative text-left"
+                            onclick={() => openProject(item)}
+                            role="button"
+                            tabindex="0"
+                            onkeydown={(e) =>
+                                e.key === "Enter" && openProject(item)}
                         >
-                            <div class="flex justify-between items-start">
-                                <span
-                                    class="font-medium text-white group-hover/item:text-primary transition-colors"
-                                    >{item.name}</span
+                            <div
+                                class="absolute top-2 right-2 opacity-0 group-hover/item:opacity-100 transition-opacity z-10"
+                            >
+                                <button
+                                    class="p-1 hover:bg-surface rounded text-muted hover:text-red-400"
+                                    onclick={(e) => {
+                                        e.stopPropagation();
+                                        deleteItem(item.id);
+                                    }}
                                 >
-                                <MoreHorizontal
-                                    size={16}
-                                    class="text-muted opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                />
+                                    <MoreHorizontal size={16} />
+                                </button>
                             </div>
 
-                            <div class="text-xs text-muted">
-                                {#if section.id === "projects" && item.progress !== undefined}
-                                    <div
-                                        class="w-full h-1 bg-surface rounded-full overflow-hidden mt-2"
+                            <div class="w-full">
+                                <div
+                                    class="flex justify-between items-start mb-2"
+                                >
+                                    <span
+                                        class="font-medium text-white group-hover/item:text-primary transition-colors truncate w-full pr-6"
+                                        >{item.name}</span
                                     >
-                                        <div
-                                            class="h-full bg-primary"
-                                            style="width: {item.progress}%"
-                                        ></div>
+                                </div>
+                                {#if item.intent}
+                                    <p class="text-xs text-muted line-clamp-2">
+                                        {item.intent}
+                                    </p>
+                                {/if}
+                            </div>
+
+                            <div class="text-xs text-muted mt-auto pt-2 w-full">
+                                {#if section.id === "projects"}
+                                    <div
+                                        class="flex items-center justify-between mb-1"
+                                    >
+                                        <span>Last active</span>
+                                        <span
+                                            >{new Date(
+                                                item.updatedAt ||
+                                                    item.createdAt,
+                                            ).toLocaleDateString()}</span
+                                        >
                                     </div>
-                                {:else if (section.id === "areas" || section.id === "resources") && item.items !== undefined}
-                                    {item.items} items
-                                {:else if item.date !== undefined}
-                                    Archived: {item.date}
+                                    <!-- Dormancy Indicator -->
+                                    {#if projectsStore.isDormant(item)}
+                                        <div
+                                            class="text-orange-500 text-[10px] mt-1"
+                                        >
+                                            ● Dormant (>21d)
+                                        </div>
+                                    {/if}
+                                {:else if section.id === "archives"}
+                                    Archived
+                                {:else}
+                                    {getItemCount(item)} items
                                 {/if}
                             </div>
                         </div>
                     {/each}
 
                     <!-- Add New -->
-                    <button
-                        class="p-4 rounded-xl border border-dashed border-line hover:bg-surface/50 hover:border-primary/50 text-muted hover:text-white transition-all flex items-center justify-center h-24"
-                    >
-                        <span class="text-sm font-medium">Add New</span>
-                    </button>
+                    {#if section.id !== "archives"}
+                        <button
+                            onclick={() => handleAdd(section.type)}
+                            class="p-4 rounded-xl border border-dashed border-line hover:bg-surface/50 hover:border-primary/50 text-muted hover:text-white transition-all flex items-center justify-center h-32"
+                        >
+                            <span class="text-sm font-medium">Add New</span>
+                        </button>
+                    {/if}
                 </div>
 
                 <div

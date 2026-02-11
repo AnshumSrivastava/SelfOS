@@ -87,7 +87,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-family: var(--font-heading);
+
         font-weight: 700;
         font-size: 1.25rem;
     }

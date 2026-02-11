@@ -6,15 +6,19 @@
 </script>
 
 <div
-    class="flex flex-col min-h-screen bg-black text-white font-sans {uiState.showChrome
-        ? 'pb-24'
-        : 'pb-0'}"
+    class="flex flex-col h-[100dvh] bg-black text-white font-sans overflow-hidden"
 >
     {#if uiState.showChrome}
-        <MobileHeader />
+        <div class="flex-none z-40 relative">
+            <MobileHeader />
+        </div>
     {/if}
 
-    <main class="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide">
+    <main
+        class="flex-1 px-4 py-2 overflow-y-auto scrollbar-hide relative z-0 {uiState.showChrome
+            ? 'pb-24'
+            : ''}"
+    >
         {@render children()}
     </main>
 

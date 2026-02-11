@@ -1,7 +1,16 @@
 <script lang="ts">
-    import { Folder, FileText, Search, Plus, Hash } from "lucide-svelte";
+    import {
+        Folder,
+        FileText,
+        Search,
+        Plus,
+        Hash,
+        Trash2,
+    } from "lucide-svelte";
+
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
     import NoteModal from "./NoteModal.svelte";
+    import { confirmState } from "$lib/stores/confirm.svelte";
 
     let selectedFilter = $state("All");
     let searchQuery = $state("");
@@ -38,7 +47,7 @@
 <div class="space-y-8 pb-12">
     <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Notebook</h1>
+            <h1 class="text-3xl font-bold text-white mb-2">Notes</h1>
             <p class="text-muted">Second Brain & Knowledge Base.</p>
         </div>
 
@@ -94,19 +103,19 @@
         </button>
 
         {#each filteredNotes as note (note.id)}
-            <button
-                onclick={() => openNote(note)}
-                class="card group cursor-pointer hover:-translate-y-1 transition-transform h-full flex flex-col justify-between min-h-[200px] text-left"
-            >
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <Folder
-                            size={20}
-                            class="text-primary/50 group-hover:text-primary transition-colors"
-                        />
-                        <span class="text-xs text-muted">{note.date}</span>
-                    </div>
+            <div class="relative group h-full">
+                <button
+                    onclick={() => openNote(note)}
+                    class="card w-full h-full flex flex-col justify-between min-h-[200px] text-left hover:-translate-y-1 transition-transform"
+                >
                     <div class="w-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <Folder
+                                size={20}
+                                class="text-primary/50 group-hover:text-primary transition-colors"
+                            />
+                            <span class="text-xs text-muted">{note.date}</span>
+                        </div>
                         <h3
                             class="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-2"
                         >
@@ -116,25 +125,42 @@
                             {note.content}
                         </p>
                     </div>
-                </div>
-                <div
-                    class="pt-4 mt-4 border-t border-line/50 flex flex-wrap gap-1 w-full min-h-[24px] items-end"
-                >
-                    {#if note.tags}
-                        {#each note.tags.slice(0, 3) as tag}
-                            <span
-                                class="text-[10px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
-                                >#{tag}</span
-                            >
-                        {/each}
-                        {#if note.tags.length > 3}
-                            <span class="text-[10px] text-muted pl-1"
-                                >+{note.tags.length - 3}</span
-                            >
+                    <div
+                        class="pt-4 mt-4 border-t border-line/50 flex flex-wrap gap-1 w-full min-h-[24px] items-end"
+                    >
+                        {#if note.tags}
+                            {#each note.tags.slice(0, 3) as tag}
+                                <span
+                                    class="text-[10px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
+                                    >#{tag}</span
+                                >
+                            {/each}
+                            {#if note.tags.length > 3}
+                                <span class="text-[10px] text-muted pl-1"
+                                    >+{note.tags.length - 3}</span
+                                >
+                            {/if}
                         {/if}
-                    {/if}
-                </div>
-            </button>
+                    </div>
+                </button>
+                <button
+                    onclick={async (e) => {
+                        e.stopPropagation();
+                        if (
+                            await confirmState.confirm(
+                                "Delete Note",
+                                "Are you sure you want to delete this note?",
+                            )
+                        ) {
+                            notesStore.deleteNote(note.id);
+                        }
+                    }}
+                    class="absolute top-2 right-2 p-2 text-muted hover:text-red-400 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete Note"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
         {/each}
     </div>
 </div>
