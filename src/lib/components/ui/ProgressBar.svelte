@@ -1,4 +1,6 @@
 <script>
+    import { settings } from "$lib/stores/settings.svelte";
+
     let {
         value = 0,
         max = 100,
@@ -8,6 +10,7 @@
     } = $props();
 
     let percentage = $derived((value / max) * 100);
+    const isMinimal = $derived(settings.theme === "minimal");
 </script>
 
 <div class="w-full">
@@ -24,7 +27,9 @@
         class="h-2 w-full bg-surface border border-line rounded-full overflow-hidden"
     >
         <div
-            class="h-full bg-{color} rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(0,0,0,0.5)]"
+            class="{isMinimal
+                ? 'h-full bg-white rounded-full'
+                : `h-full bg-${color} rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]`} transition-all duration-1000 ease-out"
             style="width: {percentage}%"
         ></div>
     </div>

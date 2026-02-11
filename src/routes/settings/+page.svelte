@@ -7,6 +7,7 @@
         Sun,
         Monitor,
         Plus,
+        Minus,
     } from "lucide-svelte";
     import { fade } from "svelte/transition";
 
@@ -14,6 +15,7 @@
         { id: "dark", label: "Dark", icon: Moon, bg: "bg-[#121214]" },
         { id: "light", label: "Light", icon: Sun, bg: "bg-[#ffffff]" },
         { id: "amoled", label: "Amoled", icon: Monitor, bg: "bg-[#000000]" },
+        { id: "minimal", label: "Minimal", icon: Minus, bg: "bg-[#1a1a1a]" },
     ];
 
     const accentColors = [
@@ -114,7 +116,7 @@
             <!-- Theme Mode -->
             <div class="space-y-3">
                 <label class="text-sm font-medium text-muted">Theme Mode</label>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {#each themes as theme}
                         <button
                             class="flex flex-col items-center gap-3 p-4 rounded-xl border transition-all {settings.theme ===
@@ -146,10 +148,16 @@
             </div>
 
             <!-- Accent Color -->
-            <div class="space-y-3">
-                <label class="text-sm font-medium text-muted"
-                    >Accent Color</label
-                >
+            <div
+                class="space-y-3 {settings.theme === 'minimal'
+                    ? 'opacity-50 pointer-events-none'
+                    : ''}"
+            >
+                <label class="text-sm font-medium text-muted">
+                    Accent Color {settings.theme === "minimal"
+                        ? "(Disabled in Minimal Mode)"
+                        : ""}
+                </label>
                 <div class="flex flex-wrap gap-3">
                     {#each accentColors as color}
                         <button

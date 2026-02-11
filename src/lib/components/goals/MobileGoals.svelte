@@ -1,93 +1,304 @@
-<script>
-    import { Target, Flag, Calendar, Plus } from "lucide-svelte";
+<script lang="ts">
+    import {
+        Target,
+        Plus,
+        Calendar,
+        ChevronDown,
+        ChevronUp,
+        Loader2,
+        ExternalLink,
+    } from "lucide-svelte";
+    import { goalsStore, type Goal } from "$lib/stores/goals.svelte.ts";
+    import GoalModal from "./GoalModal.svelte";
 
-    const goals = [
-        {
-            title: "Launch SaaS MV",
-            deadline: "Dec 31",
-            progress: 65,
-            tasks: 12,
-        },
-        {
-            title: "Reach 10% Body Fat",
-            deadline: "Nov 15",
-            progress: 40,
-            tasks: 20,
-        },
-        {
-            title: "Read 12 Books",
-            deadline: "Dec 31",
-            progress: 33,
-            tasks: 12,
-        },
-    ];
+    let showGoalModal = $state(false);
+    let editingGoal = $state<Goal | null>(null);
+    let expandedGoals = $state<Set<string>>(new Set());
+    let newTaskInputs = $state<Record<string, string>>({});
+    let processingBatch = $state<Record<string, boolean>>({});
+
+    const goals = $derived(goalsStore.activeGoals);
+
+    function openGoalModal(goal: Goal | null = null) {
+        editingGoal = goal;
+        showGoalModal = true;
+    }
+
+    function closeGoalModal() {
+        showGoalModal = false;
+        editingGoal = null;
+    }
+
+    function toggleGoal(goalId: string) {
+        if (expandedGoals.has(goalId)) {
+            expandedGoals.delete(goalId);
+        } else {
+            expandedGoals.add(goalId);
+        }
+        expandedGoals = new Set(expandedGoals);
+    }
+
+    async function addTask(goalId: string) {
+        const input = newTaskInputs[goalId]?.trim();
+        if (!input) return;
+
+        // Check if it's a batch input (multiple lines or YouTube URL)
+        const lines = input.split("\n").filter((l) => l.trim());
+        const isYouTubeUrl =
+            /youtube\.com\/playlist\?list=|youtu\.be\/.*\?list=/.test(input);
+
+        if (lines.length > 1 || isYouTubeUrl) {
+            // Batch mode
+            processingBatch[goalId] = true;
+            try {
+                await goalsStore.addTasksBatch(goalId, input);
+                newTaskInputs[goalId] = "";
+
+                // Show success message briefly
+                setTimeout(() => {
+                    processingBatch[goalId] = false;
+                }, 1000);
+            } catch (error) {
+                console.error("Failed to add batch tasks:", error);
+                processingBatch[goalId] = false;
+            }
+        } else {
+            // Single task - parse for inline link
+            const urlMatch = input.match(/(https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+                const url = urlMatch[1];
+                const title = input.replace(url, "").trim();
+                goalsStore.addTask({ goalId, title: title || url, link: url });
+            } else {
+                goalsStore.addTask({ goalId, title: input });
+            }
+            newTaskInputs[goalId] = "";
+        }
+    }
+
+    function formatDeadline(deadline?: string) {
+        if (!deadline) return null;
+        const date = new Date(deadline);
+        const now = new Date();
+        const diffDays = Math.ceil(
+            (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
+        if (diffDays < 0) return { text: "Overdue", color: "text-red-500" };
+        if (diffDays === 0) return { text: "Today", color: "text-orange-500" };
+        if (diffDays <= 7)
+            return { text: `${diffDays}d`, color: "text-yellow-500" };
+        return {
+            text: date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+            }),
+            color: "text-muted",
+        };
+    }
 </script>
 
 <div class="space-y-6 pb-20">
+    <!-- Header -->
     <div class="flex items-center justify-between">
         <h1 class="text-3xl font-light text-white">Goals</h1>
         <button
-            class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            onclick={() => openGoalModal()}
+            class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>
     </div>
 
-    <!-- Cycle Info -->
-    <div
-        class="p-4 rounded-2xl bg-gradient-to-br from-neutral-900 to-black border border-neutral-800 flex justify-between items-center"
-    >
-        <div>
-            <span class="text-xs text-gray-500 uppercase tracking-wider"
-                >Current Cycle</span
-            >
-            <div class="text-white font-medium">Q4 2026</div>
-        </div>
-        <div class="text-right">
-            <span class="text-xs text-gray-500 uppercase tracking-wider"
-                >Week</span
-            >
-            <div class="text-emerald-500 font-bold">5 / 12</div>
-        </div>
-    </div>
-
     <!-- Goals List -->
-    <div class="space-y-4">
-        {#each goals as goal}
-            <div
-                class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 space-y-4 relative overflow-hidden"
+    {#if goals.length === 0}
+        <div class="text-center py-16">
+            <Target size={64} class="text-gray-700 mx-auto mb-4" />
+            <h3 class="text-xl font-semibold text-white mb-2">No goals yet</h3>
+            <p class="text-gray-500 mb-6">Create your first goal</p>
+            <button
+                onclick={() => openGoalModal()}
+                class="px-6 py-3 bg-white text-black font-semibold rounded-full active:scale-95 transition-transform"
             >
-                <div class="flex justify-between items-start relative z-10">
-                    <div>
-                        <h3 class="font-bold text-white text-lg">
-                            {goal.title}
-                        </h3>
-                        <div class="flex items-center gap-3 mt-1">
-                            <span
-                                class="text-xs text-gray-500 flex items-center gap-1"
-                                ><Flag size={10} />
-                                {goal.tasks} Milestones</span
-                            >
-                            <span
-                                class="text-xs text-gray-500 flex items-center gap-1"
-                                ><Calendar size={10} /> {goal.deadline}</span
-                            >
-                        </div>
-                    </div>
-                    <span class="text-xl font-bold text-white"
-                        >{goal.progress}%</span
-                    >
-                </div>
+                Create Goal
+            </button>
+        </div>
+    {:else}
+        <div class="space-y-4">
+            {#each goals as goal}
+                {@const tasks = goalsStore.getGoalTasks(goal.id)}
+                {@const progress = goalsStore.getGoalProgress(goal.id)}
+                {@const isExpanded = expandedGoals.has(goal.id)}
+                {@const deadlineInfo = formatDeadline(goal.deadline)}
+                {@const isProcessing = processingBatch[goal.id]}
 
                 <div
-                    class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden relative z-10"
+                    class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900"
                 >
+                    <!-- Goal Header -->
                     <div
-                        class="h-full bg-white"
-                        style="width: {goal.progress}%"
-                    ></div>
+                        class="flex items-start justify-between cursor-pointer"
+                        onclick={() => toggleGoal(goal.id)}
+                    >
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-white mb-1">
+                                {goal.title}
+                            </h3>
+
+                            {#if goal.description}
+                                <p class="text-sm text-gray-500 mb-2">
+                                    {goal.description}
+                                </p>
+                            {/if}
+
+                            <div
+                                class="flex items-center gap-3 text-xs text-gray-500"
+                            >
+                                {#if tasks.length > 0}
+                                    <span
+                                        >{tasks.filter((t) => t.completed)
+                                            .length}/{tasks.length} done</span
+                                    >
+                                {/if}
+                                {#if deadlineInfo}
+                                    <span
+                                        class="flex items-center gap-1 {deadlineInfo.color}"
+                                    >
+                                        <Calendar size={12} />
+                                        {deadlineInfo.text}
+                                    </span>
+                                {/if}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl font-bold text-white"
+                                >{progress}%</span
+                            >
+                            {#if isExpanded}
+                                <ChevronUp size={20} class="text-gray-500" />
+                            {:else}
+                                <ChevronDown size={20} class="text-gray-500" />
+                            {/if}
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div
+                        class="mt-3 h-2 w-full bg-neutral-800 rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full bg-white transition-all duration-300"
+                            style="width: {progress}%"
+                        ></div>
+                    </div>
+
+                    <!-- Expanded Tasks -->
+                    {#if isExpanded}
+                        <div
+                            class="mt-4 space-y-2 pt-4 border-t border-neutral-800"
+                        >
+                            <!-- Task List -->
+                            {#each tasks as task}
+                                <div class="flex items-center gap-3">
+                                    <button
+                                        onclick={() =>
+                                            goalsStore.toggleTask(task.id)}
+                                        class="flex-shrink-0"
+                                    >
+                                        {#if task.completed}
+                                            <div
+                                                class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center"
+                                            >
+                                                <svg
+                                                    class="w-3 h-3 text-white"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="3"
+                                                        d="M5 13l4 4L19 7"
+                                                    ></path>
+                                                </svg>
+                                            </div>
+                                        {:else}
+                                            <div
+                                                class="w-5 h-5 rounded-full border-2 border-gray-600"
+                                            ></div>
+                                        {/if}
+                                    </button>
+
+                                    <span
+                                        class="flex-1 text-white text-sm {task.completed
+                                            ? 'line-through opacity-50'
+                                            : ''}"
+                                    >
+                                        {task.title}
+                                    </span>
+
+                                    {#if task.link}
+                                        <a
+                                            href={task.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="p-1 rounded active:bg-neutral-800 transition-colors"
+                                            onclick={(e) => e.stopPropagation()}
+                                        >
+                                            <ExternalLink
+                                                size={16}
+                                                class="text-white"
+                                            />
+                                        </a>
+                                    {/if}
+                                </div>
+                            {/each}
+
+                            <!-- Add Task Input -->
+                            <div class="space-y-2 pt-2">
+                                <textarea
+                                    bind:value={newTaskInputs[goal.id]}
+                                    placeholder="Add tasks or paste YouTube playlist...&#10;Include links: Task name https://link.com"
+                                    rows="2"
+                                    class="w-full bg-neutral-800 border-0 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-white resize-none"
+                                ></textarea>
+                                <button
+                                    onclick={() => addTask(goal.id)}
+                                    disabled={isProcessing}
+                                    class="w-full px-3 py-2 bg-white text-black rounded-lg text-sm font-medium active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {#if isProcessing}
+                                        <Loader2
+                                            size={16}
+                                            class="animate-spin"
+                                        />
+                                        Processing...
+                                    {:else}
+                                        Add
+                                    {/if}
+                                </button>
+                            </div>
+
+                            <!-- Edit Button -->
+                            <button
+                                onclick={() => openGoalModal(goal)}
+                                class="text-xs text-gray-500 hover:text-white transition-colors pt-2"
+                            >
+                                Edit goal
+                            </button>
+                        </div>
+                    {/if}
                 </div>
-            </div>
-        {/each}
-    </div>
+            {/each}
+        </div>
+    {/if}
 </div>
+
+<!-- Modal -->
+<GoalModal
+    bind:isOpen={showGoalModal}
+    onClose={closeGoalModal}
+    goal={editingGoal}
+/>

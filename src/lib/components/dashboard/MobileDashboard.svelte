@@ -39,32 +39,23 @@
     </div>
 
     <!-- Main Focus Card -->
-    <div
-        class=" p-6 rounded-3xl bg-neutral-900 border border-neutral-800 relative overflow-hidden"
-    >
-        <div class="relative z-10">
-            <span
-                class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium mb-4 inline-block"
-                >Deep Work</span
-            >
-            <div class="flex items-end justify-between">
-                <div>
-                    <h2 class="text-3xl font-bold text-white">45m</h2>
-                    <p class="text-gray-400 text-sm mt-1">Remaining today</p>
-                </div>
-                <button
-                    onclick={() => (showQuickCapture = true)}
-                    class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                >
-                    <Plus size={24} />
-                </button>
+    <div class=" p-6 rounded-2xl bg-neutral-900 border border-neutral-800">
+        <span
+            class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium mb-4 inline-block"
+            >Deep Work</span
+        >
+        <div class="flex items-end justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-white">45m</h2>
+                <p class="text-gray-400 text-sm mt-1">Remaining today</p>
             </div>
+            <button
+                onclick={() => (showQuickCapture = true)}
+                class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            >
+                <Plus size={24} />
+            </button>
         </div>
-
-        <!-- Decoration -->
-        <div
-            class="absolute -right-4 -bottom-4 w-32 h-32 bg-gradient-to-br from-neutral-800 to-transparent rounded-full opacity-20 blur-2xl"
-        ></div>
     </div>
 
     <!-- Quick Stats Row -->

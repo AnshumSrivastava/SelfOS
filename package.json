@@ -28,6 +28,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
-		"marked": "^17.0.1"
+		"marked": "^17.0.1",
+		"svelte-dnd-action": "^0.9.69"
 	}
 }

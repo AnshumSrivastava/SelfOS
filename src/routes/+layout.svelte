@@ -1,15 +1,44 @@
 <script>
   import "../app.css";
+  import { goto } from "$app/navigation";
+  import { base } from "$app/paths";
+  import { page } from "$app/stores";
+  import { onMount } from "svelte";
   import MobileLayout from "$lib/layouts/MobileLayout.svelte";
   import DesktopLayout from "$lib/layouts/DesktopLayout.svelte";
   import { focusStore } from "$lib/stores/focus.svelte";
   import { settings } from "$lib/stores/settings.svelte";
   import { searchStore } from "$lib/stores/search.svelte";
   import { uiState } from "$lib/stores/ui.svelte";
+  import { userStore } from "$lib/stores/user.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
 
   let { children } = $props();
+  let isAuthenticated = $state(false);
+  let isLoading = $state(true);
+
+  // Check if current route is a public auth route
+  let isAuthRoute = $derived(
+    $page.url.pathname.startsWith(`${base}/login`) ||
+      $page.url.pathname.startsWith(`${base}/signup`),
+  );
+
+  // Check authentication on mount
+  onMount(() => {
+    isAuthenticated = userStore.isAuthenticated;
+    isLoading = false;
+
+    // Only redirect to login if not authenticated AND not already on an auth page
+    if (!userStore.isAuthenticated && !isAuthRoute) {
+      goto(`${base}/login`);
+    }
+  });
+
+  // Watch for auth state changes
+  $effect(() => {
+    isAuthenticated = userStore.isAuthenticated;
+  });
 
   $effect(() => {
     localStorage.setItem(
@@ -53,17 +82,49 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="md:hidden">
-  <MobileLayout>
-    {@render children()}
-  </MobileLayout>
-</div>
+{#if isLoading}
+  <!-- Loading state while checking authentication -->
+  <div class="min-h-screen bg-background flex items-center justify-center">
+    <div class="text-center">
+      <div
+        class="w-16 h-16 mx-auto rounded-2xl bg-primary/20 flex items-center justify-center mb-4"
+      >
+        <div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
+      </div>
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+{:else if isAuthRoute}
+  <!-- Auth pages (login/signup) - no layout, no guards -->
+  {@render children()}
+{:else if isAuthenticated}
+  <!-- Main app with smooth tab transition -->
+  <div class="transition-opacity duration-300 ease-in-out animate-fade-in">
+    <div class="md:hidden">
+      <MobileLayout>
+        {@render children()}
+      </MobileLayout>
+    </div>
 
-<div class="hidden md:block">
-  <DesktopLayout>
-    {@render children()}
-  </DesktopLayout>
-</div>
+    <div class="hidden md:block">
+      <DesktopLayout>
+        {@render children()}
+      </DesktopLayout>
+    </div>
+  </div>
+{:else}
+  <!-- Redirecting to login -->
+  <div class="min-h-screen bg-background flex items-center justify-center">
+    <div class="text-center">
+      <div
+        class="w-16 h-16 mx-auto rounded-2xl bg-primary/20 flex items-center justify-center mb-4"
+      >
+        <div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
+      </div>
+      <p class="text-muted">Redirecting to login...</p>
+    </div>
+  </div>
+{/if}
 
 {#if focusStore.zenMode && !focusStore.sessionComplete}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
