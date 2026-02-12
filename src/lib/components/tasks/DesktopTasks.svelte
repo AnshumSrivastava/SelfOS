@@ -10,9 +10,13 @@
         MoreVertical,
         Trash2,
         CalendarDays,
+        Flame,
+        Target,
+        TrendingUp,
     } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { fade, slide } from "svelte/transition";
+    import QuestCard from "./QuestCard.svelte";
 
     let filter = $state("all");
     let isAdding = $state(false);
@@ -35,25 +39,108 @@
         "Learning",
     ];
 
-    // Derived filtered tasks
+    // Enhanced filtered tasks with urgency calculation
     let filteredTasks = $derived.by(() => {
-        const all = tasksStore.tasks;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let tasks = tasksStore.tasks;
+
+        // Apply filter
         switch (filter) {
             case "active":
-                return all.filter((t) => t.status !== "completed");
+                tasks = tasks.filter((t) => t.status !== "completed");
+                break;
             case "completed":
-                return all.filter((t) => t.status === "completed");
+                tasks = tasks.filter((t) => t.status === "completed");
+                break;
             case "high":
-                return all.filter(
+                tasks = tasks.filter(
                     (t) => t.priority === "high" && t.status !== "completed",
                 );
+                break;
             case "scheduled":
-                return all.filter(
+                tasks = tasks.filter(
                     (t) => t.scheduled && t.status !== "completed",
                 );
+                break;
             default:
-                return all.filter((t) => t.status !== "completed"); // Default to active
+                tasks = tasks.filter((t) => t.status !== "completed");
         }
+
+        // Calculate urgency for each task
+        return tasks
+            .map((task) => {
+                let urgency = 0;
+                let urgencyLabel = "";
+                let urgencyColor = "text-muted";
+
+                if (task.deadline) {
+                    const deadline = new Date(task.deadline);
+                    deadline.setHours(0, 0, 0, 0);
+                    const daysUntil = Math.floor(
+                        (deadline.getTime() - today.getTime()) /
+                            (1000 * 60 * 60 * 24),
+                    );
+
+                    if (daysUntil < 0) {
+                        urgency = 100;
+                        urgencyLabel = `${Math.abs(daysUntil)}d overdue`;
+                        urgencyColor = "text-red-400";
+                    } else if (daysUntil === 0) {
+                        urgency = 90;
+                        urgencyLabel = "Due today";
+                        urgencyColor = "text-orange-400";
+                    } else if (daysUntil === 1) {
+                        urgency = 80;
+                        urgencyLabel = "Due tomorrow";
+                        urgencyColor = "text-yellow-400";
+                    } else if (daysUntil <= 3) {
+                        urgency = 70;
+                        urgencyLabel = `${daysUntil}d left`;
+                        urgencyColor = "text-yellow-400";
+                    } else if (daysUntil <= 7) {
+                        urgency = 50;
+                        urgencyLabel = `${daysUntil}d left`;
+                        urgencyColor = "text-blue-400";
+                    }
+                }
+
+                if (task.priority === "high") urgency += 20;
+                else if (task.priority === "medium") urgency += 10;
+
+                return { ...task, urgency, urgencyLabel, urgencyColor };
+            })
+            .sort((a, b) => {
+                if (filter === "completed") return 0;
+                return b.urgency - a.urgency;
+            });
+    });
+
+    // Calculate insights
+    let insights = $derived.by(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const overdue = tasksStore.tasks.filter((t) => {
+            if (t.status === "completed" || !t.deadline) return false;
+            const deadline = new Date(t.deadline);
+            deadline.setHours(0, 0, 0, 0);
+            return deadline < today;
+        }).length;
+
+        const dueToday = tasksStore.tasks.filter((t) => {
+            if (t.status === "completed" || !t.deadline) return false;
+            const deadline = new Date(t.deadline);
+            deadline.setHours(0, 0, 0, 0);
+            return deadline.getTime() === today.getTime();
+        }).length;
+
+        const highPriority = tasksStore.tasks.filter(
+            (t) => t.priority === "high" && t.status !== "completed",
+        ).length;
+
+        return { overdue, dueToday, highPriority };
     });
 
     function getPriorityColor(p: string) {
@@ -92,7 +179,6 @@
                 : null,
         });
 
-        // Reset
         newTask = {
             title: "",
             project: "General",
@@ -108,8 +194,16 @@
     <!-- Header -->
     <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">My Tasks</h1>
-            <p class="text-neutral-400">Capture, Organize, Engage.</p>
+            <h1
+                class="text-3xl font-bold text-white mb-2 flex items-center gap-3"
+            >
+                <span class="text-4xl">⚔️</span>
+                Quest Board
+            </h1>
+            <p class="text-neutral-400">
+                {tasksStore.activeCount} active quests · {tasksStore.completedCount}
+                completed
+            </p>
         </div>
         <button
             onclick={() => (isAdding = !isAdding)}
@@ -122,6 +216,57 @@
             {/if}
         </button>
     </div>
+
+    <!-- Insights Bar -->
+    {#if insights.overdue > 0 || insights.dueToday > 0 || insights.highPriority > 0}
+        <div class="grid grid-cols-3 gap-4">
+            {#if insights.overdue > 0}
+                <div
+                    class="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+                >
+                    <div class="flex items-center gap-2 mb-1">
+                        <AlertCircle size={16} class="text-red-400" />
+                        <span class="text-sm font-medium text-red-400"
+                            >Overdue</span
+                        >
+                    </div>
+                    <p class="text-2xl font-bold text-white">
+                        {insights.overdue}
+                    </p>
+                </div>
+            {/if}
+            {#if insights.dueToday > 0}
+                <div
+                    class="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20"
+                >
+                    <div class="flex items-center gap-2 mb-1">
+                        <Flame size={16} class="text-orange-400" />
+                        <span class="text-sm font-medium text-orange-400"
+                            >Due Today</span
+                        >
+                    </div>
+                    <p class="text-2xl font-bold text-white">
+                        {insights.dueToday}
+                    </p>
+                </div>
+            {/if}
+            {#if insights.highPriority > 0}
+                <div
+                    class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20"
+                >
+                    <div class="flex items-center gap-2 mb-1">
+                        <Target size={16} class="text-yellow-400" />
+                        <span class="text-sm font-medium text-yellow-400"
+                            >High Priority</span
+                        >
+                    </div>
+                    <p class="text-2xl font-bold text-white">
+                        {insights.highPriority}
+                    </p>
+                </div>
+            {/if}
+        </div>
+    {/if}
 
     <!-- Filters -->
     <div class="flex gap-2 border-b border-neutral-800 pb-4 overflow-x-auto">
@@ -149,11 +294,10 @@
                 type="text"
                 placeholder="What needs to be done?"
                 class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none border-b border-neutral-800 pb-2"
-                autoFocus
+                autofocus
             />
 
             <div class="flex flex-wrap items-center gap-4">
-                <!-- Project Selector -->
                 <div class="relative group">
                     <select
                         bind:value={newTask.project}
@@ -169,7 +313,6 @@
                     />
                 </div>
 
-                <!-- Priority Selector -->
                 <div
                     class="flex bg-neutral-800 rounded-lg p-1 border border-neutral-700"
                 >
@@ -186,7 +329,6 @@
                     {/each}
                 </div>
 
-                <!-- Deadline -->
                 <div
                     class="flex items-center gap-2 text-sm text-neutral-400 bg-neutral-800 px-3 py-1.5 rounded-lg border border-neutral-700"
                 >
@@ -199,7 +341,6 @@
                     />
                 </div>
 
-                <!-- Scheduled -->
                 <div
                     class="flex items-center gap-2 text-sm text-neutral-400 bg-neutral-800 px-3 py-1.5 rounded-lg border border-neutral-700"
                 >
@@ -232,98 +373,22 @@
         >
             {#if filteredTasks.length === 0}
                 <div class="text-center py-12 text-neutral-500">
-                    <p>No tasks found for this view.</p>
+                    <CheckSquare size={48} class="mx-auto mb-4 opacity-50" />
+                    <p class="text-lg font-medium">No tasks found</p>
+                    <p class="text-sm mt-2">
+                        {filter === "completed"
+                            ? "Complete some tasks to see them here"
+                            : "Add a new task to get started"}
+                    </p>
                 </div>
             {/if}
 
             {#each filteredTasks as task (task.id)}
-                <div
-                    transition:slide|local
-                    class="group relative flex items-start gap-4 p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900 transition-all"
-                >
-                    <!-- Checkbox -->
-                    <button
-                        onclick={() => tasksStore.toggle(task.id)}
-                        class="mt-1 w-5 h-5 rounded border border-neutral-600 group-hover:border-white flex items-center justify-center transition-colors {task.status ===
-                        'completed'
-                            ? 'bg-green-500 border-green-500 text-black'
-                            : 'hover:bg-neutral-800'}"
-                    >
-                        {#if task.status === "completed"}
-                            <CheckSquare size={14} />
-                        {/if}
-                    </button>
-
-                    <!-- Content -->
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h3
-                                    class="text-neutral-200 font-medium truncate pr-4 transition-colors {task.status ===
-                                    'completed'
-                                        ? 'line-through text-neutral-500'
-                                        : ''}"
-                                >
-                                    {task.title}
-                                </h3>
-                                <div
-                                    class="flex flex-wrap items-center gap-3 mt-2"
-                                >
-                                    <span
-                                        class="text-xs px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700"
-                                    >
-                                        {task.project}
-                                    </span>
-
-                                    {#if task.priority !== "medium" || task.priority === "high"}
-                                        <span
-                                            class="text-xs px-2 py-0.5 rounded-full border {getPriorityColor(
-                                                task.priority,
-                                            )} flex items-center gap-1"
-                                        >
-                                            <AlertCircle size={10} />
-                                            {task.priority}
-                                        </span>
-                                    {/if}
-
-                                    {#if task.deadline}
-                                        <span
-                                            class="text-xs text-neutral-400 flex items-center gap-1"
-                                            title="Deadline"
-                                        >
-                                            <AlertCircle
-                                                size={12}
-                                                class="text-red-400"
-                                            />
-                                            Due {formatDate(task.deadline)}
-                                        </span>
-                                    {/if}
-
-                                    {#if task.scheduled}
-                                        <span
-                                            class="text-xs text-neutral-400 flex items-center gap-1"
-                                            title="Scheduled Date"
-                                        >
-                                            <CalendarDays
-                                                size={12}
-                                                class="text-blue-400"
-                                            />
-                                            Do: {formatDate(task.scheduled)}
-                                        </span>
-                                    {/if}
-                                </div>
-                            </div>
-
-                            <button
-                                onclick={() => tasksStore.remove(task.id)}
-                                class="text-neutral-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 p-1"
-                                title="Delete Task"
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <QuestCard
+                    {task}
+                    onToggle={() => tasksStore.toggle(task.id)}
+                    onDelete={() => tasksStore.remove(task.id)}
+                />
             {/each}
         </div>
 
@@ -334,21 +399,17 @@
             >
                 <h3 class="font-bold text-white mb-4 flex items-center gap-2">
                     <div class="w-1.5 h-4 bg-green-500 rounded-full"></div>
-                    Focus Mode
+                    Progress Overview
                 </h3>
                 <p class="text-sm text-neutral-400 mb-6">
                     You have <span class="text-white font-medium"
                         >{tasksStore.activeCount}</span
                     >
                     active tasks.
-                    {#if tasksStore.tasks.filter((t) => t.priority === "high" && t.status !== "completed").length > 0}
+                    {#if insights.highPriority > 0}
                         <br />Prioritize your
                         <span class="text-red-400"
-                            >{tasksStore.tasks.filter(
-                                (t) =>
-                                    t.priority === "high" &&
-                                    t.status !== "completed",
-                            ).length} high priority</span
+                            >{insights.highPriority} high priority</span
                         > tasks.
                     {/if}
                 </p>
@@ -358,7 +419,7 @@
                         class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden"
                     >
                         <div
-                            class="h-full bg-green-500 transition-all duration-500"
+                            class="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500"
                             style="width: {tasksStore.tasks.length
                                 ? (tasksStore.completedCount /
                                       tasksStore.tasks.length) *
@@ -368,15 +429,47 @@
                     </div>
                     <div class="flex justify-between text-xs text-neutral-500">
                         <span>{tasksStore.completedCount} completed</span>
-                        <span>{tasksStore.activeCount} remaining</span>
+                        <span
+                            >{tasksStore.tasks.length > 0
+                                ? Math.round(
+                                      (tasksStore.completedCount /
+                                          tasksStore.tasks.length) *
+                                          100,
+                                  )
+                                : 0}%</span
+                        >
                     </div>
                 </div>
 
-                <button
-                    class="w-full py-2.5 rounded-xl border border-neutral-700 hover:bg-neutral-800 text-sm font-medium text-neutral-300 transition-colors"
-                >
-                    Start Focus Session
-                </button>
+                <!-- Quick Stats -->
+                <div class="space-y-3">
+                    <div
+                        class="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50"
+                    >
+                        <span class="text-sm text-neutral-400">Active</span>
+                        <span class="text-sm font-semibold text-white"
+                            >{tasksStore.activeCount}</span
+                        >
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50"
+                    >
+                        <span class="text-sm text-neutral-400">Completed</span>
+                        <span class="text-sm font-semibold text-green-400"
+                            >{tasksStore.completedCount}</span
+                        >
+                    </div>
+                    {#if insights.overdue > 0}
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg bg-red-500/10 border border-red-500/20"
+                        >
+                            <span class="text-sm text-red-400">Overdue</span>
+                            <span class="text-sm font-semibold text-red-400"
+                                >{insights.overdue}</span
+                            >
+                        </div>
+                    {/if}
+                </div>
             </div>
         </div>
     </div>

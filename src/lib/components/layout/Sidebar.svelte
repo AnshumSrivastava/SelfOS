@@ -24,6 +24,25 @@
     } from "lucide-svelte";
 
     import { settings } from "$lib/stores/settings.svelte";
+    import { gamificationStore } from "$lib/stores/gamification.svelte";
+    import XPBar from "$lib/components/gamification/XPBar.svelte";
+    import StatMeter from "$lib/components/gamification/StatMeter.svelte";
+    import CurrencyDisplay from "$lib/components/gamification/CurrencyDisplay.svelte";
+    import LevelUpModal from "$lib/components/gamification/LevelUpModal.svelte";
+    import AchievementToast from "$lib/components/gamification/AchievementToast.svelte";
+    import { User } from "lucide-svelte";
+
+    // Initialize gamification
+    $effect(() => {
+        gamificationStore.init();
+    });
+
+    // Level up modal state
+    let showLevelUpModal = $state(false);
+    let levelUpData = $state({ oldLevel: 1, newLevel: 2 });
+
+    // Achievement toast state
+    let currentAchievement = $state(null);
 
     // Sidebar collapse state
     let isCollapsed = $state(false);
@@ -242,6 +261,83 @@
         </button>
     </div>
 
+    <!-- Gaming HUD (Character Profile) -->
+    {#if !isCollapsed && gamificationStore.profile}
+        <div class="px-4 mb-6 space-y-4">
+            <!-- Character Avatar & Level -->
+            <div class="relative">
+                <!-- Glow Effect -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-cyan-500/10 blur-xl rounded-2xl"
+                ></div>
+
+                <!-- Card -->
+                <div
+                    class="relative bg-gradient-to-br from-[#1a1a2e]/80 to-[#0f0f1e]/80 border border-cyan-500/20 rounded-2xl p-4 backdrop-blur-sm"
+                >
+                    <!-- Avatar & Level -->
+                    <div class="flex items-center gap-3 mb-3">
+                        <!-- Avatar -->
+                        <div
+                            class="relative w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30"
+                        >
+                            <User size={28} class="text-white" />
+                            <!-- Level Badge -->
+                            <div
+                                class="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1e]"
+                            >
+                                {gamificationStore.profile.level}
+                            </div>
+                        </div>
+
+                        <!-- Name & Title -->
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-white font-bold truncate">
+                                {gamificationStore.profile.username}
+                            </h3>
+                            <p class="text-xs text-cyan-400">
+                                {gamificationStore.profile.avatar.class}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- XP Bar -->
+                    <XPBar
+                        current={gamificationStore.profile.xp}
+                        max={gamificationStore.xpToNextLevel}
+                        label="XP"
+                        size="sm"
+                        color="gradient"
+                    />
+
+                    <!-- Currency -->
+                    <div class="mt-3">
+                        <CurrencyDisplay
+                            gold={gamificationStore.profile.gold}
+                            gems={gamificationStore.profile.gems}
+                            size="sm"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    {:else if isCollapsed && gamificationStore.profile}
+        <!-- Collapsed View - Just Level Badge -->
+        <div class="px-2 mb-4 flex justify-center">
+            <div
+                class="relative w-12 h-12 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-cyan-500/30"
+                title="Level {gamificationStore.profile.level}"
+            >
+                <User size={24} class="text-white" />
+                <div
+                    class="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1e]"
+                >
+                    {gamificationStore.profile.level}
+                </div>
+            </div>
+        </div>
+    {/if}
+
     <!-- Dashboard - Always visible at top -->
     <div class="px-2 mb-2">
         <!-- svelte-ignore a11y_missing_attribute -->
@@ -407,3 +503,12 @@
         </div>
     {/if}
 </aside>
+
+<!-- Gamification Modals -->
+<LevelUpModal
+    bind:show={showLevelUpModal}
+    oldLevel={levelUpData.oldLevel}
+    newLevel={levelUpData.newLevel}
+/>
+
+<AchievementToast bind:achievement={currentAchievement} />
