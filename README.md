@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# SelfOS
-Self OS — An open-source life operating system inspired by LifeOS Dashboard, designed to help individuals organize goals, tasks, habits, and self-reflection in one unified system.
-=======
 # SelfOS - Your Mindful Personal Operating System
 
 SelfOS is a minimalist, intentional, and feature-rich personal dashboard designed to help you manage your life with clarity and focus. Built with SvelteKit and Tailwind CSS, it provides a seamless experience for tracking tasks, habits, finances, and focus sessions.
@@ -127,4 +123,3 @@ This project is licensed under the MIT License - see the `LICENSE` file for deta
 ---
 
 *Built with ❤️ for a more mindful life.*
->>>>>>> fa3ef3c (chore: initial commit with comprehensive documentation and screenshots)
