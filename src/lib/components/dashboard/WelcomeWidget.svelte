@@ -28,7 +28,7 @@
 </script>
 
 <div
-    class="card flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden relative border-primary/20"
+    class="card-subtle flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden relative border-primary/20"
 >
     <div class="flex items-center gap-6 relative z-10">
         <div

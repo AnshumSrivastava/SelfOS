@@ -31,40 +31,24 @@
     let fire: StreakFire;
 </script>
 
-<div class="space-y-6 pb-20 relative">
+<div class="page-container relative">
     <StreakFire bind:this={fire} />
-    <div class="flex items-center justify-between">
+    <div class="module-header mb-6">
         <h1 class="text-3xl font-light text-white">Habits</h1>
         <button
             onclick={() => (isAdding = true)}
-            class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>
     </div>
 
-    <!-- Consistency Graph -->
-    <div
-        class="px-4 py-6 bg-[#0A0A0A] rounded-2xl border border-neutral-900 mb-2"
-    >
-        <div class="flex justify-between items-end mb-4">
-            <h2
-                class="text-sm font-medium text-neutral-400 uppercase tracking-widest"
-            >
-                Consistency
-            </h2>
-            <span class="text-xs text-neutral-500 font-mono">LAST 7 DAYS</span>
-        </div>
-
-        <ConsistencyChart height="h-28" />
-    </div>
-
     <!-- Habits List -->
-    <div class="space-y-3">
+    <div class="space-y-3 mb-6">
         {#each habitsStore.habits as habit (habit.id)}
             {@const isCompleted = habitsStore.isCompleted(habit.id)}
             <div
-                class="w-full p-4 rounded-xl bg-[#0A0A0A] border border-neutral-900 flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
+                class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
             >
                 <button
                     onclick={(e) => {
@@ -78,7 +62,7 @@
                     <div
                         class="w-6 h-6 rounded border-2 {isCompleted
                             ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-neutral-700'} flex items-center justify-center transition-colors"
+                            : 'border-line'} flex items-center justify-center transition-colors"
                     >
                         {#if isCompleted}
                             <Check
@@ -90,15 +74,15 @@
                     </div>
                     <span
                         class="text-lg font-medium {isCompleted
-                            ? 'text-gray-500 line-through'
-                            : 'text-white'}">{habit.name}</span
+                            ? 'text-muted line-through'
+                            : 'text-white'}"
                     >
+                        {habit.name}
+                    </span>
                 </button>
 
                 <div class="flex items-center gap-3">
-                    <div
-                        class="flex items-center gap-1.5 text-xs text-gray-500"
-                    >
+                    <div class="flex items-center gap-1.5 text-xs text-muted">
                         <Flame
                             size={12}
                             class={habit.streak > 10 ? "text-orange-500" : ""}
@@ -111,13 +95,27 @@
                             e.stopPropagation();
                             habitsStore.remove(habit.id);
                         }}
-                        class="text-neutral-600 hover:text-red-500 p-1"
+                        class="text-muted hover:text-red-500 p-1"
                     >
                         <Trash2 size={16} />
                     </button>
                 </div>
             </div>
         {/each}
+    </div>
+
+    <!-- Consistency Graph -->
+    <div class="card-subtle mb-2">
+        <div class="flex justify-between items-end mb-4">
+            <h2
+                class="text-sm font-medium text-muted uppercase tracking-widest"
+            >
+                Consistency
+            </h2>
+            <span class="text-xs text-muted font-mono">LAST 7 DAYS</span>
+        </div>
+
+        <ConsistencyChart height="h-28" />
     </div>
 </div>
 
@@ -127,14 +125,14 @@
         transition:fade={{ duration: 200 }}
     >
         <div
-            class="bg-[#0A0A0A] border-t sm:border border-neutral-800 w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl p-6 shadow-2xl"
+            class="card-subtle w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl"
             transition:slide={{ duration: 300, axis: "y" }}
         >
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-white">New Habit</h3>
                 <button
                     onclick={() => (isAdding = false)}
-                    class="text-gray-400 hover:text-white transition-colors"
+                    class="text-muted hover:text-white transition-colors"
                 >
                     <X size={20} />
                 </button>
@@ -144,7 +142,7 @@
                 type="text"
                 bind:value={newHabitName}
                 placeholder="What habit do you want to build?"
-                class="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-white/20 mb-6"
+                class="input w-full mb-6"
                 onkeydown={(e) => e.key === "Enter" && addHabit()}
                 autofocus
             />
@@ -152,14 +150,14 @@
             <div class="flex gap-3 justify-end">
                 <button
                     onclick={() => (isAdding = false)}
-                    class="px-4 py-3 text-gray-400 hover:text-white transition-colors"
+                    class="btn btn-ghost"
                 >
                     Cancel
                 </button>
                 <button
                     onclick={addHabit}
                     disabled={!newHabitName.trim()}
-                    class="bg-white text-black font-bold px-6 py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="btn btn-primary px-6"
                 >
                     Create
                 </button>

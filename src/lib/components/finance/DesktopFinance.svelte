@@ -116,49 +116,51 @@
     }
 </script>
 
-<div class="space-y-8 pb-12 relative">
+<div class="page-container relative">
     {#if showBudgetModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
         >
-            <div
-                class="card w-full max-w-md bg-[#1E1E1E] border border-white/10 p-6 shadow-2xl rounded-2xl"
-            >
+            <div class="card-subtle w-full max-w-md shadow-2xl">
                 <h3 class="text-xl font-bold mb-6 text-white">Add Budget</h3>
                 <div class="space-y-4">
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="budget-category"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Category</label
                         >
                         <input
+                            id="budget-category"
                             type="text"
                             bind:value={newBudget.category}
                             placeholder="e.g. Dining Out"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
                         />
                     </div>
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="budget-amount"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Amount</label
                         >
                         <input
+                            id="budget-amount"
                             type="number"
                             bind:value={newBudget.amount}
                             placeholder="e.g. 5000"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
                         />
                     </div>
 
                     <div class="flex gap-3 pt-6">
                         <button
-                            class="flex-1 py-3 rounded-xl font-medium border border-white/10 hover:bg-white/5 transition-colors text-white"
+                            class="btn btn-ghost flex-1"
                             onclick={() => (showBudgetModal = false)}
                             >Cancel</button
                         >
                         <button
-                            class="flex-1 py-3 rounded-xl font-bold bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 transition-colors shadow-[0_0_20px_rgba(0,188,212,0.3)]"
+                            class="btn btn-primary flex-1"
                             onclick={handleAddBudget}>Save Budget</button
                         >
                     </div>
@@ -171,57 +173,61 @@
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
         >
-            <div
-                class="card w-full max-w-md bg-[#1E1E1E] border border-white/10 p-6 shadow-2xl rounded-2xl"
-            >
+            <div class="card-subtle w-full max-w-md shadow-2xl">
                 <h3 class="text-xl font-bold mb-6 text-white">
                     Add Savings Goal
                 </h3>
                 <div class="space-y-4">
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="goal-name"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Goal Name</label
                         >
                         <input
+                            id="goal-name"
                             type="text"
                             bind:value={newGoal.name}
                             placeholder="e.g. New Laptop"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
                         />
                     </div>
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="goal-amount"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Target Amount</label
                         >
                         <input
+                            id="goal-amount"
                             type="number"
                             bind:value={newGoal.targetAmount}
                             placeholder="e.g. 50000"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
                         />
                     </div>
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="goal-deadline"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Deadline (Optional)</label
                         >
                         <input
+                            id="goal-deadline"
                             type="date"
                             bind:value={newGoal.deadline}
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
                         />
                     </div>
 
                     <div class="flex gap-3 pt-6">
                         <button
-                            class="flex-1 py-3 rounded-xl font-medium border border-white/10 hover:bg-white/5 transition-colors text-white"
+                            class="btn btn-ghost flex-1"
                             onclick={() => (showGoalModal = false)}
                             >Cancel</button
                         >
                         <button
-                            class="flex-1 py-3 rounded-xl font-bold bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 transition-colors shadow-[0_0_20px_rgba(0,188,212,0.3)]"
+                            class="btn btn-primary flex-1"
                             onclick={handleAddGoal}>Save Goal</button
                         >
                     </div>
@@ -234,32 +240,31 @@
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
         >
-            <div
-                class="card w-full max-w-md bg-[#1E1E1E] border border-white/10 p-6 shadow-2xl rounded-2xl"
-            >
+            <div class="card-subtle w-full max-w-md shadow-2xl">
                 <h3 class="text-xl font-bold mb-6 text-white">
                     Add Transaction
                 </h3>
                 <div class="space-y-4">
                     <div>
-                        <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
-                            >Type</label
+                        <p
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                         >
-                        <div class="flex gap-2 p-1 bg-black/40 rounded-lg">
+                            Type
+                        </p>
+                        <div class="flex gap-2 p-1 bg-background/40 rounded-lg">
                             <button
                                 class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
                                 'income'
-                                    ? 'bg-[#4CAF50] text-black shadow-lg'
-                                    : 'text-gray-400 hover:text-white'}"
+                                    ? 'bg-emerald-500 text-black shadow-lg'
+                                    : 'text-muted hover:text-white'}"
                                 onclick={() => (newTransaction.type = "income")}
                                 >Income</button
                             >
                             <button
                                 class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
                                 'expense'
-                                    ? 'bg-[#FF5252] text-black shadow-lg'
-                                    : 'text-gray-400 hover:text-white'}"
+                                    ? 'bg-red-500 text-black shadow-lg'
+                                    : 'text-muted hover:text-white'}"
                                 onclick={() =>
                                     (newTransaction.type = "expense")}
                                 >Expense</button
@@ -268,57 +273,62 @@
                     </div>
                     <div>
                         <label
-                            class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
+                            for="transaction-title"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
                             >Details</label
                         >
                         <input
+                            id="transaction-title"
                             type="text"
                             bind:value={newTransaction.title}
                             placeholder="Title (e.g. Groceries)"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none mb-3 transition-colors"
+                            class="input w-full mb-3"
                         />
                         <input
                             type="number"
                             bind:value={newTransaction.amount}
                             placeholder="Amount (e.g. 500)"
-                            class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
+                            class="input w-full"
+                            aria-label="Transaction Amount"
                         />
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label
-                                class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
-                                >Category</label
-                            >
-                            <input
-                                type="text"
-                                bind:value={newTransaction.category}
-                                placeholder="General"
-                                class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="text-xs text-gray-400 block mb-2 uppercase tracking-wider"
-                                >Tags</label
-                            >
-                            <input
-                                type="text"
-                                bind:value={newTransaction.tags}
-                                placeholder="comma, separated"
-                                class="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-[#00BCD4]/50 outline-none transition-colors"
-                            />
-                        </div>
+                    <div>
+                        <label
+                            for="transaction-category"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                            >Category</label
+                        >
+                        <input
+                            id="transaction-category"
+                            type="text"
+                            bind:value={newTransaction.category}
+                            placeholder="General"
+                            class="input w-full"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="transaction-tags"
+                            class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                            >Tags</label
+                        >
+                        <input
+                            id="transaction-tags"
+                            type="text"
+                            bind:value={newTransaction.tags}
+                            placeholder="comma, separated"
+                            class="input w-full"
+                        />
                     </div>
 
                     <div class="flex gap-3 pt-6">
                         <button
-                            class="flex-1 py-3 rounded-xl font-medium border border-white/10 hover:bg-white/5 transition-colors text-white"
+                            class="btn btn-ghost flex-1"
                             onclick={() => (showAddModal = false)}
                             >Cancel</button
                         >
                         <button
-                            class="flex-1 py-3 rounded-xl font-bold bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 transition-colors shadow-[0_0_20px_rgba(0,188,212,0.3)]"
+                            class="btn btn-primary flex-1"
                             onclick={handleAddTransaction}
                             >Save Transaction</button
                         >
@@ -328,24 +338,20 @@
         </div>
     {/if}
 
-    <div class="flex items-end justify-between">
+    <div class="module-header">
         <div>
-            <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">
-                Finance
-            </h1>
-            <p class="text-gray-400">Master your wealth and cashflow.</p>
+            <h1 class="text-3xl font-light text-white">Finance</h1>
+            <p class="text-muted">Master your wealth and cashflow.</p>
         </div>
 
         <div class="flex gap-3">
-            <button
-                class="btn border border-white/10 text-white hover:bg-white/5 flex items-center gap-2 rounded-xl px-4 py-2"
-            >
+            <button class="btn btn-ghost flex items-center gap-2">
                 <PieChart size={18} />
                 <span class="hidden sm:inline">Reports</span>
             </button>
             <button
                 onclick={() => (showAddModal = true)}
-                class="btn bg-[#00BCD4] text-black hover:bg-[#00BCD4]/90 flex items-center gap-2 rounded-xl px-4 py-2 font-bold shadow-[0_0_20px_rgba(0,188,212,0.2)]"
+                class="btn btn-primary flex items-center gap-2"
             >
                 <Plus size={18} /> Add Transaction
             </button>
@@ -355,9 +361,7 @@
     <!-- Header Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <!-- Incoming Payments (Receiving) -->
-        <div
-            class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E] relative overflow-hidden group"
-        >
+        <div class="card-subtle relative overflow-hidden group">
             <div
                 class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"
             >
@@ -398,9 +402,7 @@
         </div>
 
         <!-- Bills (Paying) -->
-        <div
-            class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E] relative overflow-hidden group"
-        >
+        <div class="card-subtle relative overflow-hidden group">
             <div
                 class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"
             >
@@ -440,9 +442,7 @@
         </div>
 
         <!-- Monthly Summary (Income vs Expense Actuals) -->
-        <div
-            class="md:col-span-2 card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E] flex flex-col justify-between"
-        >
+        <div class="md:col-span-2 card-subtle flex flex-col justify-between">
             <div>
                 <p
                     class="text-sm text-gray-400 font-medium uppercase tracking-wider mb-4"
@@ -507,9 +507,7 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Investments Section -->
             {#if financeStore.investments.length > 0}
-                <div
-                    class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E]"
-                >
+                <div class="card-subtle">
                     <div class="flex items-center justify-between mb-6">
                         <h3
                             class="font-bold text-white flex items-center gap-2 text-lg"
@@ -564,9 +562,7 @@
             {/if}
 
             <!-- Recent Transactions -->
-            <div
-                class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E]"
-            >
+            <div class="card-subtle">
                 <h3 class="font-bold text-white mb-6 text-lg">
                     Recent Activity
                 </h3>
@@ -652,9 +648,7 @@
         <!-- Sidebar: Budgets, Goals, Reminders -->
         <div class="space-y-6">
             <!-- Budgets -->
-            <div
-                class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E]"
-            >
+            <div class="card-subtle">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-bold text-white text-lg">Budgets</h3>
                     <button
@@ -732,9 +726,7 @@
             </div>
 
             {#each financeStore.goals as goal}
-                <div
-                    class="card p-6 rounded-2xl border border-white/5 bg-[#1E1E1E] relative overflow-hidden group"
-                >
+                <div class="card-subtle relative overflow-hidden group">
                     <div
                         class="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"
                     >

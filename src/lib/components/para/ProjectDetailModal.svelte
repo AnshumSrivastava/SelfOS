@@ -152,16 +152,16 @@
 
 <Portal>
     <div
-        class="fixed inset-0 z-[5000] bg-[#050505] text-gray-200 flex flex-col md:flex-row animate-in fade-in duration-200 overflow-hidden font-sans"
+        class="fixed inset-0 z-[5000] bg-black text-white flex flex-col md:flex-row animate-in fade-in duration-200 overflow-hidden font-sans"
     >
         <!-- MAIN COLUMN: Editor (Flex-1) -->
-        <div class="flex-1 flex flex-col h-full relative bg-neutral-900/5">
+        <div class="flex-1 flex flex-col h-full relative bg-background">
             <!-- Header (Moved from Left Sidebar) -->
             <div
-                class="h-16 border-b border-neutral-800 flex items-center justify-between px-6 bg-[#050505]/50 backdrop-blur shrink-0"
+                class="h-16 border-b border-line flex items-center justify-between px-6 bg-surface/50 backdrop-blur shrink-0"
             >
                 <div class="flex items-center gap-4">
-                    <button onclick={onClose} class="md:hidden text-gray-400">
+                    <button onclick={onClose} class="md:hidden text-muted">
                         <X size={24} />
                     </button>
                     <div class="flex items-center gap-3">
@@ -190,16 +190,16 @@
                 <div class="flex items-center gap-4">
                     {#if liveProject.intent}
                         <span
-                            class="hidden md:block text-xs text-gray-500 italic truncate max-w-[300px]"
+                            class="hidden md:block text-xs text-muted italic truncate max-w-[300px]"
                             >"{liveProject.intent}"</span
                         >
                     {/if}
-                    <div class="w-px h-4 bg-neutral-800 hidden md:block"></div>
+                    <div class="w-px h-4 bg-line hidden md:block"></div>
                     <button
                         onclick={() =>
                             (viewMode =
                                 viewMode === "default" ? "history" : "default")}
-                        class="text-gray-500 hover:text-white transition-colors {viewMode ===
+                        class="text-muted hover:text-white transition-colors {viewMode ===
                         'history'
                             ? 'text-white'
                             : ''}"
@@ -209,14 +209,14 @@
                     </button>
                     <button
                         onclick={handleArchive}
-                        class="text-gray-500 hover:text-white transition-colors"
+                        class="text-muted hover:text-white transition-colors"
                         title="Archive Project"
                     >
                         <Archive size={18} />
                     </button>
                     <button
                         onclick={onClose}
-                        class="hidden md:block text-gray-500 hover:text-white transition-colors"
+                        class="hidden md:block text-muted hover:text-white transition-colors"
                     >
                         <X size={20} />
                     </button>
@@ -234,17 +234,17 @@
             >
                 <!-- Hint (Desktop only or Edit mode) -->
                 <div
-                    class="flex items-center justify-between px-6 py-3 border-b border-neutral-800 bg-[#050505]/30 backdrop-blur shrink-0 z-10"
+                    class="flex items-center justify-between px-6 py-3 border-b border-line bg-surface/30 backdrop-blur shrink-0 z-10"
                 >
                     <span
-                        class="text-sm font-medium text-gray-500 uppercase tracking-widest"
+                        class="text-sm font-medium text-muted uppercase tracking-widest"
                         >Scratchpad / Inbox</span
                     >
-                    <div class="text-xs text-gray-500 flex items-center">
+                    <div class="text-xs text-muted flex items-center">
                         <span class="text-emerald-500 font-bold">[] task</span>
-                        <span class="mx-3 text-neutral-700">|</span>
+                        <span class="mx-3 border-l border-line h-3"></span>
                         <span class="text-blue-500 font-bold">{"{}"} link</span>
-                        <span class="mx-3 text-neutral-700">|</span>
+                        <span class="mx-3 border-l border-line h-3"></span>
                         <span class="hidden md:inline">SHIFT+ENTER to save</span
                         >
                         <span class="md:hidden">Process to save</span>
@@ -256,7 +256,7 @@
                         bind:value={scratchpadInput}
                         onkeydown={handleKeydown}
                         placeholder="Capture thoughts, tasks, or links..."
-                        class="w-full h-full bg-transparent text-lg md:text-xl text-gray-200 placeholder-neutral-700 p-6 md:p-8 resize-none outline-none leading-relaxed"
+                        class="w-full h-full bg-transparent text-lg md:text-xl text-white placeholder-muted p-6 md:p-8 resize-none outline-none leading-relaxed"
                         autofocus
                     ></textarea>
 
@@ -265,7 +265,7 @@
                         <!-- Mobile: Cancel/Done -->
                         <button
                             onclick={() => (mobileMode = "view")}
-                            class="md:hidden flex items-center justify-center bg-neutral-800 text-white w-12 h-12 rounded-full shadow-lg border border-neutral-700 active:scale-95 transition-all"
+                            class="md:hidden flex items-center justify-center bg-surface text-white w-12 h-12 rounded-full shadow-lg border border-line active:scale-95 transition-all"
                             title="Done"
                         >
                             <X size={20} />
@@ -293,7 +293,7 @@
         <div
             class="{mobileMode === 'view'
                 ? 'flex w-full'
-                : 'hidden'} md:flex flex-col md:w-[300px] border-l border-neutral-800 bg-[#0A0A0A]"
+                : 'hidden'} md:flex flex-col md:w-[300px] border-l border-line bg-surface"
         >
             <!-- Mobile Header for View Mode (replacing generic Project Overview) -->
             <div
@@ -305,7 +305,7 @@
                             {liveProject.name}
                         </h2>
                         {#if liveProject.intent}
-                            <p class="text-sm text-gray-400 mt-1">
+                            <p class="text-sm text-muted mt-1">
                                 {liveProject.intent}
                             </p>
                         {/if}

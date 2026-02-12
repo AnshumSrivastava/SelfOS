@@ -2,21 +2,12 @@
     import {
         CheckCircle2,
         Circle,
-        Coins,
-        Zap,
-        Star,
         Calendar,
         Flame,
+        ExternalLink,
     } from "lucide-svelte";
     import { scale } from "svelte/transition";
     import type { Task } from "$lib/stores/tasks.svelte";
-    import {
-        calculateQuestRarity,
-        calculateQuestXP,
-        calculateQuestGold,
-        calculateQuestDifficulty,
-    } from "$lib/stores/tasks.svelte";
-    import type { QuestRarity } from "$lib/types/gamification";
 
     let {
         task,
@@ -27,50 +18,6 @@
         onToggle: () => void;
         onDelete: () => void;
     } = $props();
-
-    let rarity = $derived(calculateQuestRarity(task));
-    let xpReward = $derived(calculateQuestXP(task));
-    let goldReward = $derived(calculateQuestGold(task));
-    let difficulty = $derived(calculateQuestDifficulty(task));
-
-    function getRarityColors(rarity: QuestRarity) {
-        switch (rarity) {
-            case "common":
-                return {
-                    border: "border-gray-500/30",
-                    bg: "bg-gray-500/5",
-                    glow: "shadow-gray-500/10",
-                    text: "text-gray-400",
-                    gradient: "from-gray-500 to-gray-600",
-                };
-            case "rare":
-                return {
-                    border: "border-blue-500/30",
-                    bg: "bg-blue-500/5",
-                    glow: "shadow-blue-500/20",
-                    text: "text-blue-400",
-                    gradient: "from-blue-500 to-blue-600",
-                };
-            case "epic":
-                return {
-                    border: "border-purple-500/30",
-                    bg: "bg-purple-500/5",
-                    glow: "shadow-purple-500/20",
-                    text: "text-purple-400",
-                    gradient: "from-purple-500 to-purple-600",
-                };
-            case "legendary":
-                return {
-                    border: "border-yellow-500/40",
-                    bg: "bg-yellow-500/5",
-                    glow: "shadow-yellow-500/30 shadow-lg",
-                    text: "text-yellow-400",
-                    gradient: "from-yellow-500 to-orange-600",
-                };
-        }
-    }
-
-    let colors = $derived(getRarityColors(rarity));
 
     // Calculate urgency
     let urgencyInfo = $derived.by(() => {
@@ -119,16 +66,9 @@
 </script>
 
 <div
-    class="relative group {colors.bg} {colors.border} border-2 rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] {colors.glow}"
+    class="relative group card-subtle transition-all duration-300"
     transition:scale={{ duration: 200 }}
 >
-    <!-- Rarity Badge -->
-    <div
-        class="absolute -top-2 -right-2 px-3 py-1 bg-gradient-to-r {colors.gradient} rounded-full text-xs font-bold text-white uppercase shadow-lg"
-    >
-        {rarity}
-    </div>
-
     <!-- Content -->
     <div class="flex items-start gap-4">
         <!-- Checkbox -->
@@ -137,9 +77,9 @@
             class="flex-shrink-0 mt-1 transition-transform hover:scale-110"
         >
             {#if task.status === "completed"}
-                <CheckCircle2 size={24} class="text-green-500" />
+                <CheckCircle2 size={24} class="text-emerald-500" />
             {:else}
-                <Circle size={24} class="text-gray-600 hover:text-gray-400" />
+                <Circle size={24} class="text-muted hover:text-white" />
             {/if}
         </button>
 
@@ -157,7 +97,7 @@
                 </h3>
                 <div class="flex items-center gap-2 flex-wrap">
                     <span
-                        class="text-xs px-2 py-0.5 bg-white/5 rounded text-gray-400"
+                        class="text-xs px-2 py-0.5 bg-background border border-line rounded text-muted"
                     >
                         {task.project}
                     </span>
@@ -171,64 +111,37 @@
                     >
                         {task.priority}
                     </span>
+                    {#if task.link}
+                        <a
+                            href={task.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-xs px-2 py-0.5 rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors flex items-center gap-1"
+                            onclick={(e) => e.stopPropagation()}
+                        >
+                            <ExternalLink size={10} />
+                            Link
+                        </a>
+                    {/if}
                 </div>
             </div>
 
             <!-- Deadline -->
             {#if urgencyInfo}
-                <div class="flex items-center gap-2 mb-3">
-                    {#if urgencyInfo.icon === Flame}
-                        <Flame size={14} class={urgencyInfo.color} />
-                    {:else}
-                        <Calendar size={14} class={urgencyInfo.color} />
-                    {/if}
+                <div class="flex items-center gap-2">
+                    <urgencyInfo.icon size={14} class={urgencyInfo.color} />
                     <span class="text-sm {urgencyInfo.color}"
                         >{urgencyInfo.label}</span
                     >
                 </div>
             {/if}
-
-            <!-- Rewards & Difficulty -->
-            <div class="flex items-center gap-4 flex-wrap">
-                <!-- XP Reward -->
-                <div
-                    class="flex items-center gap-1.5 px-2 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded-lg"
-                >
-                    <Zap size={14} class="text-cyan-400" />
-                    <span class="text-sm font-bold text-cyan-400"
-                        >+{xpReward} XP</span
-                    >
-                </div>
-
-                <!-- Gold Reward -->
-                <div
-                    class="flex items-center gap-1.5 px-2 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
-                >
-                    <Coins size={14} class="text-yellow-500" />
-                    <span class="text-sm font-bold text-yellow-500"
-                        >+{goldReward}</span
-                    >
-                </div>
-
-                <!-- Difficulty Stars -->
-                <div class="flex items-center gap-1">
-                    {#each Array(5) as _, i}
-                        <Star
-                            size={12}
-                            class={i < difficulty
-                                ? "text-yellow-500 fill-yellow-500"
-                                : "text-gray-700"}
-                        />
-                    {/each}
-                </div>
-            </div>
         </div>
 
         <!-- Delete Button (on hover) -->
         <button
             onclick={onDelete}
             class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-red-400"
-            aria-label="Delete quest"
+            aria-label="Delete task"
         >
             <svg
                 width="20"

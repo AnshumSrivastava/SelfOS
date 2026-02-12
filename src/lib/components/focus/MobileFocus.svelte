@@ -97,28 +97,28 @@
     <!-- Modes -->
     <div class="flex gap-2">
         <button
-            class="px-4 py-2 rounded-full text-xs font-medium border transition-colors {focusStore.mode ===
+            class="px-4 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 {focusStore.mode ===
             'focus'
-                ? 'bg-white/10 text-white border-white/20'
-                : 'text-gray-500 border-transparent hover:text-white'}"
+                ? 'bg-white text-black border-white shadow-lg'
+                : 'bg-surface text-muted border-line'}"
             onclick={() => focusStore.setMode("focus")}
         >
             Focus
         </button>
         <button
-            class="px-4 py-2 rounded-full text-xs font-medium border transition-colors {focusStore.mode ===
+            class="px-4 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 {focusStore.mode ===
             'shortBreak'
-                ? 'bg-white/10 text-white border-white/20'
-                : 'text-gray-500 border-transparent hover:text-white'}"
+                ? 'bg-white text-black border-white shadow-lg'
+                : 'bg-surface text-muted border-line'}"
             onclick={() => focusStore.setMode("shortBreak")}
         >
             Short Break
         </button>
         <button
-            class="px-4 py-2 rounded-full text-xs font-medium border transition-colors {focusStore.mode ===
+            class="px-4 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 {focusStore.mode ===
             'longBreak'
-                ? 'bg-white/10 text-white border-white/20'
-                : 'text-gray-500 border-transparent hover:text-white'}"
+                ? 'bg-white text-black border-white shadow-lg'
+                : 'bg-surface text-muted border-line'}"
             onclick={() => focusStore.setMode("longBreak")}
         >
             Long Break

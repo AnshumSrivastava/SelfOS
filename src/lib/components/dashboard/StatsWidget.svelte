@@ -111,7 +111,7 @@
         {@const TrendIcon = stat.trendUp ? TrendingUp : TrendingDown}
         <button
             onclick={() => goto(stat.link)}
-            class="card hover:border-{stat.color}/30 transition-all group cursor-pointer text-left relative overflow-hidden"
+            class="card-subtle hover:border-{stat.color}/30 transition-all group cursor-pointer text-left relative overflow-hidden"
         >
             <!-- Background gradient for actionable items -->
             {#if stat.actionable}

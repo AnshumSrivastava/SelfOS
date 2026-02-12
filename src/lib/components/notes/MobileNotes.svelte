@@ -37,12 +37,12 @@
 
 <NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
-<div class="space-y-6 pb-20">
-    <div class="flex items-center justify-between">
+<div class="page-container relative">
+    <div class="module-header">
         <h1 class="text-3xl font-light text-white">Notes</h1>
         <button
             onclick={openNewNote}
-            class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>
@@ -52,13 +52,13 @@
     <div class="relative">
         <Search
             size={18}
-            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
         />
         <input
             type="text"
             bind:value={searchQuery}
             placeholder="Search..."
-            class="w-full bg-[#0A0A0A] border border-neutral-900 rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-white/20 transition-colors placeholder:text-gray-600"
+            class="input w-full pl-11"
         />
     </div>
 
@@ -67,10 +67,10 @@
         {#each filters as f}
             <button
                 onclick={() => (selectedFilter = f)}
-                class="px-4 py-2 rounded-full border border-neutral-800 text-sm font-medium whitespace-nowrap {f ===
+                class="px-4 py-1.5 rounded-full border border-line text-sm font-medium whitespace-nowrap transition-all active:scale-95 {f ===
                 selectedFilter
-                    ? 'bg-white text-black border-white'
-                    : 'bg-neutral-900 text-gray-400'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface text-muted'}"
             >
                 {f}
             </button>
@@ -81,7 +81,7 @@
     <div class="grid grid-cols-2 gap-3">
         <button
             onclick={openNewNote}
-            class="p-4 rounded-2xl border border-dashed border-neutral-800 flex flex-col items-center justify-center aspect-square text-gray-600 active:scale-95 transition-transform"
+            class="card-subtle flex flex-col items-center justify-center aspect-square text-muted border-dashed border-line active:scale-95 transition-transform"
         >
             <Plus size={24} />
             <span class="text-xs mt-2">New Note</span>
@@ -91,12 +91,12 @@
             <div class="relative group">
                 <button
                     onclick={() => openNote(note)}
-                    class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between aspect-square text-left w-full h-full active:scale-95 transition-transform"
+                    class="card-subtle flex flex-col justify-between aspect-square text-left w-full h-full active:scale-95 transition-transform"
                 >
                     <div class="w-full">
                         <div class="flex justify-between items-start mb-2">
-                            <Folder size={16} class="text-gray-500" />
-                            <span class="text-[10px] text-gray-600"
+                            <Folder size={16} class="text-muted" />
+                            <span class="text-[10px] text-muted"
                                 >{note.date}</span
                             >
                         </div>
@@ -111,12 +111,12 @@
                         {#if note.tags && note.tags.length > 0}
                             {#each note.tags.slice(0, 2) as tag}
                                 <span
-                                    class="text-[9px] text-gray-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded-md"
+                                    class="text-[9px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
                                     >#{tag}</span
                                 >
                             {/each}
                             {#if note.tags.length > 2}
-                                <span class="text-[9px] text-gray-500 px-1"
+                                <span class="text-[9px] text-muted px-1"
                                     >+{note.tags.length - 2}</span
                                 >
                             {/if}
@@ -135,7 +135,7 @@
                             notesStore.deleteNote(note.id);
                         }
                     }}
-                    class="absolute top-2 right-2 p-2 text-neutral-600 hover:text-red-400 z-10"
+                    class="absolute top-2 right-2 p-2 text-muted hover:text-red-400 z-10"
                     title="Delete Note"
                 >
                     <Trash2 size={16} />

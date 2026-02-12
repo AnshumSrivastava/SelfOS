@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Plus } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
-    import MobileQuestCard from "$lib/components/tasks/MobileQuestCard.svelte";
+    import MobileTaskCard from "$lib/components/tasks/MobileQuestCard.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
 
     let filter = $state("active");
@@ -31,14 +31,12 @@
     );
 </script>
 
-<div class="space-y-6">
+<div class="page-container h-full">
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-white flex items-center gap-2">
-                ⚔️ Quest Board
-            </h1>
-            <p class="text-sm text-gray-400 mt-1">
+            <h1 class="text-3xl font-light text-white">Tasks</h1>
+            <p class="text-sm text-muted mt-1">
                 {activeCount} active · {completedCount} completed
             </p>
         </div>
@@ -49,30 +47,29 @@
         {#each [{ id: "active", label: "All Active" }, { id: "high", label: "High Priority" }, { id: "completed", label: "Completed" }] as tab}
             <button
                 onclick={() => (filter = tab.id)}
-                class="px-4 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition-all active:scale-95 {filter ===
+                class="px-4 py-1.5 rounded-full border text-sm font-medium whitespace-nowrap transition-all active:scale-95 {filter ===
                 tab.id
-                    ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50'
-                    : 'bg-white/5 text-gray-400 border-white/10'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface text-muted border-line'}"
             >
                 {tab.label}
             </button>
         {/each}
     </div>
 
-    <!-- Quest List -->
+    <!-- Task List -->
     <div class="space-y-0">
         {#if filteredTasks.length === 0}
             <div class="text-center py-16">
-                <div class="text-5xl mb-4">📋</div>
-                <p class="text-gray-400">No quests found</p>
-                <p class="text-sm text-gray-600 mt-1">
-                    Tap + to add a new quest
+                <p class="text-muted">No tasks found</p>
+                <p class="text-sm text-muted/60 mt-1">
+                    Tap + to add a new task
                 </p>
             </div>
         {/if}
 
         {#each filteredTasks as task (task.id)}
-            <MobileQuestCard
+            <MobileTaskCard
                 {task}
                 onToggle={() => tasksStore.toggle(task.id)}
                 onDelete={() => tasksStore.remove(task.id)}
@@ -83,8 +80,8 @@
     <!-- Floating Add Button -->
     <button
         onclick={() => (isQuickCaptureOpen = true)}
-        class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white flex items-center justify-center shadow-2xl shadow-cyan-500/30 active:scale-90 transition-transform z-30"
-        aria-label="Add new quest"
+        class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-black flex items-center justify-center shadow-2xl shadow-primary/30 active:scale-90 transition-transform z-30"
+        aria-label="Add new task"
     >
         <Plus size={28} />
     </button>

@@ -8,7 +8,7 @@
         Loader2,
         ExternalLink,
     } from "lucide-svelte";
-    import { goalsStore, type Goal } from "$lib/stores/goals.svelte.ts";
+    import { goalsStore, type Goal } from "$lib/stores/goals.svelte";
     import GoalModal from "./GoalModal.svelte";
 
     let showGoalModal = $state(false);
@@ -98,13 +98,17 @@
     }
 </script>
 
-<div class="space-y-6 pb-20">
+<div class="page-container h-full">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-light text-white">Goals</h1>
+    <div class="module-header">
+        <div>
+            <h1 class="text-3xl font-light text-white">Goals</h1>
+            <p class="text-sm text-muted">Set direction. Achieve.</p>
+        </div>
         <button
             onclick={() => openGoalModal()}
-            class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            aria-label="New Goal"
         >
             <Plus size={24} />
         </button>
@@ -112,13 +116,13 @@
 
     <!-- Goals List -->
     {#if goals.length === 0}
-        <div class="text-center py-16">
-            <Target size={64} class="text-gray-700 mx-auto mb-4" />
+        <div class="text-center py-16 card-subtle">
+            <Target size={64} class="text-muted mx-auto mb-4" />
             <h3 class="text-xl font-semibold text-white mb-2">No goals yet</h3>
-            <p class="text-gray-500 mb-6">Create your first goal</p>
+            <p class="text-muted mb-6">Create your first goal</p>
             <button
                 onclick={() => openGoalModal()}
-                class="px-6 py-3 bg-white text-black font-semibold rounded-full active:scale-95 transition-transform"
+                class="px-6 py-3 bg-primary text-black font-semibold rounded-full active:scale-95 transition-transform"
             >
                 Create Goal
             </button>
@@ -132,13 +136,15 @@
                 {@const deadlineInfo = formatDeadline(goal.deadline)}
                 {@const isProcessing = processingBatch[goal.id]}
 
-                <div
-                    class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900"
-                >
+                <div class="card-subtle">
                     <!-- Goal Header -->
                     <div
                         class="flex items-start justify-between cursor-pointer"
                         onclick={() => toggleGoal(goal.id)}
+                        onkeydown={(e) =>
+                            e.key === "Enter" && toggleGoal(goal.id)}
+                        role="button"
+                        tabindex="0"
                     >
                         <div class="flex-1">
                             <h3 class="text-lg font-bold text-white mb-1">
@@ -146,13 +152,13 @@
                             </h3>
 
                             {#if goal.description}
-                                <p class="text-sm text-gray-500 mb-2">
+                                <p class="text-sm text-muted mb-2">
                                     {goal.description}
                                 </p>
                             {/if}
 
                             <div
-                                class="flex items-center gap-3 text-xs text-gray-500"
+                                class="flex items-center gap-3 text-xs text-muted"
                             >
                                 {#if tasks.length > 0}
                                     <span
@@ -176,19 +182,19 @@
                                 >{progress}%</span
                             >
                             {#if isExpanded}
-                                <ChevronUp size={20} class="text-gray-500" />
+                                <ChevronUp size={20} class="text-muted" />
                             {:else}
-                                <ChevronDown size={20} class="text-gray-500" />
+                                <ChevronDown size={20} class="text-muted" />
                             {/if}
                         </div>
                     </div>
 
                     <!-- Progress Bar -->
                     <div
-                        class="mt-3 h-2 w-full bg-neutral-800 rounded-full overflow-hidden"
+                        class="mt-3 h-2 w-full bg-background rounded-full overflow-hidden"
                     >
                         <div
-                            class="h-full bg-white transition-all duration-300"
+                            class="h-full bg-primary transition-all duration-300"
                             style="width: {progress}%"
                         ></div>
                     </div>

@@ -9,7 +9,7 @@
         Loader2,
         ExternalLink,
     } from "lucide-svelte";
-    import { goalsStore, type Goal } from "$lib/stores/goals.svelte.ts";
+    import { goalsStore, type Goal } from "$lib/stores/goals.svelte";
     import GoalModal from "./GoalModal.svelte";
 
     let showGoalModal = $state(false);
@@ -117,13 +117,16 @@
     };
 </script>
 
-<div class="space-y-6 pb-12">
+<div class="page-container h-full">
     <!-- Header -->
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-white">Goals</h1>
+    <div class="module-header">
+        <div>
+            <h1 class="text-3xl font-light text-white">Goals</h1>
+            <p class="text-muted">Set direction. Track progress. Achieve.</p>
+        </div>
         <button
             onclick={() => openGoalModal()}
-            class="px-6 py-3 bg-primary text-black font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+            class="btn btn-primary flex items-center gap-2"
         >
             <Plus size={20} />
             New Goal
@@ -132,7 +135,7 @@
 
     <!-- Goals List -->
     {#if goals.length === 0}
-        <div class="card text-center py-16">
+        <div class="card-subtle text-center py-16">
             <Target size={64} class="text-muted mx-auto mb-4" />
             <h3 class="text-xl font-semibold text-white mb-2">No goals yet</h3>
             <p class="text-muted mb-6">Create your first goal to get started</p>
@@ -153,11 +156,15 @@
                 {@const deadlineInfo = formatDeadline(goal.deadline)}
                 {@const isProcessing = processingBatch[goal.id]}
 
-                <div class="card">
+                <div class="card-subtle">
                     <!-- Goal Header -->
                     <div
                         class="flex items-start gap-4 cursor-pointer"
                         onclick={() => toggleGoal(goal.id)}
+                        onkeydown={(e) =>
+                            e.key === "Enter" && toggleGoal(goal.id)}
+                        role="button"
+                        tabindex="0"
                     >
                         <div class="p-3 rounded-lg bg-primary/10 text-primary">
                             <Target size={24} />
@@ -211,6 +218,9 @@
                             </div>
                             <button
                                 class="p-2 hover:bg-surface rounded-lg transition-colors"
+                                aria-label={isExpanded
+                                    ? "Collapse goal"
+                                    : "Expand goal"}
                             >
                                 {#if isExpanded}
                                     <ChevronDown size={20} class="text-muted" />

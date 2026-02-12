@@ -59,26 +59,29 @@
     }
 </script>
 
-<div class="space-y-6">
-    <!-- Dashboard Header -->
-    <div class="flex items-center justify-between">
+<div class="page-container h-full">
+    <div class="module-header mb-10">
         <div>
-            <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-            <p class="text-sm text-muted">Your personal command center</p>
+            <div class="flex items-center gap-4 mb-2">
+                <h1 class="text-3xl font-light text-white leading-none">
+                    Dashboard
+                </h1>
+                <button
+                    onclick={() => (showSettings = !showSettings)}
+                    class="p-1.5 rounded-lg hover:bg-surface transition-colors text-muted hover:text-white"
+                    aria-label="Dashboard settings"
+                >
+                    <Settings2 size={18} />
+                </button>
+            </div>
+            <p class="text-muted">Welcome back. Here's your focus for today.</p>
         </div>
-        <button
-            onclick={() => (showSettings = !showSettings)}
-            class="p-2 rounded-lg hover:bg-surface transition-colors text-muted hover:text-white"
-            aria-label="Dashboard settings"
-        >
-            <Settings2 size={20} />
-        </button>
     </div>
 
     <!-- Settings Panel -->
     {#if showSettings}
         <div
-            class="card border-primary/20 animate-slide-up"
+            class="card-subtle border-primary/20 animate-slide-up"
             transition:slide={{ duration: 200 }}
         >
             <h3 class="text-lg font-semibold text-white mb-4">
@@ -117,7 +120,7 @@
 
     <!-- Widgets Grid with Drag and Drop -->
     <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-8"
         use:dndzone={{
             items,
             flipDurationMs: 200,
@@ -141,14 +144,17 @@
                     </div>
 
                     <!-- Widget Content -->
-                    <svelte:component this={getWidgetComponent(widget.type)} />
+                    {@const WidgetComp = getWidgetComponent(widget.type)}
+                    {#if WidgetComp}
+                        <WidgetComp />
+                    {/if}
                 </div>
             </div>
         {/each}
     </div>
 
     {#if items.length === 0}
-        <div class="card text-center py-12">
+        <div class="card-subtle text-center py-12">
             <Settings2 size={48} class="mx-auto mb-4 text-muted opacity-50" />
             <h3 class="text-lg font-semibold text-white mb-2">
                 No widgets enabled

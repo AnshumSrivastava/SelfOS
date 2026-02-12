@@ -50,6 +50,8 @@ class SettingsStore {
     layoutStyle = $state<LayoutStyle>('card');
     fontSize = $state<FontSize>('normal');
     animations = $state(true);
+    borderRadius = $state(16);
+    modulePadding = $state(24);
 
     dashboardWidgets = $state<DashboardWidget[]>([
         { id: 'stats', type: 'stats', enabled: true, order: 0 },
@@ -75,12 +77,15 @@ class SettingsStore {
                 this.layoutStyle = parsed.layoutStyle || 'card';
                 this.fontSize = parsed.fontSize || 'normal';
                 this.animations = parsed.animations !== undefined ? parsed.animations : true;
+                this.borderRadius = parsed.borderRadius || 16;
+                this.modulePadding = parsed.modulePadding || 24;
                 this.dashboardWidgets = parsed.dashboardWidgets || this.dashboardWidgets;
                 this.pagePreferences = parsed.pagePreferences || {};
             }
-            // Apply theme immediately on load
+            // Apply theme and design system immediately on load
             this.applyTheme();
             this.applyFontSize();
+            this.applyDesignSystem();
 
             // Auto-save effect
             $effect.root(() => {
@@ -93,6 +98,8 @@ class SettingsStore {
                         layoutStyle: this.layoutStyle,
                         fontSize: this.fontSize,
                         animations: this.animations,
+                        borderRadius: this.borderRadius,
+                        modulePadding: this.modulePadding,
                         dashboardWidgets: this.dashboardWidgets,
                         pagePreferences: this.pagePreferences,
                     }));
@@ -140,6 +147,11 @@ class SettingsStore {
         }
     }
 
+    setDesignVariable(variable: 'borderRadius' | 'modulePadding', value: number) {
+        (this as any)[variable] = value;
+        this.applyDesignSystem();
+    }
+
     reorderDashboardWidgets(newOrder: DashboardWidget[]) {
         this.dashboardWidgets = newOrder;
     }
@@ -157,6 +169,13 @@ class SettingsStore {
 
         // Add new font size class
         root.classList.add(`font-${this.fontSize}`);
+    }
+
+    applyDesignSystem() {
+        if (!browser) return;
+        const root = document.documentElement;
+        root.style.setProperty('--card-radius', `${this.borderRadius}px`);
+        root.style.setProperty('--module-padding', `${this.modulePadding}px`);
     }
 
     applyTheme() {

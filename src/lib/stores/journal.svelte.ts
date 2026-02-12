@@ -4,32 +4,24 @@ export type JournalEntry = {
     id: string;
     title: string;
     date: string;
-    mood: string;
-    preview: string;
-    content?: string;
+    mood: 'Great' | 'Good' | 'Neutral' | 'Sad' | 'Angry';
+    content: string;
+    weather?: 'Sunny' | 'Cloudy' | 'Rainy' | 'Stormy' | 'Snowy';
 };
 
 const DEFAULT_ENTRIES: JournalEntry[] = [
     {
         id: '1',
-        date: "Today",
+        date: new Date().toISOString().split('T')[0],
         mood: "Great",
-        title: "Productive Start",
-        preview: "Managed to get the auth system working perfectly...",
-        content: "Detailed content here..."
-    },
-    {
-        id: '2',
-        date: "Yesterday",
-        mood: "Okay",
-        title: "A bit slow",
-        preview: "Had trouble focusing in the afternoon...",
-        content: "Detailed content here..."
-    },
+        title: "Initial Entry",
+        content: "Drafting the new journal system for SelfOS. Excited about the scratchpad! #journal #dev",
+        weather: "Sunny"
+    }
 ];
 
 class JournalStore {
-    store = new LocalStore<JournalEntry[]>('selfos_journal', DEFAULT_ENTRIES);
+    store = new LocalStore<JournalEntry[]>('selfos_journal_v2', DEFAULT_ENTRIES);
 
     get entries() {
         return this.store.value;
@@ -37,6 +29,18 @@ class JournalStore {
 
     addEntry(entry: Omit<JournalEntry, 'id'>) {
         this.store.value = [...this.store.value, { ...entry, id: crypto.randomUUID() }];
+    }
+
+    updateEntry(id: string, updates: Partial<JournalEntry>) {
+        this.store.value = this.store.value.map(e => e.id === id ? { ...e, ...updates } : e);
+    }
+
+    removeEntry(id: string) {
+        this.store.value = this.store.value.filter(e => e.id !== id);
+    }
+
+    getEntryById(id: string) {
+        return this.store.value.find(e => e.id === id);
     }
 }
 

@@ -22,13 +22,13 @@
     />
 {/if}
 
-<div class="space-y-6 pb-24 px-4 pt-4">
+<div class="page-container h-full">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="module-header">
         <h1 class="text-3xl font-light text-white tracking-tight">Projects</h1>
         <button
             onclick={handleAdd}
-            class="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={20} />
         </button>
@@ -36,20 +36,20 @@
 
     <!-- Stats / System Status (Optional - keeping it minimal) -->
     <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4">
+        <div class="card-subtle p-4">
             <div class="text-2xl font-bold text-white">
                 {projectsStore.activeProjects.length}
             </div>
-            <div class="text-xs text-gray-500 uppercase tracking-widest">
+            <div class="text-xs text-muted uppercase tracking-widest">
                 Active
             </div>
         </div>
-        <div class="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4">
+        <div class="card-subtle p-4">
             <div class="text-2xl font-bold text-white">
                 {projectsStore.projects.filter((p) => p.status === "Archived")
                     .length}
             </div>
-            <div class="text-xs text-gray-500 uppercase tracking-widest">
+            <div class="text-xs text-muted uppercase tracking-widest">
                 Archived
             </div>
         </div>
@@ -59,7 +59,7 @@
     <div class="space-y-3">
         {#each projectsStore.activeProjects as project}
             <button
-                class="w-full text-left p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 active:scale-[0.98] transition-all group relative overflow-hidden"
+                class="w-full text-left card-subtle active:scale-[0.98] transition-all group relative overflow-hidden"
                 onclick={() => openProject(project)}
             >
                 <!-- Color Indicator Bar -->
@@ -85,11 +85,11 @@
                             {/if}
                         </div>
                         {#if project.intent}
-                            <p class="text-sm text-gray-500 line-clamp-1">
+                            <p class="text-sm text-muted line-clamp-1">
                                 {project.intent}
                             </p>
                         {:else}
-                            <p class="text-sm text-gray-600 italic">
+                            <p class="text-sm text-muted italic opacity-50">
                                 No intent set
                             </p>
                         {/if}
@@ -126,16 +126,16 @@
         {/each}
 
         {#if projectsStore.activeProjects.length === 0}
-            <div class="text-center py-12">
+            <div class="text-center py-12 card-subtle opacity-50">
                 <div
-                    class="w-16 h-16 rounded-full bg-neutral-900 flex items-center justify-center mx-auto mb-4 text-neutral-700"
+                    class="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4 text-muted"
                 >
                     <Folder size={32} />
                 </div>
-                <h3 class="text-lg font-medium text-gray-500">
+                <h3 class="text-lg font-medium text-muted">
                     No active projects
                 </h3>
-                <p class="text-sm text-gray-600 mt-2">
+                <p class="text-sm text-muted mt-2">
                     Tap the + button to create one.
                 </p>
             </div>

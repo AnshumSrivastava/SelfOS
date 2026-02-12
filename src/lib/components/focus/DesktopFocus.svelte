@@ -43,6 +43,14 @@
                     isEditing = true;
                 }
             }}
+            onkeydown={(e) => {
+                if (e.key === "Enter" && !isEditing && !focusStore.isRunning) {
+                    editMinutes = Math.floor(focusStore.timeLeft / 60);
+                    isEditing = true;
+                }
+            }}
+            role="button"
+            tabindex="0"
         >
             <h2 class="text-muted tracking-widest uppercase font-medium mb-2">
                 {focusStore.mode === "shortBreak"
@@ -60,9 +68,9 @@
                         min="1"
                         max="180"
                         class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] bg-transparent border-b-4 border-primary w-[400px] text-center focus:outline-none"
-                        autofocus
                         onclick={(e) => e.stopPropagation()}
                         onkeydown={(e) => e.key === "Enter" && saveDuration()}
+                        aria-label="Edit duration minutes"
                     />
                     <button
                         class="p-6 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
@@ -126,28 +134,28 @@
 
         <div class="mt-12 flex gap-4 justify-center">
             <button
-                class="px-4 py-1.5 rounded-full text-sm cursor-pointer transition-colors border {focusStore.mode ===
+                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                 'focus'
-                    ? 'bg-surface border-primary text-white'
-                    : 'bg-transparent border-transparent text-muted hover:text-white'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface border-line text-muted hover:text-white'}"
                 onclick={() => focusStore.setMode("focus")}
             >
                 Pomodoro
             </button>
             <button
-                class="px-4 py-1.5 rounded-full text-sm cursor-pointer transition-colors border {focusStore.mode ===
+                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                 'shortBreak'
-                    ? 'bg-surface border-primary text-white'
-                    : 'bg-transparent border-transparent text-muted hover:text-white'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface border-line text-muted hover:text-white'}"
                 onclick={() => focusStore.setMode("shortBreak")}
             >
                 Short Break
             </button>
             <button
-                class="px-4 py-1.5 rounded-full text-sm cursor-pointer transition-colors border {focusStore.mode ===
+                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                 'longBreak'
-                    ? 'bg-surface border-primary text-white'
-                    : 'bg-transparent border-transparent text-muted hover:text-white'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface border-line text-muted hover:text-white'}"
                 onclick={() => focusStore.setMode("longBreak")}
             >
                 Long Break

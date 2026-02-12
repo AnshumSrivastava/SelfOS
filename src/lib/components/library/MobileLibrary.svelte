@@ -33,7 +33,7 @@
         <div class="space-y-4">
             {#each libraryStore.reading as book}
                 <div
-                    class="p-4 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex gap-4 active:scale-95 transition-transform cursor-pointer"
+                    class="card-subtle flex gap-4 active:scale-95 transition-transform cursor-pointer"
                     onclick={() => openBook(book.id)}
                     role="button"
                     tabindex="0"
@@ -88,7 +88,7 @@
         <div class="grid grid-cols-2 gap-4">
             {#each libraryStore.books as book}
                 <div
-                    class="p-3 rounded-xl bg-[#0A0A0A] border border-neutral-900 group active:scale-95 transition-transform cursor-pointer"
+                    class="card-subtle flex flex-col justify-between aspect-[2/3] text-left w-full h-full active:scale-95 transition-transform cursor-pointer"
                     onclick={() => openBook(book.id)}
                     role="button"
                     tabindex="0"

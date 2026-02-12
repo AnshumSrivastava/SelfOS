@@ -107,7 +107,7 @@
 </script>
 
 {#if nextActions.length > 0}
-    <div class="card border-primary/20">
+    <div class="card-subtle border-primary/20">
         <div class="flex items-center gap-3 mb-4">
             <div
                 class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"

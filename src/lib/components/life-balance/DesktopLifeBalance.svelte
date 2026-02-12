@@ -85,12 +85,10 @@
     }
 </script>
 
-<div class="space-y-8 pb-12">
-    <div class="flex items-end justify-between">
+<div class="page-container h-full">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-                Life Balance
-            </h1>
+            <h1 class="text-3xl font-light text-white">Life Balance</h1>
             <p class="text-muted">
                 Harmony across Health, Family, Fun, and Spirit.
             </p>
@@ -100,15 +98,16 @@
         </button>
     </div>
 
-    <!-- Balance Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {#each categories as cat}
-            <div class="card group hover:border-primary/30 transition-all">
+            <div
+                class="card-subtle group hover:border-primary/30 transition-all"
+            >
                 <div class="flex items-center gap-3 mb-4">
                     <div class="p-3 rounded-lg {cat.bg}/10 {cat.color}">
                         <cat.icon size={24} />
                     </div>
-                    <h3 class="font-bold text-lg text-[var(--color-text)]">
+                    <h3 class="text-lg font-light text-white">
                         {cat.name}
                     </h3>
                 </div>
@@ -116,12 +115,12 @@
                 <div class="space-y-2">
                     <div class="flex justify-between text-sm">
                         <span class="text-muted">Progress</span>
-                        <span class="font-bold text-[var(--color-text)]"
+                        <span class="font-medium text-white"
                             >{getProgress(cat.id)}%</span
                         >
                     </div>
                     <ProgressBar
-                        progress={getProgress(cat.id)}
+                        value={getProgress(cat.id)}
                         color={cat.bg.replace("bg-", "")}
                     />
                 </div>
@@ -132,10 +131,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Tasks Lists -->
         {#each categories as cat}
-            <div class="card">
+            <div class="card-subtle bg-surface/30">
                 <div class="flex items-center justify-between mb-4">
                     <h3
-                        class="font-bold text-[var(--color-text)] flex items-center gap-2"
+                        class="text-lg font-light text-white flex items-center gap-2"
                     >
                         <cat.icon size={18} class={cat.color} />
                         {cat.name} Goals
@@ -152,6 +151,10 @@
                         <div
                             class="flex items-center gap-3 group cursor-pointer"
                             onclick={() => toggleTask(task.id)}
+                            onkeydown={(e) =>
+                                e.key === "Enter" && toggleTask(task.id)}
+                            role="button"
+                            tabindex="0"
                         >
                             <div
                                 class="w-5 h-5 rounded border border-line flex items-center justify-center transition-colors {task.completed
@@ -166,7 +169,7 @@
                             <span
                                 class="text-sm {task.completed
                                     ? 'text-muted line-through'
-                                    : 'text-[var(--color-text)]'} transition-colors"
+                                    : 'text-white'} transition-colors"
                             >
                                 {task.title}
                             </span>

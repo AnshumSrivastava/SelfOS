@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         PenTool,
         Calendar,
@@ -10,160 +10,382 @@
         Sun,
         Cloud,
         Moon,
+        Trash2,
+        Save,
+        X,
+        ArrowLeft,
+        Wind,
+        CloudRain,
+        Zap,
+        Snowflake,
     } from "lucide-svelte";
+    import {
+        journalStore,
+        type JournalEntry,
+    } from "$lib/stores/journal.svelte";
+    import { uiState } from "$lib/stores/ui.svelte";
 
-    const journals = [
-        {
-            date: "Today, Oct 10",
-            mood: "Great",
+    let view = $state("list"); // 'list' or 'edit'
+    let editingEntry = $state<JournalEntry | null>(null);
+    let isNewEntry = $state(false);
+
+    $effect(() => {
+        if (view === "edit") {
+            uiState.showChrome = false;
+        } else {
+            uiState.showChrome = true;
+        }
+    });
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === "Escape" && view === "edit") {
+            saveEntry();
+        }
+    }
+
+    const moods = [
+        { name: "Angry", icon: Frown, color: "#ef4444" },
+        { name: "Sad", icon: Frown, color: "#3b82f6" },
+        { name: "Neutral", icon: Meh, color: "#94a3b8" },
+        { name: "Good", icon: Smile, color: "#10b981" },
+        { name: "Great", icon: Smile, color: "#f59e0b" },
+    ] as const;
+
+    const weatherIcons = {
+        Sunny: Sun,
+        Cloudy: Cloud,
+        Rainy: CloudRain,
+        Stormy: Zap,
+        Snowy: Snowflake,
+    } as const;
+
+    const weatherOptions = Object.keys(
+        weatherIcons,
+    ) as (keyof typeof weatherIcons)[];
+
+    function createNewEntry() {
+        const today = new Date().toISOString().split("T")[0];
+        editingEntry = {
+            id: "",
+            title: "",
+            date: today,
+            mood: "Neutral",
+            content: "",
             weather: "Sunny",
-            title: "Productive start to the week",
-            preview:
-                "Managed to get the auth system working perfectly. Felt good about the...",
-        },
-        {
-            date: "Yesterday, Oct 9",
-            mood: "Okay",
-            weather: "Cloudy",
-            title: "A bit slow",
-            preview:
-                "Had trouble focusing in the afternoon. Need to sleep earlier...",
-        },
-        {
-            date: "Mon, Oct 8",
-            mood: "Good",
-            weather: "Rainy",
-            title: "Weekly Planning",
-            preview:
-                "Set goals for the upcoming sprint. Excited about the new features...",
-        },
-    ];
+        };
+        isNewEntry = true;
+        view = "edit";
+    }
+
+    function editEntry(entry: JournalEntry) {
+        editingEntry = { ...entry };
+        isNewEntry = false;
+        view = "edit";
+    }
+
+    function saveEntry() {
+        if (!editingEntry) return;
+        if (isNewEntry) {
+            journalStore.addEntry(editingEntry);
+        } else {
+            journalStore.updateEntry(editingEntry.id, editingEntry);
+        }
+        view = "list";
+        editingEntry = null;
+    }
+
+    function removeEntry(id: string) {
+        journalStore.removeEntry(id);
+    }
+
+    function getMoodIcon(moodName: string) {
+        return moods.find((m) => m.name === moodName)?.icon || Smile;
+    }
+
+    function getMoodColor(moodName: string) {
+        return moods.find((m) => m.name === moodName)?.color || "var(--muted)";
+    }
+
+    let stats = $derived({
+        total: journalStore.entries.length,
+        moodDistribution: moods.map((m) => ({
+            name: m.name,
+            count: journalStore.entries.filter(
+                (e: JournalEntry) => e.mood === m.name,
+            ).length,
+            percent:
+                journalStore.entries.length > 0
+                    ? (journalStore.entries.filter(
+                          (e: JournalEntry) => e.mood === m.name,
+                      ).length /
+                          journalStore.entries.length) *
+                      100
+                    : 0,
+        })),
+    });
+
+    let EditingMoodIcon = $derived(
+        editingEntry ? getMoodIcon(editingEntry.mood) : null,
+    );
 </script>
 
-<div class="space-y-8 pb-12">
-    <div class="flex items-end justify-between">
+<svelte:window onkeydown={handleKeydown} />
+
+<div class="page-container h-full">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Journal</h1>
+            <h1 class="text-3xl font-light text-white">Journal</h1>
             <p class="text-muted">Reflect, Learn, Grow.</p>
         </div>
-        <button class="btn btn-primary flex items-center gap-2">
-            <PenTool size={18} /> New Entry
-        </button>
+        {#if view === "list"}
+            <button
+                onclick={createNewEntry}
+                class="btn btn-primary flex items-center gap-2"
+            >
+                <PenTool size={18} /> New Entry
+            </button>
+        {/if}
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Calendar / Streak -->
-        <div class="space-y-6">
-            <div class="card">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-white">October 2026</h3>
-                    <div class="flex gap-2">
-                        <button class="p-1 hover:bg-white/10 rounded"
-                            ><ChevronLeft size={16} /></button
-                        >
-                        <button class="p-1 hover:bg-white/10 rounded"
-                            ><ChevronRight size={16} /></button
-                        >
+    {#if view === "list"}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Mood Stats -->
+                <div class="card-subtle bg-surface/30">
+                    <h3
+                        class="text-xs font-medium text-muted mb-4 uppercase tracking-wider flex items-center gap-2"
+                    >
+                        <Smile size={14} /> Mood Distribution
+                    </h3>
+                    <div class="space-y-4">
+                        {#each stats.moodDistribution as mood}
+                            <div class="space-y-1">
+                                <div
+                                    class="flex justify-between text-[10px] uppercase font-bold"
+                                >
+                                    <span
+                                        style="color: {getMoodColor(mood.name)}"
+                                        >{mood.name}</span
+                                    >
+                                    <span class="text-muted"
+                                        >{mood.percent.toFixed(0)}%</span
+                                    >
+                                </div>
+                                <div
+                                    class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                                >
+                                    <div
+                                        class="h-full transition-all duration-1000"
+                                        style="width: {mood.percent}%; background-color: {getMoodColor(
+                                            mood.name,
+                                        )}"
+                                    ></div>
+                                </div>
+                            </div>
+                        {/each}
                     </div>
                 </div>
 
-                <!-- Mini Calendar Mockup -->
-                <div class="grid grid-cols-7 gap-2 text-center text-sm">
-                    {#each ["S", "M", "T", "W", "T", "F", "S"] as d}<span
-                            class="text-muted text-xs font-bold">{d}</span
-                        >{/each}
-                    {#each Array(31) as _, i}
-                        <div
-                            class="aspect-square rounded-full flex items-center justify-center cursor-pointer hover:bg-white/10 {i ===
-                            9
-                                ? 'bg-primary text-black font-bold'
-                                : i < 9
-                                  ? 'text-white'
-                                  : 'text-muted'}"
+                <!-- Streak stats -->
+                <div class="card-subtle">
+                    <h3
+                        class="text-xs font-medium text-muted mb-4 uppercase tracking-wider flex items-center gap-2"
+                    >
+                        <Zap size={14} class="text-primary" /> Journaling Streak
+                    </h3>
+                    <div class="flex items-center gap-4">
+                        <div class="text-4xl font-light text-white">12</div>
+                        <div class="text-xs text-muted">
+                            Days in a row. You're on fire!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entries List -->
+            <div class="lg:col-span-2 space-y-4">
+                {#if journalStore.entries.length === 0}
+                    <div class="card-subtle text-center py-12">
+                        <PenTool size={48} class="mx-auto text-muted/20 mb-4" />
+                        <h3 class="text-xl font-light text-muted">
+                            No entries yet
+                        </h3>
+                        <p class="text-sm text-muted/60 mb-6">
+                            Start your journey today.
+                        </p>
+                        <button onclick={createNewEntry} class="btn btn-primary"
+                            >Create First Entry</button
                         >
-                            {i + 1}
+                    </div>
+                {:else}
+                    {#each [...journalStore.entries].reverse() as entry}
+                        <div
+                            onclick={() => editEntry(entry)}
+                            class="card-subtle hover:border-primary/50 transition-all cursor-pointer group relative"
+                        >
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold text-primary"
+                                        >{entry.date}</span
+                                    >
+                                    <span class="w-1 h-1 rounded-full bg-line"
+                                    ></span>
+                                    <div
+                                        class="flex items-center gap-1 text-xs text-muted"
+                                    >
+                                        {#if entry.weather}
+                                            {@const WeatherIcon =
+                                                weatherIcons[
+                                                    entry.weather as keyof typeof weatherIcons
+                                                ]}
+                                            <WeatherIcon size={12} />
+                                            {entry.weather}
+                                        {/if}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface border border-line text-muted"
+                                        style="border-color: {getMoodColor(
+                                            entry.mood,
+                                        )}40"
+                                    >
+                                        {#if true}
+                                            {@const MoodIcon = getMoodIcon(
+                                                entry.mood,
+                                            )}
+                                            <MoodIcon
+                                                size={12}
+                                                style="color: {getMoodColor(
+                                                    entry.mood,
+                                                )}"
+                                            />
+                                        {/if}
+                                        {entry.mood}
+                                    </div>
+                                    <button
+                                        onclick={(e) => {
+                                            e.stopPropagation();
+                                            removeEntry(entry.id);
+                                        }}
+                                        class="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-500 transition-all"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h3
+                                class="text-xl font-medium text-white mb-2 group-hover:text-primary transition-colors"
+                            >
+                                {entry.title || "Untitled Entry"}
+                            </h3>
+                            <p class="text-muted text-sm line-clamp-2">
+                                {entry.content}
+                            </p>
                         </div>
                     {/each}
-                </div>
-            </div>
-
-            <div class="card bg-surface/50 border-primary/20">
-                <h3
-                    class="text-sm font-bold text-muted mb-4 uppercase tracking-wider"
-                >
-                    Mood Tracker
-                </h3>
-                <div class="flex justify-between px-2">
-                    <div class="flex flex-col items-center gap-2">
-                        <span
-                            class="h-16 w-1.5 bg-background rounded-full overflow-hidden flex items-end"
-                        >
-                            <span class="w-full bg-green-500 h-[60%]"></span>
-                        </span>
-                        <Smile size={16} class="text-green-500" />
-                    </div>
-                    <div class="flex flex-col items-center gap-2">
-                        <span
-                            class="h-16 w-1.5 bg-background rounded-full overflow-hidden flex items-end"
-                        >
-                            <span class="w-full bg-yellow-500 h-[30%]"></span>
-                        </span>
-                        <Meh size={16} class="text-yellow-500" />
-                    </div>
-                    <div class="flex flex-col items-center gap-2">
-                        <span
-                            class="h-16 w-1.5 bg-background rounded-full overflow-hidden flex items-end"
-                        >
-                            <span class="w-full bg-red-500 h-[10%]"></span>
-                        </span>
-                        <Frown size={16} class="text-red-500" />
-                    </div>
-                </div>
+                {/if}
             </div>
         </div>
-
-        <!-- Entries -->
-        <div class="lg:col-span-2 space-y-4">
-            {#each journals as entry}
-                <div
-                    class="card hover:border-primary/50 transition-all cursor-pointer group"
-                >
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-bold text-primary"
-                                >{entry.date}</span
-                            >
-                            <span class="w-1 h-1 rounded-full bg-line"></span>
-                            <div
-                                class="flex items-center gap-1 text-xs text-muted"
-                            >
-                                {#if entry.weather === "Sunny"}<Sun
-                                        size={12}
-                                    />{:else}<Cloud size={12} />{/if}
-                                {entry.weather}
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface border border-line text-white"
-                        >
-                            {#if entry.mood === "Great"}<Smile
-                                    size={12}
-                                    class="text-green-500"
-                                />{/if}
-                            {entry.mood}
-                        </div>
-                    </div>
-
-                    <h3
-                        class="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors"
+    {:else if editingEntry}
+        <!-- SCRATCHPAD EDITOR -->
+        <div
+            class="fixed inset-0 z-50 bg-background flex flex-col animate-in fade-in duration-300"
+        >
+            <!-- Editor Header -->
+            <div
+                class="border-b border-line bg-surface/30 backdrop-blur-md px-8 py-4 flex items-center justify-between"
+            >
+                <div class="flex items-center gap-6">
+                    <button
+                        onclick={() => (view = "list")}
+                        class="p-2 hover:bg-surface rounded-full text-muted hover:text-white transition-colors"
                     >
-                        {entry.title}
-                    </h3>
-                    <p class="text-muted text-sm line-clamp-2">
-                        {entry.preview}
-                    </p>
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div class="h-8 w-px bg-line"></div>
+                    <div class="flex items-center gap-4">
+                        <input
+                            type="date"
+                            bind:value={editingEntry.date}
+                            class="bg-transparent border-none text-muted text-sm focus:outline-none focus:text-white"
+                        />
+                        <select
+                            bind:value={editingEntry.weather}
+                            class="bg-transparent border-none text-muted text-sm focus:outline-none focus:text-white appearance-none cursor-pointer"
+                        >
+                            {#each weatherOptions as w}
+                                <option value={w}>{w}</option>
+                            {/each}
+                        </select>
+                    </div>
                 </div>
-            {/each}
+
+                <div class="flex items-center gap-4">
+                    <!-- Mood Switcher -->
+                    <div
+                        class="flex bg-surface rounded-full p-1 border border-line"
+                    >
+                        {#each moods as m}
+                            {@const MoodIcon = m.icon}
+                            <button
+                                onclick={() => (editingEntry!.mood = m.name)}
+                                class="p-2 rounded-full transition-all {editingEntry.mood ===
+                                m.name
+                                    ? 'bg-background shadow-lg'
+                                    : 'hover:bg-white/5 opacity-40 hover:opacity-100'}"
+                                title={m.name}
+                            >
+                                <MoodIcon size={18} style="color: {m.color}" />
+                            </button>
+                        {/each}
+                    </div>
+
+                    <button
+                        onclick={saveEntry}
+                        class="btn btn-primary flex items-center gap-2"
+                    >
+                        <Save size={18} /> Save
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor Content -->
+            <div
+                class="flex-1 overflow-y-auto p-12 lg:p-24 bg-scratchpad bg-fixed"
+            >
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <input
+                        type="text"
+                        bind:value={editingEntry.title}
+                        placeholder="Give it a title..."
+                        class="w-full bg-transparent border-none text-5xl font-light text-white focus:outline-none placeholder:text-muted/20"
+                    />
+                    <div class="h-px w-24 bg-primary/30"></div>
+                    <textarea
+                        bind:value={editingEntry.content}
+                        placeholder="Start typing your thoughts here..."
+                        class="w-full bg-transparent border-none text-xl font-light text-muted leading-relaxed min-h-[60vh] focus:outline-none placeholder:text-muted/10 resize-none"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Editor Footer / Meta -->
+            <div
+                class="border-t border-line bg-surface/10 px-8 py-3 flex justify-between items-center text-[10px] text-muted font-mono uppercase tracking-widest"
+            >
+                <div class="flex gap-4">
+                    <span>Characters: {editingEntry.content.length}</span>
+                    <span
+                        >Words: {editingEntry.content
+                            .split(/\s+/)
+                            .filter(Boolean).length}</span
+                    >
+                </div>
+                <div>Scratchpad Mode Active</div>
+            </div>
         </div>
-    </div>
+    {/if}
 </div>

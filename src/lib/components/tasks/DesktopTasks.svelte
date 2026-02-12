@@ -13,13 +13,15 @@
         Flame,
         Target,
         TrendingUp,
+        Loader2,
     } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { fade, slide } from "svelte/transition";
-    import QuestCard from "./QuestCard.svelte";
+    import TaskCard from "./QuestCard.svelte";
 
     let filter = $state("all");
     let isAdding = $state(false);
+    let isProcessing = $state(false);
 
     // New Task Form State
     let newTask = $state({
@@ -164,50 +166,48 @@
         });
     }
 
-    function handleAddTask() {
+    async function handleAddTask() {
         if (!newTask.title.trim()) return;
 
-        tasksStore.add({
-            title: newTask.title,
-            project: newTask.project,
-            priority: newTask.priority,
-            deadline: newTask.deadline
-                ? new Date(newTask.deadline).toISOString()
-                : null,
-            scheduled: newTask.scheduled
-                ? new Date(newTask.scheduled).toISOString()
-                : null,
-        });
+        isProcessing = true;
+        try {
+            await tasksStore.addBatch(
+                newTask.title,
+                newTask.project,
+                newTask.priority,
+            );
 
-        newTask = {
-            title: "",
-            project: "General",
-            priority: "medium",
-            deadline: "",
-            scheduled: "",
-        };
-        isAdding = false;
+            newTask = {
+                title: "",
+                project: "General",
+                priority: "medium",
+                deadline: "",
+                scheduled: "",
+            };
+            isAdding = false;
+        } catch (error) {
+            console.error("Failed to add tasks:", error);
+        } finally {
+            isProcessing = false;
+        }
     }
 </script>
 
-<div class="space-y-8 pb-12 h-full flex flex-col">
+<div class="page-container relative h-full">
     <!-- Header -->
-    <div class="flex items-end justify-between">
+    <div class="module-header">
         <div>
-            <h1
-                class="text-3xl font-bold text-white mb-2 flex items-center gap-3"
-            >
-                <span class="text-4xl">⚔️</span>
-                Quest Board
-            </h1>
-            <p class="text-neutral-400">
-                {tasksStore.activeCount} active quests · {tasksStore.completedCount}
+            <h1 class="text-3xl font-light text-white">Tasks</h1>
+            <p class="text-muted">
+                {tasksStore.activeCount} active tasks · {tasksStore.completedCount}
                 completed
             </p>
         </div>
         <button
             onclick={() => (isAdding = !isAdding)}
-            class="px-4 py-2 bg-white text-black rounded-lg font-medium flex items-center gap-2 hover:bg-neutral-200 transition-colors"
+            class="btn {isAdding
+                ? 'btn-ghost'
+                : 'btn-primary'} flex items-center gap-2"
         >
             {#if isAdding}
                 Cancel
@@ -285,23 +285,29 @@
 
     <!-- Add Task Panel -->
     {#if isAdding}
-        <div
-            transition:slide
-            class="p-4 rounded-xl bg-neutral-900 border border-neutral-800 space-y-4"
-        >
-            <input
+        <div transition:slide class="card-subtle space-y-4">
+            <textarea
                 bind:value={newTask.title}
-                type="text"
-                placeholder="What needs to be done?"
-                class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none border-b border-neutral-800 pb-2"
+                placeholder="What needs to be done?&#10;Paste multiple lines or a YouTube playlist URL..."
+                class="w-full bg-transparent text-xl text-white placeholder:text-muted/50 focus:outline-none border-b border-line pb-2 resize-none"
+                rows="3"
                 autofocus
-            />
+                onkeydown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleAddTask();
+                    }
+                }}
+            ></textarea>
+            <div class="text-[10px] text-neutral-500 mt-1">
+                Press Ctrl+Enter to add
+            </div>
 
             <div class="flex flex-wrap items-center gap-4">
                 <div class="relative group">
                     <select
                         bind:value={newTask.project}
-                        class="appearance-none bg-neutral-800 text-neutral-300 px-3 py-1.5 rounded-lg text-sm border border-neutral-700 focus:border-white focus:outline-none pr-8 cursor-pointer"
+                        class="appearance-none input px-3 py-1.5 pr-8 cursor-pointer"
                     >
                         {#each projects as p}
                             <option value={p}>{p}</option>
@@ -309,20 +315,20 @@
                     </select>
                     <Tag
                         size={14}
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
                     />
                 </div>
 
                 <div
-                    class="flex bg-neutral-800 rounded-lg p-1 border border-neutral-700"
+                    class="flex bg-background/50 rounded-lg p-1 border border-line"
                 >
                     {#each ["low", "medium", "high"] as p}
                         <button
                             onclick={() => (newTask.priority = p as any)}
                             class="px-3 py-1 rounded text-xs capitalize transition-colors {newTask.priority ===
                             p
-                                ? 'bg-neutral-600 text-white'
-                                : 'text-neutral-400 hover:text-white'}"
+                                ? 'bg-primary text-black font-medium'
+                                : 'text-muted hover:text-white'}"
                         >
                             {p}
                         </button>
@@ -330,7 +336,7 @@
                 </div>
 
                 <div
-                    class="flex items-center gap-2 text-sm text-neutral-400 bg-neutral-800 px-3 py-1.5 rounded-lg border border-neutral-700"
+                    class="flex items-center gap-2 text-sm text-muted bg-background/50 px-3 py-1.5 rounded-lg border border-line"
                 >
                     <AlertCircle size={14} />
                     <span class="text-xs">Deadline:</span>
@@ -342,7 +348,7 @@
                 </div>
 
                 <div
-                    class="flex items-center gap-2 text-sm text-neutral-400 bg-neutral-800 px-3 py-1.5 rounded-lg border border-neutral-700"
+                    class="flex items-center gap-2 text-sm text-muted bg-background/50 px-3 py-1.5 rounded-lg border border-line"
                 >
                     <CalendarDays size={14} />
                     <span class="text-xs">Do on:</span>
@@ -357,10 +363,15 @@
             <div class="flex justify-end pt-2">
                 <button
                     onclick={handleAddTask}
-                    disabled={!newTask.title.trim()}
-                    class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!newTask.title.trim() || isProcessing}
+                    class="btn btn-primary"
                 >
-                    Add Task
+                    {#if isProcessing}
+                        <Loader2 size={18} class="animate-spin" />
+                        Processing...
+                    {:else}
+                        Add Tasks
+                    {/if}
                 </button>
             </div>
         </div>
@@ -384,7 +395,7 @@
             {/if}
 
             {#each filteredTasks as task (task.id)}
-                <QuestCard
+                <TaskCard
                     {task}
                     onToggle={() => tasksStore.toggle(task.id)}
                     onDelete={() => tasksStore.remove(task.id)}
@@ -394,9 +405,7 @@
 
         <!-- Sidebar Info -->
         <div class="space-y-6">
-            <div
-                class="p-6 rounded-2xl bg-neutral-900/30 border border-neutral-800 backdrop-blur-sm"
-            >
+            <div class="card-subtle flex flex-col">
                 <h3 class="font-bold text-white mb-4 flex items-center gap-2">
                     <div class="w-1.5 h-4 bg-green-500 rounded-full"></div>
                     Progress Overview

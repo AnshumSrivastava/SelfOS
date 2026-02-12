@@ -11,15 +11,10 @@
     let deadline = $state("");
     let scheduled = $state("");
 
-    function handleSubmit() {
+    async function handleSubmit() {
         if (!title.trim()) return;
-        tasksStore.add({
-            title,
-            project: tag,
-            priority,
-            deadline: deadline ? new Date(deadline).toISOString() : null,
-            scheduled: scheduled ? new Date(scheduled).toISOString() : null,
-        });
+
+        await tasksStore.addBatch(title, tag, priority);
 
         // Reset form
         title = "";
@@ -66,13 +61,18 @@
             }}
             class="space-y-6"
         >
-            <input
-                type="text"
+            <textarea
                 bind:value={title}
-                placeholder="What's on your mind?"
-                class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none"
-                autoFocus
-            />
+                placeholder="What's on your mind?&#10;Paste tasks (one per line) or a YouTube playlist URL..."
+                class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none resize-none"
+                rows="3"
+                onkeydown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleSubmit();
+                    }
+                }}
+            ></textarea>
 
             <!-- Projects -->
             <div class="space-y-2">

@@ -21,10 +21,13 @@
   /* 32px */
   --space-6: 3rem;
   /* 48px */
-  --space-8: 4rem;
-  /* 64px */
-  --space-12: 6rem;
-  /* 96px */
+  --space-8: 4rem;      /* 64px */
+  --space-12: 6rem;     /* 96px */
+
+  --module-padding: var(--space-4);
+  --section-gap: var(--space-8);
+  --card-radius: 16px;
+  --input-radius: 10px;
 
   /* Typography Scale */
   --text-xs: 0.75rem;
@@ -172,16 +175,31 @@
 
   /* Card with subtle background - less opacity for cleaner look */
   .card-subtle {
-    background: rgba(255, 255, 255, 0.01);
-    border-radius: 12px;
+    background: var(--theme-surface);
+    border-radius: var(--card-radius);
     padding: var(--space-4);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--theme-line);
     transition: all 0.2s ease;
   }
 
   .card-subtle:hover {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Page container normalization */
+  .page-container {
+    padding-bottom: var(--space-12);
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  .module-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
   }
 
   /* Premium Button Styles - Simplified */

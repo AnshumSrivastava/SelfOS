@@ -56,13 +56,13 @@
     }
 </script>
 
-<div class="space-y-6 pb-24 relative">
+<div class="page-container relative">
     {#if showAddModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm"
         >
             <div
-                class="w-full bg-[#1E1E1E] rounded-t-3xl sm:rounded-2xl p-6 border-t border-white/10 animate-in slide-in-from-bottom duration-200"
+                class="card-subtle w-full rounded-t-3xl sm:rounded-2xl border-t border-line animate-in slide-in-from-bottom duration-200"
             >
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl font-bold text-white">
@@ -75,20 +75,22 @@
                 </div>
 
                 <div class="space-y-4">
-                    <div class="flex gap-3 bg-black/40 p-1.5 rounded-xl">
+                    <div
+                        class="flex gap-3 bg-background/40 p-1.5 rounded-xl border border-line"
+                    >
                         <button
                             class="flex-1 py-3 rounded-lg font-bold text-sm transition-all {newTransaction.type ===
                             'income'
-                                ? 'bg-[#4CAF50] text-black shadow-lg'
-                                : 'text-gray-400'}"
+                                ? 'bg-emerald-500 text-black shadow-lg'
+                                : 'text-muted hover:text-white'}"
                             onclick={() => (newTransaction.type = "income")}
                             >Income</button
                         >
                         <button
                             class="flex-1 py-3 rounded-lg font-bold text-sm transition-all {newTransaction.type ===
                             'expense'
-                                ? 'bg-[#FF5252] text-black shadow-lg'
-                                : 'text-gray-400'}"
+                                ? 'bg-red-500 text-black shadow-lg'
+                                : 'text-muted hover:text-white'}"
                             onclick={() => (newTransaction.type = "expense")}
                             >Expense</button
                         >
@@ -98,18 +100,18 @@
                         type="number"
                         bind:value={newTransaction.amount}
                         placeholder="₹0"
-                        class="w-full bg-transparent border-b border-white/10 p-4 text-4xl font-bold text-white text-center focus:border-[#00BCD4] outline-none"
+                        class="w-full bg-transparent border-b border-line p-4 text-4xl font-bold text-white text-center focus:border-primary outline-none"
                     />
 
                     <input
                         type="text"
                         bind:value={newTransaction.title}
                         placeholder="What was this for?"
-                        class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-[#00BCD4] outline-none"
+                        class="input w-full p-4"
                     />
 
                     <button
-                        class="w-full py-4 rounded-xl font-bold bg-[#00BCD4] text-black shadow-lg shadow-[#00BCD4]/20 active:scale-95 transition-transform"
+                        class="btn btn-primary w-full py-4 text-lg"
                         onclick={handleAddTransaction}
                     >
                         Save Transaction
@@ -119,11 +121,11 @@
         </div>
     {/if}
 
-    <div class="flex items-center justify-between">
+    <div class="module-header">
         <h1 class="text-3xl font-light text-white tracking-wide">Finance</h1>
         <button
             onclick={() => (showAddModal = true)}
-            class="w-10 h-10 rounded-full bg-[#00BCD4] text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,188,212,0.4)] active:scale-95 transition-transform"
+            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>
@@ -131,10 +133,10 @@
 
     <!-- Balance Card -->
     <div
-        class="p-6 rounded-3xl bg-gradient-to-br from-[#1E1E1E] to-black border border-white/5 shadow-2xl relative overflow-hidden"
+        class="card-subtle relative overflow-hidden bg-gradient-to-br from-surface to-background"
     >
         <div
-            class="absolute top-0 right-0 w-32 h-32 bg-[#00BCD4]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+            class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
         ></div>
 
         <span
@@ -149,25 +151,25 @@
             <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
                     <div
-                        class="w-4 h-4 rounded-full bg-[#4CAF50]/20 flex items-center justify-center text-[#4CAF50]"
+                        class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500"
                     >
                         <ArrowUpRight size={10} />
                     </div>
-                    <span class="text-xs text-gray-400">Income</span>
+                    <span class="text-xs text-muted">Income</span>
                 </div>
                 <div class="text-lg font-bold text-white">
                     {formatCurrency(financeStore.income)}
                 </div>
             </div>
-            <div class="w-px bg-white/10"></div>
+            <div class="w-px bg-line"></div>
             <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
                     <div
-                        class="w-4 h-4 rounded-full bg-[#FF5252]/20 flex items-center justify-center text-[#FF5252]"
+                        class="w-4 h-4 rounded-full bg-red-500/20 flex items-center justify-center text-red-500"
                     >
                         <ArrowDownRight size={10} />
                     </div>
-                    <span class="text-xs text-gray-400">Spent</span>
+                    <span class="text-xs text-muted">Spent</span>
                 </div>
                 <div class="text-lg font-bold text-white">
                     {formatCurrency(financeStore.expense)}
@@ -181,7 +183,7 @@
         <!-- Budgets -->
         {#if financeStore.budgets.length > 0}
             <div
-                class="min-w-[140px] p-4 rounded-2xl bg-[#1E1E1E] border border-white/5 flex flex-col justify-between h-32"
+                class="min-w-[140px] flex flex-col justify-between h-32 card-subtle"
             >
                 <div
                     class="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2"
@@ -189,12 +191,12 @@
                     <PiggyBank size={16} />
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400">Budgets</p>
+                    <p class="text-xs text-muted">Budgets</p>
                     <p class="text-sm font-bold text-white truncate">
                         {financeStore.budgets[0].category}
                     </p>
                     <div
-                        class="h-1 w-full bg-white/10 rounded-full mt-2 overflow-hidden"
+                        class="h-1 w-full bg-line rounded-full mt-2 overflow-hidden"
                     >
                         <div
                             class="h-full bg-orange-500"
@@ -213,19 +215,19 @@
         <!-- Goals -->
         {#if financeStore.goals.length > 0}
             <div
-                class="min-w-[140px] p-4 rounded-2xl bg-[#1E1E1E] border border-white/5 flex flex-col justify-between h-32"
+                class="min-w-[140px] flex flex-col justify-between h-32 card-subtle"
             >
                 <div
-                    class="w-8 h-8 rounded-full bg-[#00BCD4]/10 flex items-center justify-center text-[#00BCD4] mb-2"
+                    class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2"
                 >
                     <Target size={16} />
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400">Goal</p>
+                    <p class="text-xs text-muted">Goal</p>
                     <p class="text-sm font-bold text-white truncate">
                         {financeStore.goals[0].name}
                     </p>
-                    <p class="text-[10px] text-gray-500 mt-1">
+                    <p class="text-[10px] text-muted mt-1">
                         {formatCurrency(financeStore.goals[0].currentAmount)}
                     </p>
                 </div>
@@ -234,7 +236,7 @@
 
         <!-- Investments -->
         <div
-            class="min-w-[140px] p-4 rounded-2xl bg-[#1E1E1E] border border-white/5 flex flex-col justify-between h-32"
+            class="min-w-[140px] flex flex-col justify-between h-32 card-subtle"
         >
             <div
                 class="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500 mb-2"
@@ -242,11 +244,11 @@
                 <Briefcase size={16} />
             </div>
             <div>
-                <p class="text-xs text-gray-400">Investments</p>
+                <p class="text-xs text-muted">Investments</p>
                 <p class="text-sm font-bold text-white">
                     {formatCurrency(financeStore.totalInvestmentValue)}
                 </p>
-                <p class="text-[10px] text-green-500 mt-1">+12%</p>
+                <p class="text-[10px] text-emerald-500 mt-1">+12%</p>
             </div>
         </div>
     </div>
@@ -256,14 +258,12 @@
         <h3 class="text-lg font-bold text-white">Recent Activity</h3>
         <div class="space-y-3">
             {#each financeStore.transactions as t}
-                <div
-                    class="p-4 rounded-2xl bg-[#1E1E1E] border border-neutral-800 flex items-center justify-between"
-                >
+                <div class="card-subtle flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div
-                            class="w-10 h-10 rounded-full bg-black flex items-center justify-center {t.type ===
+                            class="w-10 h-10 rounded-full bg-background flex items-center justify-center {t.type ===
                             'income'
-                                ? 'text-[#4CAF50]'
+                                ? 'text-emerald-500'
                                 : 'text-white'}"
                         >
                             {#if t.type === "income"}
@@ -276,14 +276,14 @@
                             <p class="font-bold text-white text-sm">
                                 {t.title}
                             </p>
-                            <p class="text-xs text-gray-500">
+                            <p class="text-xs text-muted">
                                 {formatDate(t.date)}
                             </p>
                         </div>
                     </div>
                     <span
                         class="font-bold {t.type === 'income'
-                            ? 'text-[#4CAF50]'
+                            ? 'text-emerald-500'
                             : 'text-white'}"
                     >
                         {t.type === "income" ? "+" : "-"}{formatCurrency(

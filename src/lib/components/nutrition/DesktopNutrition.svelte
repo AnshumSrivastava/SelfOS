@@ -11,12 +11,10 @@
     } from "lucide-svelte";
 </script>
 
-<div class="space-y-8 pb-12">
-    <div class="flex items-end justify-between">
+<div class="page-container h-full">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-                Macro Tracker
-            </h1>
+            <h1 class="text-3xl font-light text-white">Macro Tracker</h1>
             <p class="text-muted">Fuel your body efficiently.</p>
         </div>
         <button class="btn btn-primary flex items-center gap-2">
@@ -25,9 +23,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-            class="card bg-surface border-primary/20 flex flex-col items-center justify-center p-8"
-        >
+        <div class="card-subtle flex flex-col items-center justify-center p-8">
             <div
                 class="relative w-40 h-40 mb-4 flex items-center justify-center"
             >
@@ -55,8 +51,7 @@
                     />
                 </svg>
                 <div class="absolute text-center">
-                    <span
-                        class="text-3xl font-bold text-[var(--color-text)] block"
+                    <span class="text-3xl font-bold text-white block"
                         >1,240</span
                     >
                     <span class="text-xs text-muted">Kcal left</span>
@@ -65,10 +60,10 @@
             <p class="text-sm text-muted">Daily Goal: 2,400 Kcal</p>
         </div>
 
-        <div class="card md:col-span-2 space-y-6 flex flex-col justify-center">
-            <h3 class="font-bold text-[var(--color-text)] mb-2">
-                Macronutrients
-            </h3>
+        <div
+            class="card-subtle md:col-span-2 space-y-6 flex flex-col justify-center"
+        >
+            <h3 class="text-lg font-light text-white mb-2">Macronutrients</h3>
             <div>
                 <div class="flex justify-between text-sm mb-2">
                     <span class="text-blue-400 font-bold">Protein</span>
@@ -112,10 +107,8 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card">
-            <h3 class="font-bold text-[var(--color-text)] mb-6">
-                Today's Meals
-            </h3>
+        <div class="card-subtle">
+            <h3 class="text-lg font-light text-white mb-6">Today's Meals</h3>
             <div class="space-y-4">
                 {#each [{ name: "Breakfast", cal: 450, time: "8:00 AM", items: "Oatmeal, Eggs, Coffee" }, { name: "Lunch", cal: 850, time: "1:00 PM", items: "Chicken Salad, Rice" }, { name: "Snack", cal: 200, time: "4:30 PM", items: "Protein Bar" }] as meal}
                     <div
@@ -123,15 +116,14 @@
                     >
                         <div>
                             <h4
-                                class="font-bold text-[var(--color-text)] group-hover:text-primary transition-colors"
+                                class="font-bold text-white group-hover:text-primary transition-colors"
                             >
                                 {meal.name}
                             </h4>
                             <p class="text-xs text-muted mt-1">{meal.items}</p>
                         </div>
                         <div class="text-right">
-                            <span
-                                class="block font-bold text-[var(--color-text)]"
+                            <span class="block font-bold text-white"
                                 >{meal.cal} kcal</span
                             >
                             <span class="text-xs text-muted">{meal.time}</span>
@@ -147,10 +139,10 @@
             </div>
         </div>
 
-        <div class="card bg-surface/50 border-primary/10">
+        <div class="card-subtle bg-surface/30">
             <div class="flex items-center justify-between mb-4">
                 <h3
-                    class="font-bold text-[var(--color-text)] flex items-center gap-2"
+                    class="text-lg font-light text-white flex items-center gap-2"
                 >
                     <Utensils size={18} class="text-primary" /> Meal Planner
                 </h3>
@@ -163,7 +155,7 @@
                     <span class="text-xs text-muted block mb-1"
                         >Tomorrow • Breakfast</span
                     >
-                    <span class="font-bold text-[var(--color-text)]"
+                    <span class="font-medium text-white"
                         >Avocado Toast & Eggs</span
                     >
                 </div>
@@ -171,7 +163,7 @@
                     <span class="text-xs text-muted block mb-1"
                         >Tomorrow • Lunch</span
                     >
-                    <span class="font-bold text-[var(--color-text)]"
+                    <span class="font-medium text-white"
                         >Grilled Salmon & Quinoa</span
                     >
                 </div>
@@ -181,13 +173,11 @@
             >
         </div>
 
-        <div class="card relative overflow-hidden">
+        <div class="card-subtle relative overflow-hidden">
             <div class="absolute top-0 right-0 p-8 opacity-5">
                 <Apple size={160} />
             </div>
-            <h3 class="font-bold text-[var(--color-text)] mb-4">
-                Water Tracker
-            </h3>
+            <h3 class="text-lg font-light text-white mb-4">Water Tracker</h3>
 
             <div class="flex items-center justify-center gap-2 mb-8">
                 {#each Array(8) as _, i}
@@ -207,8 +197,7 @@
             </div>
 
             <div class="text-center">
-                <span
-                    class="text-4xl font-bold text-[var(--color-text)] block mb-1"
+                <span class="text-4xl font-bold text-white block mb-1"
                     >1,250ml</span
                 >
                 <span class="text-sm text-muted">Goal: 2,500ml</span>

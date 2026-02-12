@@ -1,6 +1,4 @@
 import { LocalStore } from "./localStore.svelte";
-import { gamificationStore } from "./gamification.svelte";
-import type { QuestRarity } from "$lib/types/gamification";
 
 export type Task = {
     id: string;
@@ -9,6 +7,7 @@ export type Task = {
     project: string;
     priority: "low" | "medium" | "high";
     status: "pending" | "in_progress" | "completed";
+    link: string | null; // Optional external link
     deadline: string | null; // ISO Date string
     scheduled: string | null; // ISO Date string
     createdAt: string; // ISO Date string
@@ -24,6 +23,7 @@ const DEFAULT_TASKS: Task[] = [
         status: "pending",
         deadline: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
         scheduled: null,
+        link: null,
         createdAt: new Date().toISOString(),
     },
     {
@@ -34,91 +34,10 @@ const DEFAULT_TASKS: Task[] = [
         status: "pending",
         deadline: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
         scheduled: new Date(Date.now() + 86400000).toISOString(),
+        link: null,
         createdAt: new Date().toISOString(),
     },
 ];
-
-// ============================================================================
-// Quest/Gamification Helpers
-// ============================================================================
-
-/**
- * Calculate quest rarity based on priority and deadline urgency
- */
-export function calculateQuestRarity(task: Task): QuestRarity {
-    const now = Date.now();
-    const isOverdue = task.deadline && new Date(task.deadline).getTime() < now;
-    const isDueToday =
-        task.deadline &&
-        new Date(task.deadline).toDateString() === new Date().toDateString();
-    const isDueSoon =
-        task.deadline &&
-        new Date(task.deadline).getTime() - now < 3 * 24 * 60 * 60 * 1000; // 3 days
-
-    // Legendary: High priority + (Overdue OR Due Today)
-    if (task.priority === "high" && (isOverdue || isDueToday)) {
-        return "legendary";
-    }
-
-    // Epic: High priority + Due Soon, OR Medium priority + Overdue
-    if (
-        (task.priority === "high" && isDueSoon) ||
-        (task.priority === "medium" && isOverdue)
-    ) {
-        return "epic";
-    }
-
-    // Rare: Medium priority + Due Soon, OR High priority
-    if ((task.priority === "medium" && isDueSoon) || task.priority === "high") {
-        return "rare";
-    }
-
-    // Common: Everything else
-    return "common";
-}
-
-/**
- * Calculate XP reward based on quest rarity and priority
- */
-export function calculateQuestXP(task: Task): number {
-    const rarity = calculateQuestRarity(task);
-    const baseXP = {
-        common: 10,
-        rare: 30,
-        epic: 75,
-        legendary: 150,
-    }[rarity];
-
-    // Bonus for priority
-    const priorityBonus = {
-        low: 0,
-        medium: 5,
-        high: 10,
-    }[task.priority];
-
-    return baseXP + priorityBonus;
-}
-
-/**
- * Calculate gold reward (10% of XP)
- */
-export function calculateQuestGold(task: Task): number {
-    return Math.floor(calculateQuestXP(task) * 0.1);
-}
-
-/**
- * Calculate difficulty stars (1-5)
- */
-export function calculateQuestDifficulty(task: Task): 1 | 2 | 3 | 4 | 5 {
-    const rarity = calculateQuestRarity(task);
-    const difficultyMap: Record<QuestRarity, 1 | 2 | 3 | 4 | 5> = {
-        common: 1,
-        rare: 2,
-        epic: 4,
-        legendary: 5,
-    };
-    return difficultyMap[rarity];
-}
 
 // ============================================================================
 // Tasks Store
@@ -136,6 +55,7 @@ class TasksStore {
             id: crypto.randomUUID(),
             title: task.title,
             description: task.description,
+            link: task.link || null,
             project: task.project || "General",
             priority: task.priority || "medium",
             status: "pending",
@@ -144,6 +64,74 @@ class TasksStore {
             createdAt: new Date().toISOString(),
             completedAt: null,
         });
+    }
+
+    // Helper functions for parsing
+    private isYouTubePlaylistUrl(text: string): boolean {
+        return /youtube\.com\/playlist\?list=|youtu\.be\/.*\?list=/.test(text);
+    }
+
+    private async parseYouTubePlaylist(url: string): Promise<Array<{ title: string; url: string }>> {
+        try {
+            const response = await fetch('/api/youtube-playlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            if (!response.ok) return [];
+            const data = await response.json();
+            return data.videos || [];
+        } catch (error) {
+            console.error('Failed to parse YouTube playlist:', error);
+            return [];
+        }
+    }
+
+    private parseTaskLine(line: string): { title: string; link: string | null } {
+        const urlMatch = line.match(/(https?:\/\/[^\s]+)/);
+        if (urlMatch) {
+            const url = urlMatch[1];
+            const title = line.replace(url, '').trim();
+            return { title: title || url, link: url };
+        }
+        return { title: line, link: null };
+    }
+
+    async addBatch(input: string, project: string = "General", priority: "low" | "medium" | "high" = "medium") {
+        const trimmed = input.trim();
+
+        if (this.isYouTubePlaylistUrl(trimmed)) {
+            const videos = await this.parseYouTubePlaylist(trimmed);
+            for (const video of videos) {
+                this.add({
+                    title: video.title,
+                    link: video.url,
+                    project,
+                    priority,
+                    deadline: null,
+                    scheduled: null
+                });
+            }
+            return videos.length;
+        }
+
+        const lines = trimmed
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+
+        for (const line of lines) {
+            const { title, link } = this.parseTaskLine(line);
+            this.add({
+                title,
+                link,
+                project,
+                priority,
+                deadline: null,
+                scheduled: null
+            });
+        }
+        return lines.length;
     }
 
     update(id: string, updates: Partial<Omit<Task, "id" | "createdAt">>) {
@@ -163,43 +151,9 @@ class TasksStore {
                 task.status = "pending";
                 task.completedAt = null;
             } else {
-                // Complete task - GRANT XP AND GOLD!
+                // Complete task
                 task.status = "completed";
                 task.completedAt = new Date().toISOString();
-
-                // Calculate rewards
-                const xpReward = calculateQuestXP(task);
-                const goldReward = calculateQuestGold(task);
-
-                // Grant XP (this will also check for level ups and achievements)
-                await gamificationStore.gainXP(xpReward, "task_complete", task.id);
-
-                // Grant Gold
-                await gamificationStore.addGold(goldReward);
-
-                // Check task-based achievements
-                const completedCount = this.completedCount;
-                const firstStepsAchievement = gamificationStore.achievements.find(
-                    (a) => a.title === "First Steps",
-                );
-                const productivityWarriorAchievement =
-                    gamificationStore.achievements.find(
-                        (a) => a.title === "Productivity Warrior",
-                    );
-
-                if (firstStepsAchievement) {
-                    await gamificationStore.checkAchievement(
-                        firstStepsAchievement.id,
-                        completedCount,
-                    );
-                }
-
-                if (productivityWarriorAchievement) {
-                    await gamificationStore.checkAchievement(
-                        productivityWarriorAchievement.id,
-                        completedCount,
-                    );
-                }
             }
         }
     }

@@ -28,30 +28,30 @@
     );
 </script>
 
-<div class="space-y-6 pb-20 relative">
+<div class="page-container relative">
     <StreakFire bind:this={fire} />
     <!-- Greeting & Status -->
-    <div class="space-y-1 mt-2">
-        <h1 class="text-3xl font-light tracking-tight text-white">
+    <div class="space-y-2 mt-8 mb-10">
+        <h1 class="text-3xl font-light tracking-tight text-white line-clamp-1">
             Good Morning
         </h1>
-        <p class="text-gray-500">You have {activeTasks} priorities today.</p>
+        <p class="text-muted">You have {activeTasks} priorities today.</p>
     </div>
 
     <!-- Main Focus Card -->
-    <div class=" p-6 rounded-2xl bg-neutral-900 border border-neutral-800">
+    <div class="card-subtle relative overflow-hidden group">
         <span
-            class="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium mb-4 inline-block"
+            class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4 inline-block"
             >Deep Work</span
         >
         <div class="flex items-end justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-white">45m</h2>
-                <p class="text-gray-400 text-sm mt-1">Remaining today</p>
+                <p class="text-muted text-sm mt-1">Remaining today</p>
             </div>
             <button
                 onclick={() => (showQuickCapture = true)}
-                class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
             >
                 <Plus size={24} />
             </button>
@@ -59,21 +59,17 @@
     </div>
 
     <!-- Quick Stats Row -->
-    <div class="grid grid-cols-2 gap-4">
-        <div
-            class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between h-32"
-        >
+    <div class="grid grid-cols-2 gap-6 my-10">
+        <div class="card-subtle flex flex-col justify-between h-32">
             <Flame class="text-orange-500" size={24} />
             <div>
                 <span class="text-2xl font-bold text-white block"
                     ><NumberTicker value={maxStreak} /></span
                 >
-                <span class="text-xs text-gray-500">Day Streak</span>
+                <span class="text-xs text-muted">Day Streak</span>
             </div>
         </div>
-        <div
-            class="p-5 rounded-2xl bg-[#0A0A0A] border border-neutral-900 flex flex-col justify-between h-32"
-        >
+        <div class="card-subtle flex flex-col justify-between h-32">
             <div class="text-emerald-500 text-lg font-bold">
                 <NumberTicker value={taskCompletionRate} />%
             </div>
@@ -81,13 +77,13 @@
                 <span class="text-2xl font-bold text-white block"
                     >{completedTasks}/{totalTasksStr}</span
                 >
-                <span class="text-xs text-gray-500">Tasks Done</span>
+                <span class="text-xs text-muted">Tasks Done</span>
             </div>
         </div>
     </div>
 
     <!-- Habits Section -->
-    <div class="space-y-4">
+    <div class="space-y-6 my-12">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-white">Habits</h3>
             <span class="text-xs text-gray-500"
@@ -96,9 +92,7 @@
         </div>
 
         <!-- Consistency Graph -->
-        <div
-            class="px-4 py-4 bg-[#0A0A0A] rounded-2xl border border-neutral-900 mb-2"
-        >
+        <div class="card-subtle">
             <ConsistencyChart height="h-24" showLabels={false} />
         </div>
 
@@ -112,17 +106,17 @@
                         }
                         habitsStore.toggle(habit.id);
                     }}
-                    class="w-full p-4 rounded-xl bg-[#0A0A0A] border border-neutral-900 flex items-center justify-between group active:scale-[0.99] transition-all"
+                    class="card-subtle flex items-center justify-between group active:scale-[0.99] transition-all"
                 >
                     <span
                         class="text-sm font-medium {isCompleted
-                            ? 'text-gray-500 line-through'
+                            ? 'text-muted line-through'
                             : 'text-white'}">{habit.name}</span
                     >
                     <div
                         class="w-6 h-6 rounded-full border-2 {isCompleted
                             ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-neutral-700'} flex items-center justify-center transition-colors"
+                            : 'border-line'} flex items-center justify-center transition-colors"
                     >
                         {#if isCompleted}
                             <Check
@@ -138,7 +132,7 @@
     </div>
 
     <!-- Tasks Section -->
-    <div class="space-y-4">
+    <div class="space-y-6 my-12">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-medium text-white">Tasks</h3>
             <button class="text-xs text-gray-400">View All</button>
@@ -146,32 +140,35 @@
 
         <div class="space-y-2">
             {#each tasksStore.tasks.slice(0, 3) as task}
-                <div
-                    class="w-full p-4 rounded-xl bg-[#0A0A0A] border border-neutral-900 flex items-center justify-between"
-                >
+                <div class="card-subtle flex items-center justify-between">
                     <div class="flex flex-col items-start text-left">
                         <p
-                            class="text-white text-sm font-medium {task.completed
-                                ? 'line-through text-gray-500'
+                            class="text-white text-sm font-medium {task.status ===
+                            'completed'
+                                ? 'line-through text-muted'
                                 : ''}"
                         >
                             {task.title}
                         </p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            {task.tag} • {task.due}
+                        <p class="text-xs text-muted mt-1">
+                            {task.project}
+                            {#if task.deadline}• {new Date(
+                                    task.deadline,
+                                ).toLocaleDateString()}{/if}
                         </p>
                     </div>
                     <button
                         onclick={(e) => {
-                            if (!task.completed) {
+                            if (task.status !== "completed") {
                                 fire.ignite(e.clientX, e.clientY);
                             }
                             tasksStore.toggle(task.id);
                         }}
                         aria-label="Toggle task status"
-                        class="w-4 h-4 rounded-full border-2 {task.completed
-                            ? 'bg-red-500 border-red-500'
-                            : 'border-neutral-700'}"
+                        class="w-4 h-4 rounded-full border-2 {task.status ===
+                        'completed'
+                            ? 'bg-emerald-500 border-emerald-500'
+                            : 'border-line'}"
                     ></button>
                 </div>
             {/each}

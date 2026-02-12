@@ -98,11 +98,15 @@
     ];
 </script>
 
-<div class="space-y-8 pb-24 md:pb-0" in:fade>
+<div class="page-container relative" in:fade>
     <!-- Header -->
-    <div class="flex flex-col gap-2">
-        <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
-        <p class="text-muted">Customize your experience and manage features.</p>
+    <div class="module-header">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+            <p class="text-muted">
+                Customize your experience and manage features.
+            </p>
+        </div>
     </div>
 
     <!-- Theme Section -->
@@ -112,7 +116,7 @@
             Appearance
         </h2>
 
-        <div class="card space-y-6">
+        <div class="card-subtle space-y-6">
             <!-- Theme Mode -->
             <div class="space-y-3">
                 <label class="text-sm font-medium text-muted">Theme Mode</label>
@@ -214,6 +218,78 @@
         </div>
     </section>
 
+    <!-- Design System Section -->
+    <section class="space-y-4">
+        <h2 class="text-xl font-semibold flex items-center gap-2">
+            <LayoutGrid size={20} class="text-primary" />
+            Design System
+        </h2>
+
+        <div class="card-subtle space-y-8">
+            <!-- Border Radius -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <label class="text-sm font-medium text-white block"
+                            >Border Radius</label
+                        >
+                        <p class="text-xs text-muted">
+                            Control the roundness of cards and inputs
+                        </p>
+                    </div>
+                    <span
+                        class="text-sm font-mono text-primary bg-primary/10 px-2 py-1 rounded"
+                        >{settings.borderRadius}px</span
+                    >
+                </div>
+                <input
+                    type="range"
+                    min="0"
+                    max="32"
+                    step="1"
+                    value={settings.borderRadius}
+                    oninput={(e) =>
+                        settings.setDesignVariable(
+                            "borderRadius",
+                            parseInt(e.currentTarget.value),
+                        )}
+                    class="w-full accent-primary h-1.5 bg-background rounded-full appearance-none cursor-pointer"
+                />
+            </div>
+
+            <!-- Module Padding -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <label class="text-sm font-medium text-white block"
+                            >Module Spacing</label
+                        >
+                        <p class="text-xs text-muted">
+                            Interior padding for all modules
+                        </p>
+                    </div>
+                    <span
+                        class="text-sm font-mono text-primary bg-primary/10 px-2 py-1 rounded"
+                        >{settings.modulePadding}px</span
+                    >
+                </div>
+                <input
+                    type="range"
+                    min="12"
+                    max="48"
+                    step="4"
+                    value={settings.modulePadding}
+                    oninput={(e) =>
+                        settings.setDesignVariable(
+                            "modulePadding",
+                            parseInt(e.currentTarget.value),
+                        )}
+                    class="w-full accent-primary h-1.5 bg-background rounded-full appearance-none cursor-pointer"
+                />
+            </div>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section class="space-y-4">
         <h2 class="text-xl font-semibold flex items-center gap-2">
@@ -221,7 +297,7 @@
             Features
         </h2>
 
-        <div class="card divide-y divide-line">
+        <div class="card-subtle divide-y divide-line">
             {#each featuresList as feature}
                 <div
                     class="flex items-center justify-between py-4 first:pt-0 last:pb-0"

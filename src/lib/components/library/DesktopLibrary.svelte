@@ -36,10 +36,10 @@
     }
 </script>
 
-<div class="space-y-8 pb-12">
-    <div class="flex items-end justify-between">
+<div class="page-container space-y-8 pb-12">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Bookshelf</h1>
+            <h1 class="text-3xl font-light text-white">Bookshelf</h1>
             <p class="text-muted">Quick capture. Continuous reflection.</p>
         </div>
         <div class="flex gap-3">

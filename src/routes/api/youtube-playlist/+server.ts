@@ -38,16 +38,32 @@ export const POST: RequestHandler = async ({ request }) => {
 
         const html = await response.text();
 
-        // Extract video data using regex
-        const scriptMatch = html.match(/var ytInitialData = ({.+?});/);
-        if (!scriptMatch) {
+        // Extract video data using regex - try multiple common patterns
+        let data: any = null;
+        const patterns = [
+            /var ytInitialData = ({.+?});/,
+            /window\["ytInitialData"\] = ({.+?});/,
+            /ytInitialData = ({.+?});/
+        ];
+
+        for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match) {
+                try {
+                    data = JSON.parse(match[1]);
+                    break;
+                } catch (e) {
+                    continue;
+                }
+            }
+        }
+
+        if (!data) {
             return new Response(JSON.stringify({ error: 'Could not parse playlist data' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-
-        const data = JSON.parse(scriptMatch[1]);
 
         // Navigate the YouTube data structure to find videos
         const contents = data?.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer?.contents;

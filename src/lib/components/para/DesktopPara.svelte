@@ -76,16 +76,18 @@
     />
 {/if}
 
-<div class="space-y-8 pb-12">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-white mb-2">P.A.R.A. System</h1>
-        <p class="text-muted">Projects · Areas · Resources · Archives</p>
+<div class="page-container h-full">
+    <div class="module-header">
+        <div>
+            <h1 class="text-3xl font-light text-white">P.A.R.A. System</h1>
+            <p class="text-muted">Projects · Areas · Resources · Archives</p>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-8">
         {#each projectsStore.sections as section}
             {@const items = getSectionItems(section.type)}
-            <div class="card relative overflow-hidden group">
+            <div class="card-subtle relative overflow-hidden group">
                 <div class="flex items-start gap-4 mb-6">
                     <div class="p-3 rounded-lg {section.bg} {section.color}">
                         <svelte:component

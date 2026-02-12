@@ -1,10 +1,14 @@
 <script lang="ts">
     import { X } from "lucide-svelte";
+    import { fade } from "svelte/transition";
+    import { notesStore, type Note } from "$lib/stores/notes.svelte";
+    import { habitsStore } from "$lib/stores/habits.svelte";
     import {
         goalsStore,
         type Goal,
         type Priority,
-    } from "$lib/stores/goals.svelte.ts";
+    } from "$lib/stores/goals.svelte";
+    import { marked } from "marked";
 
     interface Props {
         isOpen: boolean;
@@ -64,18 +68,25 @@
             onClose();
         }
     }
+
+    function close() {
+        onClose();
+    }
 </script>
 
+```svelte
 {#if isOpen}
     <div
-        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onclick={onClose}
-        onkeydown={handleKeyDown}
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        transition:fade={{ duration: 200 }}
+        onclick={close}
+        onkeydown={(e) => e.key === "Enter" && close()}
         role="button"
-        tabindex="-1"
+        tabindex="0"
+        aria-label="Close modal overlay"
     >
         <div
-            class="bg-surface border border-line rounded-2xl w-full max-w-md"
+            class="modal-content max-w-md"
             onclick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -105,13 +116,17 @@
             >
                 <!-- Title -->
                 <div>
-                    <label class="block text-sm font-medium text-muted mb-2"
-                        >What do you want to achieve? *</label
+                    <label
+                        for="goal-title"
+                        class="block text-sm font-medium text-muted mb-2"
                     >
+                        Goal Title
+                    </label>
                     <input
+                        id="goal-title"
                         type="text"
                         bind:value={title}
-                        placeholder="e.g., Launch my product"
+                        placeholder="What do you want to achieve?"
                         class="w-full bg-background border border-line rounded-lg px-4 py-3 text-white placeholder-muted focus:outline-none focus:border-primary"
                         required
                         autofocus

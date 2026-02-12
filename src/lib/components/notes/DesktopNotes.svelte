@@ -44,10 +44,10 @@
 
 <NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
-<div class="space-y-8 pb-12">
-    <div class="flex items-end justify-between">
+<div class="page-container relative">
+    <div class="module-header">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Notes</h1>
+            <h1 class="text-3xl font-light text-white">Notes</h1>
             <p class="text-muted">Second Brain & Knowledge Base.</p>
         </div>
 
@@ -61,7 +61,7 @@
                     type="text"
                     bind:value={searchQuery}
                     placeholder="Search notes..."
-                    class="bg-surface border border-line rounded-lg pl-10 pr-4 py-2 text-sm text-white w-64 focus:outline-none focus:border-primary placeholder:text-muted/50"
+                    class="input pl-10 w-64"
                 />
             </div>
             <button
@@ -73,14 +73,14 @@
         </div>
     </div>
 
-    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+    <div class="flex gap-2 overflow-x-auto pb-2">
         {#each filters as f}
             <button
                 onclick={() => (selectedFilter = f)}
-                class="px-4 py-1.5 rounded-lg text-sm border border-transparent hover:bg-surface hover:text-white transition-colors {f ===
+                class="px-4 py-1.5 rounded-full text-sm border border-line transition-all active:scale-95 {f ===
                 selectedFilter
-                    ? 'bg-surface text-white border-line'
-                    : 'text-muted'}"
+                    ? 'bg-white text-black border-white shadow-lg'
+                    : 'bg-surface text-muted border-line hover:text-white hover:border-muted'}"
             >
                 {f}
             </button>
@@ -106,7 +106,7 @@
             <div class="relative group h-full">
                 <button
                     onclick={() => openNote(note)}
-                    class="card w-full h-full flex flex-col justify-between min-h-[200px] text-left hover:-translate-y-1 transition-transform"
+                    class="card-subtle w-full h-full flex flex-col justify-between min-h-[200px] text-left hover:-translate-y-1 transition-transform"
                 >
                     <div class="w-full">
                         <div class="flex justify-between items-start mb-4">
