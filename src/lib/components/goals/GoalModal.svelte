@@ -8,14 +8,19 @@
         Type,
         Clock,
         LayoutGrid,
+        Sparkles,
+        Target,
+        Flag,
+        Calendar,
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
     import {
         goalsStore,
         type Goal,
         type Priority,
-        type GoalType,
+        type GoalHorizon,
         type GoalArea,
+        type GoalStatus,
     } from "$lib/stores/goals.svelte";
 
     interface Props {
@@ -38,12 +43,13 @@
 
     // Form state
     let title = $state("");
+    let vision = $state("");
     let description = $state("");
-    let reason = $state("");
-    let deadline = $state("");
+    let targetDate = $state("");
     let priority: Priority = $state("normal");
-    let type: GoalType = $state("short");
+    let horizon: GoalHorizon = $state("short");
     let area: GoalArea = $state("Personal");
+    let status: GoalStatus = $state("active");
     let parentId = $state<string | undefined>(undefined);
     let structurePlan = $state("");
 
@@ -51,8 +57,10 @@
         goalsStore.goals.filter((g) => {
             if (goal && g.id === goal.id) return false;
             // Hierarchy rules:
-            if (type === "short") return g.type === "mid" || g.type === "long";
-            if (type === "mid") return g.type === "long";
+            if (horizon === "short") return g.horizon !== "short";
+            if (horizon === "mid")
+                return g.horizon === "long" || g.horizon === "life";
+            if (horizon === "long") return g.horizon === "life";
             return false;
         }),
     );
@@ -67,10 +75,27 @@
         "Other",
     ];
 
-    const types: { value: GoalType; label: string; desc: string }[] = [
-        { value: "long", label: "Long Term", desc: "Years (Top Level)" },
-        { value: "mid", label: "Mid Term", desc: "Months (Sub-Goal)" },
-        { value: "short", label: "Short Term", desc: "Days/Weeks (Sub-Sub)" },
+    const horizons: { value: GoalHorizon; label: string; desc: string }[] = [
+        {
+            value: "life",
+            label: "Life Vision",
+            desc: "Permanent directions & core values",
+        },
+        {
+            value: "long",
+            label: "Long Term",
+            desc: "1-5 Years large breakthroughs",
+        },
+        {
+            value: "mid",
+            label: "Mid Term",
+            desc: "1-6 Months tangible projects",
+        },
+        {
+            value: "short",
+            label: "Short Term",
+            desc: "1-4 Weeks atomic sprints",
+        },
     ];
 
     // Auto-inherit properties from parent
@@ -89,12 +114,13 @@
         if (isOpen) {
             if (goal) {
                 title = goal.title;
+                vision = goal.vision || "";
                 description = goal.description || "";
-                reason = goal.reason || "";
-                deadline = goal.deadline?.split("T")[0] || "";
+                targetDate = goal.targetDate?.split("T")[0] || "";
                 priority = goal.priority;
-                type = goal.type || "short";
+                horizon = goal.horizon || "short";
                 area = goal.area || "Personal";
+                status = goal.status || "active";
                 parentId = goal.parentId;
             } else {
                 resetForm();
@@ -104,7 +130,10 @@
                         (g) => g.id === initialParentId,
                     );
                     if (parent) {
-                        type = parent.type === "long" ? "mid" : "short";
+                        if (parent.horizon === "life") horizon = "long";
+                        else if (parent.horizon === "long") horizon = "mid";
+                        else horizon = "short";
+
                         area = parent.area;
                         priority = parent.priority;
                     }
@@ -115,12 +144,13 @@
 
     function resetForm() {
         title = "";
+        vision = "";
         description = "";
-        reason = "";
-        deadline = "";
+        targetDate = "";
         priority = "normal";
-        type = "short";
+        horizon = "short";
         area = "Personal";
+        status = "active";
         parentId = undefined;
         structurePlan = "";
         currentStep = 1;
@@ -140,19 +170,22 @@
 
         const goalData = {
             title: title.trim(),
+            vision: vision.trim() || undefined,
             description: description.trim() || undefined,
-            reason: reason.trim() || undefined,
-            deadline: deadline ? new Date(deadline).toISOString() : undefined,
+            targetDate: targetDate
+                ? new Date(targetDate).toISOString()
+                : undefined,
             priority,
-            type,
+            horizon,
             area,
+            status,
             parentId: parentId || undefined,
         };
 
         let createdGoal: Goal;
         if (goal) {
-            goalsStore.updateGoal(goal.id, goalData);
-            createdGoal = { ...goal, ...goalData };
+            goalsStore.updateGoal(goal.id, goalData as Partial<Goal>);
+            createdGoal = { ...goal, ...goalData } as Goal;
         } else {
             createdGoal = goalsStore.addGoal(goalData);
         }
@@ -176,35 +209,34 @@
         const parentGoal = goalsStore.goals.find((g) => g.id === parentId);
         if (!parentGoal) return;
 
-        // Simple parsing:
-        // "> Title" = Sub Goal
-        // "- Title" = Task
-
         for (const line of lines) {
             if (line.startsWith(">")) {
-                // Determine sub-goal type based on parent
-                const subType: GoalType =
-                    parentGoal.type === "long" ? "mid" : "short";
+                let subHorizon: GoalHorizon = "short";
+                if (parentGoal.horizon === "life") subHorizon = "long";
+                else if (parentGoal.horizon === "long") subHorizon = "mid";
+
                 const subTitle = line.substring(1).trim();
                 const newSub = goalsStore.addGoal({
                     title: subTitle,
-                    type: subType,
+                    horizon: subHorizon,
                     area: parentGoal.area,
                     priority: parentGoal.priority,
                     parentId: parentId,
                 });
                 currentSubGoalId = newSub.id;
-            } else if (line.startsWith("-")) {
-                const taskTitle = line.substring(1).trim();
-                goalsStore.addTask({
-                    goalId: currentSubGoalId,
-                    title: taskTitle,
-                });
             } else {
-                // Default to task under current subgoal or main goal
-                goalsStore.addTask({
-                    goalId: currentSubGoalId,
-                    title: line,
+                const taskTitle = line.startsWith("-")
+                    ? line.substring(1).trim()
+                    : line;
+                // Add to tasksStore if we want to integrate with global tasks
+                import("$lib/stores/tasks.svelte").then(({ tasksStore }) => {
+                    tasksStore.add({
+                        title: taskTitle,
+                        goalId: currentSubGoalId,
+                        project: parentGoal.area,
+                        priority:
+                            parentGoal.priority === "high" ? "high" : "medium",
+                    });
                 });
             }
         }
@@ -212,38 +244,43 @@
 
     const stepTitles = [
         "The Vision",
-        "Classification",
-        "Structure",
+        "Trajectory",
+        "Hierarchy",
         "Precision",
-        "Atomic Plan",
+        "Execution Plan",
     ];
 
     const stepSubs = [
         "What are we building and why?",
-        "How big is this and where does it fit?",
-        "Set the hierarchy and importance.",
-        "Final details and deadlines.",
-        "Brainstorm sub-goals or tasks (Optional).",
+        "How far into the future is this?",
+        "Where does it fit in your strategy?",
+        "Timeline and specific context.",
+        "Break it down into sub-goals or tasks.",
     ];
 </script>
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
         transition:fade={{ duration: 200 }}
         onclick={onClose}
+        onkeydown={(e) => (e.key === "Escape" || e.key === " ") && onClose()}
+        role="button"
+        tabindex="-1"
     >
         <div
-            class="bg-surface border border-line w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[550px]"
+            class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
+            tabindex="-1"
         >
             <!-- Header & Progress -->
-            <div class="p-8 pb-4 relative">
+            <div class="p-8 pb-4 relative border-b border-slate-800/50">
                 <button
                     onclick={onClose}
-                    class="absolute top-8 right-8 p-2 hover:bg-white/5 rounded-full transition-colors text-muted hover:text-white"
+                    class="absolute top-8 right-8 p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-500 hover:text-white"
                 >
                     <X size={20} />
                 </button>
@@ -254,103 +291,117 @@
                             class="h-1 flex-1 rounded-full transition-all duration-500 {i +
                                 1 <=
                             currentStep
-                                ? 'bg-primary'
-                                : 'bg-line'}"
+                                ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'
+                                : 'bg-slate-800'}"
                         ></div>
                     {/each}
                 </div>
 
                 <span
-                    class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1 block"
+                    class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-1 block"
                 >
                     Step {currentStep} of {totalSteps}
                 </span>
-                <h2 class="text-2xl font-black text-white leading-tight">
+                <h2 class="text-2xl font-bold text-white leading-tight">
                     {stepTitles[currentStep - 1]}
                 </h2>
-                <p class="text-sm text-muted mt-1">
+                <p class="text-xs text-slate-400 mt-1">
                     {stepSubs[currentStep - 1]}
                 </p>
             </div>
 
             <!-- Content Area -->
-            <div class="flex-1 p-8 pt-4 overflow-y-auto custom-scrollbar">
+            <div class="flex-1 p-8 pt-6 overflow-y-auto custom-scrollbar">
                 {#if currentStep === 1}
                     <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
                         <div>
-                            <label
-                                for="title"
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Goal Name</label
-                            >
-                            <input
-                                id="title"
-                                bind:value={title}
-                                placeholder="e.g., Master SvelteKit"
-                                class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30"
-                                autofocus
-                            />
+                            <label class="block">
+                                <span
+                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    >Goal Title</span
+                                >
+                                <input
+                                    bind:value={title}
+                                    placeholder="e.g., Become a Senior Architect"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-700"
+                                />
+                            </label>
                         </div>
                         <div>
-                            <label
-                                for="reason"
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Why start this?</label
-                            >
-                            <textarea
-                                id="reason"
-                                bind:value={reason}
-                                placeholder="Your motivation. This will be always visible."
-                                rows="3"
-                                class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30 resize-none"
-                            ></textarea>
+                            <label class="block">
+                                <span
+                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    >The Vision (Why?)</span
+                                >
+                                <textarea
+                                    bind:value={vision}
+                                    placeholder="The core purpose... 'So I can design systems that help millions.'"
+                                    rows="3"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-700 resize-none italic font-serif"
+                                ></textarea>
+                            </label>
                         </div>
                     </div>
                 {:else if currentStep === 2}
-                    <div class="space-y-8" in:fly={{ x: 20, duration: 400 }}>
-                        <div>
-                            <label
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Duration</label
-                            >
-                            <div class="grid grid-cols-1 gap-3">
-                                {#each types as t}
-                                    <button
-                                        type="button"
-                                        class="p-4 rounded-2xl border transition-all text-left flex items-center justify-between {type ===
-                                        t.value
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-line bg-background/40 hover:border-line-heavy'}"
-                                        onclick={() => (type = t.value)}
-                                    >
+                    <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
+                        <div class="grid grid-cols-1 gap-2.5">
+                            {#each horizons as h}
+                                <button
+                                    type="button"
+                                    class="p-4 rounded-2xl border transition-all text-left flex items-center justify-between {horizon ===
+                                    h.value
+                                        ? 'border-blue-500/50 bg-blue-500/5'
+                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700'}"
+                                    onclick={() => (horizon = h.value)}
+                                >
+                                    <div class="flex items-center gap-4">
+                                        <div
+                                            class="p-2 rounded-xl bg-slate-900 border border-slate-800 {horizon ===
+                                            h.value
+                                                ? 'text-blue-400'
+                                                : 'text-slate-500'}"
+                                        >
+                                            {#if h.value === "life"}<Sparkles
+                                                    size={18}
+                                                />
+                                            {:else if h.value === "long"}<Target
+                                                    size={18}
+                                                />
+                                            {:else if h.value === "mid"}<Calendar
+                                                    size={18}
+                                                />
+                                            {:else}<Clock size={18} />{/if}
+                                        </div>
                                         <div>
                                             <div
                                                 class="text-sm font-bold text-white mb-0.5"
                                             >
-                                                {t.label}
+                                                {h.label}
                                             </div>
-                                            <div class="text-[10px] text-muted">
-                                                {t.desc}
+                                            <div
+                                                class="text-[10px] text-slate-500"
+                                            >
+                                                {h.desc}
                                             </div>
                                         </div>
-                                        {#if type === t.value}
-                                            <div
-                                                class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-black"
-                                            >
-                                                <Check
-                                                    size={14}
-                                                    strokeWidth={3}
-                                                />
-                                            </div>
-                                        {/if}
-                                    </button>
-                                {/each}
-                            </div>
+                                    </div>
+                                    {#if horizon === h.value}
+                                        <div
+                                            class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white"
+                                        >
+                                            <Check size={12} strokeWidth={4} />
+                                        </div>
+                                    {/if}
+                                </button>
+                            {/each}
                         </div>
+                    </div>
+                {:else if currentStep === 3}
+                    <div class="space-y-8" in:fly={{ x: 20, duration: 400 }}>
                         <div>
-                            <label
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Life Area</label
+                            <span
+                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                >Life Area</span
                             >
                             <div class="flex flex-wrap gap-2">
                                 {#each areas as a}
@@ -358,8 +409,8 @@
                                         type="button"
                                         class="px-4 py-2 rounded-xl border text-xs font-bold transition-all {area ===
                                         a
-                                            ? 'border-primary bg-primary text-black'
-                                            : 'border-line text-muted hover:border-white/20'}"
+                                            ? 'border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                                            : 'border-slate-800 text-slate-500 hover:border-slate-700'}"
                                         onclick={() => (area = a)}
                                     >
                                         {a}
@@ -367,162 +418,136 @@
                                 {/each}
                             </div>
                         </div>
-                    </div>
-                {:else if currentStep === 3}
-                    <div class="space-y-8" in:fly={{ x: 20, duration: 400 }}>
-                        {#if type !== "long"}
+
+                        {#if horizon !== "life"}
                             <div>
-                                <label
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                    >Parent Goal (Optional)</label
-                                >
-                                <select
-                                    bind:value={parentId}
-                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all appearance-none"
-                                >
-                                    <option value={undefined}
-                                        >Standalone Goal</option
+                                <label class="block">
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                        >Parent Objective (Optional)</span
                                     >
-                                    {#each availableParents as p}
-                                        <option value={p.id}
-                                            >[{p.type.toUpperCase()}] {p.title}</option
+                                    <select
+                                        bind:value={parentId}
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                                    >
+                                        <option value={undefined}
+                                            >No Parent (Standalone)</option
                                         >
-                                    {/each}
-                                </select>
-                                <p
-                                    class="mt-2 text-[10px] text-muted-foreground italic"
-                                >
-                                    {#if type === "mid"}
-                                        Mid-term goals can be children of
-                                        Long-term goals.
-                                    {:else if type === "short"}
-                                        Short-term goals can be children of Mid
-                                        or Long-term goals.
-                                    {/if}
-                                </p>
+                                        {#each availableParents as p}
+                                            <option value={p.id}
+                                                >[{p.horizon.toUpperCase()}] {p.title}</option
+                                            >
+                                        {/each}
+                                    </select>
+                                </label>
                             </div>
                         {/if}
-                        <div>
-                            <label
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Priority</label
-                            >
-                            <div class="flex gap-3">
-                                {#each ["low", "normal", "high"] as p}
-                                    <button
-                                        type="button"
-                                        class="flex-1 p-4 rounded-2xl border text-xs font-bold transition-all capitalize {priority ===
-                                        p
-                                            ? 'border-primary bg-primary/5 text-primary'
-                                            : 'border-line text-muted hover:border-white/20'}"
-                                        onclick={() =>
-                                            (priority = p as Priority)}
-                                    >
-                                        {p}
-                                    </button>
-                                {/each}
-                            </div>
-                        </div>
                     </div>
                 {:else if currentStep === 4}
                     <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
-                        <div>
-                            <label
-                                for="deadline"
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Target Date (Optional)</label
-                            >
-                            <input
-                                id="deadline"
-                                type="date"
-                                bind:value={deadline}
-                                class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all color-scheme-dark"
-                            />
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <span
+                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                    >Priority</span
+                                >
+                                <div class="flex flex-col gap-2">
+                                    {#each ["low", "normal", "high"] as p}
+                                        <button
+                                            type="button"
+                                            class="p-3 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all capitalize {priority ===
+                                            p
+                                                ? 'border-amber-500/50 bg-amber-500/5 text-amber-500'
+                                                : 'border-slate-800 text-slate-500 hover:border-slate-700'}"
+                                            onclick={() =>
+                                                (priority = p as Priority)}
+                                        >
+                                            <Flag
+                                                size={14}
+                                                class={p === "high"
+                                                    ? "text-rose-500"
+                                                    : ""}
+                                            />
+                                            {p}
+                                        </button>
+                                    {/each}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block">
+                                    <span
+                                        class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                        >Target Date</span
+                                    >
+                                    <input
+                                        type="date"
+                                        bind:value={targetDate}
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3 text-white focus:border-blue-500 outline-none color-scheme-dark"
+                                    />
+                                </label>
+                            </div>
                         </div>
                         <div>
-                            <label
-                                for="description"
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
-                                >Specific Notes</label
-                            >
-                            <textarea
-                                id="description"
-                                bind:value={description}
-                                placeholder="Any additional context..."
-                                rows="4"
-                                class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30 resize-none"
-                            ></textarea>
+                            <label class="block">
+                                <span
+                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    >Strategic Notes</span
+                                >
+                                <textarea
+                                    bind:value={description}
+                                    placeholder="Resources, obstacles, or starting context..."
+                                    rows="3"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all placeholder:text-slate-700 resize-none"
+                                ></textarea>
+                            </label>
                         </div>
                     </div>
                 {:else if currentStep === 5}
                     <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <label
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                                    >Structure Your Goal</label
+                        <div
+                            class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-4"
+                        >
+                            <Sparkles
+                                class="text-blue-400 shrink-0"
+                                size={20}
+                            />
+                            <div>
+                                <p class="text-xs font-bold text-blue-400 mb-1">
+                                    Atomic Breakdown
+                                </p>
+                                <p
+                                    class="text-[10px] text-slate-400 leading-relaxed"
                                 >
-                                <span class="text-[10px] text-primary font-bold"
-                                    >Quick Mode</span
-                                >
-                            </div>
-
-                            <div
-                                class="p-4 bg-background border border-line rounded-2xl mb-4"
-                            >
-                                <div
-                                    class="grid grid-cols-2 gap-4 text-[10px] font-medium text-muted mb-4 opacity-70"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-4 h-4 rounded-md bg-white/5 flex items-center justify-center text-white font-black"
-                                        >
-                                            {">"}
-                                        </div>
-                                        <span>Sub-Goal Name</span>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-4 h-4 rounded-md bg-white/5 flex items-center justify-center text-white font-black"
-                                        >
-                                            {"-"}
-                                        </div>
-                                        <span>Task Name</span>
-                                    </div>
-                                </div>
-                                <textarea
-                                    bind:value={structurePlan}
-                                    placeholder="> Learn the basics&#10;- Setup project&#10;- Create first route&#10;&#10;> Advanced concepts&#10;- Store management&#10;- Server actions"
-                                    rows="10"
-                                    class="w-full bg-transparent border-none text-sm text-white focus:ring-0 outline-none placeholder:text-muted/20 leading-relaxed resize-none"
-                                ></textarea>
-                            </div>
-
-                            <div
-                                class="bg-primary/5 border border-primary/20 rounded-xl p-3 flex gap-3 text-xs text-primary/80"
-                            >
-                                <Plus size={16} class="flex-shrink-0" />
-                                <p>
-                                    This will automatically create {type ===
-                                    "long"
-                                        ? "Mid"
-                                        : "Short"} term sub-goals and tasks under
-                                    this goal.
+                                    Quickly architect your plan. Lines starting
+                                    with <span class="text-white font-black"
+                                        >&gt;</span
+                                    > create sub-goals. Other lines become tasks.
                                 </p>
                             </div>
+                        </div>
+
+                        <div
+                            class="bg-slate-950 border border-slate-800 rounded-2xl p-4 min-h-[250px] relative"
+                        >
+                            <textarea
+                                bind:value={structurePlan}
+                                placeholder="> Milestone: First Prototype&#10;- Design schema&#10;- Implement store&#10;&#10;> Milestone: UI Polish"
+                                rows="10"
+                                class="w-full bg-transparent border-none text-sm text-white focus:ring-0 outline-none placeholder:text-slate-800 leading-relaxed resize-none font-mono"
+                            ></textarea>
                         </div>
                     </div>
                 {/if}
             </div>
 
-            <!-- Footer Footer -->
+            <!-- Footer -->
             <div
-                class="p-8 pt-4 flex gap-3 bg-surface/80 border-t border-line/10 backdrop-blur-sm"
+                class="p-8 pb-10 pt-4 flex gap-3 bg-slate-900 border-t border-slate-800/50"
             >
                 {#if currentStep > 1}
                     <button
                         onclick={prevStep}
-                        class="px-6 py-4 rounded-2xl border border-line text-white font-bold hover:bg-white/5 transition-all flex items-center gap-2"
+                        class="px-6 py-4 rounded-2xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-all flex items-center gap-2"
                     >
                         <ChevronLeft size={18} />
                         Back
@@ -531,7 +556,7 @@
                 <button
                     onclick={nextStep}
                     disabled={currentStep === 1 && !title.trim()}
-                    class="flex-1 px-6 py-4 rounded-2xl bg-primary text-black font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                    class="flex-1 px-6 py-4 rounded-2xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                 >
                     {#if currentStep === totalSteps}
                         <span>Finish & {goal ? "Save" : "Create"}</span>

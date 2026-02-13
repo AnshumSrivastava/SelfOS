@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { page } from "$app/stores";
     import { base } from "$app/paths";
+    import Logo from "$lib/components/ui/Logo.svelte";
 
     let scrolled = false;
     let isQuickCaptureOpen = false;
@@ -33,7 +34,7 @@
 <nav class="navbar {scrolled ? 'scrolled' : ''}">
     <div class="nav-inner glass">
         <div class="logo">
-            <span class="logo-symbol">S</span>
+            <Logo size={28} className="text-primary" />
             <span class="logo-text">SelfOS</span>
         </div>
 
@@ -90,10 +91,6 @@
 
         font-weight: 700;
         font-size: 1.25rem;
-    }
-
-    .logo-symbol {
-        color: var(--color-primary);
     }
 
     .nav-links {

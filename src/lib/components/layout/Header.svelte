@@ -3,6 +3,7 @@
     import { base } from "$app/paths";
     import { Search, Bell, Settings, User, LogOut } from "lucide-svelte";
     import { userStore } from "$lib/stores/user.svelte";
+    import Logo from "$lib/components/ui/Logo.svelte";
 
     let showUserMenu = $state(false);
 
@@ -42,7 +43,10 @@
         {:else}
             <span class="text-sm hidden md:inline">Welcome back.</span>
         {/if}
-        <span class="text-sm md:hidden">SelfOS</span>
+        <div class="flex items-center gap-2 md:hidden">
+            <Logo size={24} className="text-primary" />
+            <span class="text-sm font-bold">SelfOS</span>
+        </div>
     </div>
 
     <div class="flex items-center gap-4">

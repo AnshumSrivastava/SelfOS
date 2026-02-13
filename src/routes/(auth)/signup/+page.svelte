@@ -9,6 +9,7 @@
         AlertCircle,
         CheckCircle,
     } from "lucide-svelte";
+    import Logo from "$lib/components/ui/Logo.svelte";
 
     let username = $state("");
     let displayName = $state("");
@@ -61,12 +62,8 @@
     <div class="max-w-md w-full space-y-8">
         <!-- Logo and Title -->
         <div class="text-center">
-            <div
-                class="w-16 h-16 mx-auto rounded-2xl bg-primary/20 flex items-center justify-center mb-4"
-            >
-                <div
-                    class="w-8 h-8 bg-primary rounded-full animate-pulse"
-                ></div>
+            <div class="flex justify-center mb-6">
+                <Logo size={64} className="text-primary" />
             </div>
             <h1 class="text-3xl font-bold text-white mb-2">Create Account</h1>
             <p class="text-muted">Set up your SelfOS workspace</p>

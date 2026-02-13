@@ -10,6 +10,7 @@ export type Task = {
     link: string | null; // Optional external link
     deadline: string | null; // ISO Date string
     scheduled: string | null; // ISO Date string
+    goalId: string | null; // ID of the goal this task is linked to
     createdAt: string; // ISO Date string
     completedAt?: string | null; // ISO Date string
 };
@@ -23,6 +24,7 @@ const DEFAULT_TASKS: Task[] = [
         status: "pending",
         deadline: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
         scheduled: null,
+        goalId: null,
         link: null,
         createdAt: new Date().toISOString(),
     },
@@ -34,6 +36,7 @@ const DEFAULT_TASKS: Task[] = [
         status: "pending",
         deadline: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
         scheduled: new Date(Date.now() + 86400000).toISOString(),
+        goalId: null,
         link: null,
         createdAt: new Date().toISOString(),
     },
@@ -60,6 +63,7 @@ class TasksStore {
             title: task.title,
             description: task.description,
             link: task.link || null,
+            goalId: task.goalId || null,
             project: task.project || "General",
             priority: task.priority || "medium",
             status: "pending",
@@ -117,6 +121,7 @@ class TasksStore {
                 this.add({
                     title: video.title,
                     link: video.url,
+                    goalId: null,
                     project,
                     priority,
                     deadline: null,
@@ -136,6 +141,7 @@ class TasksStore {
             this.add({
                 title,
                 link,
+                goalId: null,
                 project,
                 priority,
                 deadline: null,

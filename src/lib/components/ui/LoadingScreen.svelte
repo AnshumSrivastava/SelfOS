@@ -1,27 +1,44 @@
-<script>
+<script lang="ts">
     import { fade } from "svelte/transition";
     import { cubicOut } from "svelte/easing";
+    import { onMount } from "svelte";
+    import Logo from "./Logo.svelte";
+    import { settings } from "$lib/stores/settings.svelte";
 
     let { isLoading = $bindable(true) } = $props();
 
-    // Simulate loading progress
-    let progress = $state(0);
+    let statusIndex = $state(0);
+    const statuses = ["Initializing...", "Ready"];
 
     $effect(() => {
         if (isLoading) {
-            progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        isLoading = false;
-                    }, 300);
-                }
-            }, 200);
+            const timer = setTimeout(() => {
+                statusIndex = 1;
+                const exitTimer = setTimeout(() => {
+                    isLoading = false;
+                }, 800);
+                return () => clearTimeout(exitTimer);
+            }, 1200);
+            return () => clearTimeout(timer);
+        }
+    });
 
-            return () => clearInterval(interval);
+    let colors = $derived.by(() => {
+        // Pure luminance contrast only
+        if (settings.theme === "light") {
+            return {
+                bg: "#FFFFFF",
+                logo: "#0A0A0A",
+                text: "#222222",
+                secondary: "#666666",
+            };
+        } else {
+            return {
+                bg: "#0A0A0A",
+                logo: "#FFFFFF",
+                text: "#EDEDED",
+                secondary: "#8A8A8A",
+            };
         }
     });
 </script>
@@ -29,56 +46,20 @@
 {#if isLoading}
     <div
         class="loading-screen"
-        transition:fade={{ duration: 300, easing: cubicOut }}
+        style="background-color: {colors.bg};"
+        transition:fade={{ duration: 400, easing: cubicOut }}
     >
-        <div class="loading-content">
-            <!-- Logo/Icon -->
-            <div class="logo-container">
-                <div class="logo-pulse">
-                    <svg
-                        width="60"
-                        height="60"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        />
-                        <path
-                            d="M12 6v6l4 2"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                        />
-                    </svg>
-                </div>
+        <div class="content">
+            <div class="logo-container" style="color: {colors.logo};">
+                <Logo size={120} />
             </div>
 
-            <!-- App Name -->
-            <h1 class="app-name">SelfOS</h1>
-
-            <!-- Loading Bar -->
-            <div class="progress-container">
-                <div class="progress-bar" style="width: {progress}%"></div>
+            <div class="brand">
+                <h1 class="title" style="color: {colors.text};">SelfOS</h1>
+                <p class="status" style="color: {colors.secondary};">
+                    {statuses[statusIndex]}
+                </p>
             </div>
-
-            <!-- Loading Text -->
-            <p class="loading-text">
-                {#if progress < 30}
-                    Initializing...
-                {:else if progress < 60}
-                    Loading your data...
-                {:else if progress < 90}
-                    Almost ready...
-                {:else}
-                    Welcome back!
-                {/if}
-            </p>
         </div>
     </div>
 {/if}
@@ -87,80 +68,70 @@
     .loading-screen {
         position: fixed;
         inset: 0;
-        background: var(--color-background);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
+        z-index: 10000;
+        transition: background-color 0.3s ease;
     }
 
-    .loading-content {
+    .content {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2rem;
-        max-width: 400px;
-        padding: 2rem;
+        text-align: center;
     }
 
     .logo-container {
-        position: relative;
+        margin-bottom: 32px; /* Increased from 24px */
+        animation: fadeIn 0.3s ease-out forwards;
     }
 
-    .logo-pulse {
-        color: var(--color-primary);
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 16px; /* Increased from 12px */
     }
 
-    @keyframes pulse {
-        0%,
-        100% {
+    .title {
+        font-family: "Roboto", sans-serif;
+        font-size: 2.5rem; /* Increased from 1.5rem */
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        line-height: 1.2;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .status {
+        font-family: "Roboto", sans-serif;
+        font-size: 1.125rem; /* Increased from 0.875rem */
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        line-height: 1.3;
+        margin: 0;
+        opacity: 1;
+        animation: breathe 2.4s ease-in-out infinite;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
             opacity: 1;
             transform: scale(1);
         }
-        50% {
-            opacity: 0.7;
-            transform: scale(1.05);
-        }
     }
 
-    .app-name {
-        font-size: 2.5rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: var(--color-text);
-        margin: 0;
-    }
-
-    .progress-container {
-        width: 100%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 2px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        height: 100%;
-        background: var(--color-primary);
-        border-radius: 2px;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .loading-text {
-        font-size: 0.875rem;
-        color: var(--color-muted);
-        margin: 0;
-        animation: fadeInOut 2s ease-in-out infinite;
-    }
-
-    @keyframes fadeInOut {
+    @keyframes breathe {
         0%,
         100% {
-            opacity: 0.5;
+            opacity: 1;
         }
         50% {
-            opacity: 1;
+            opacity: 0.85;
         }
     }
 </style>

@@ -1,33 +1,38 @@
 import { LocalStore } from './localStore.svelte';
+import { tasksStore } from './tasks.svelte';
 
 // Simplified data types
 export type Priority = 'high' | 'normal' | 'low';
-export type GoalType = 'short' | 'mid' | 'long';
+export type GoalHorizon = 'life' | 'long' | 'mid' | 'short';
+export type GoalStatus = 'planned' | 'active' | 'completed' | 'paused';
 export type GoalArea = 'Professional' | 'Personal' | 'Health' | 'Family' | 'Fun' | 'Spiritual' | 'Other';
 
 export interface Goal {
     id: string;
     title: string;
+    vision?: string;        // Why this goal matters
     description?: string;
-    reason?: string;
-    deadline?: string;
+    deadline?: string;      // ISO date
+    targetDate?: string;    // Target completion date
     priority: Priority;
-    type: GoalType;
+    horizon: GoalHorizon;
     area: GoalArea;
-    parentId?: string;
+    parentId?: string;      // For hierarchy
+    status: GoalStatus;
     completed: boolean;
     createdAt: string;
+    strategicNotes?: string;
 }
 
-export interface Task {
+export interface GoalLog {
     id: string;
     goalId: string;
-    title: string;
-    link?: string; // Optional link for the task
-    date?: string; // ISO date string
-    startTime?: string; // HH:mm format
-    completed: boolean;
-    createdAt: string;
+    date: string;           // ISO date
+    workDone: string;
+    lessons: string;
+    nextStep: string;
+    mood: number;           // 1-5
+    difficulty: number;     // 1-5
 }
 
 // YouTube video data
@@ -105,32 +110,28 @@ export async function parseBatchTasks(input: string): Promise<{ tasks: Array<{ t
     return { tasks };
 }
 
-// Simple store class
 class GoalsStore {
     private goalsStore = new LocalStore<Goal[]>('goals', []);
-    private tasksStore = new LocalStore<Task[]>('goal-tasks', []);
+    private logsStore = new LocalStore<GoalLog[]>('goal-logs', []);
 
     // Getters
     get goals() {
         return this.goalsStore.value;
     }
 
-    get tasks() {
-        return this.tasksStore.value;
+    get logs() {
+        return this.logsStore.value;
     }
 
     get activeGoals() {
-        return this.goals.filter(g => !g.completed);
-    }
-
-    get completedGoals() {
-        return this.goals.filter(g => g.completed);
+        return this.goals.filter(g => g.status === 'active');
     }
 
     // Goal methods
-    addGoal(goal: Omit<Goal, 'id' | 'completed' | 'createdAt'>) {
+    addGoal(goal: Omit<Goal, 'id' | 'completed' | 'createdAt' | 'status'>) {
         const newGoal: Goal = {
             id: crypto.randomUUID(),
+            status: 'active',
             completed: false,
             createdAt: new Date().toISOString(),
             ...goal
@@ -146,72 +147,36 @@ class GoalsStore {
     }
 
     deleteGoal(id: string) {
-        // Find child goals and delete them or update them
-        const childGoals = this.goals.filter(g => g.parentId === id);
-        childGoals.forEach(child => this.deleteGoal(child.id));
+        // Recursive deletion for hierarchy
+        const children = this.getGoalChildren(id);
+        children.forEach(child => this.deleteGoal(child.id));
 
-        // Delete tasks
-        this.tasksStore.value = this.tasksStore.value.filter(t => t.goalId !== id);
-        this.goalsStore.value = this.goalsStore.value.filter(g => g.id !== id);
-    }
-
-    toggleGoal(id: string) {
-        const goal = this.goals.find(g => g.id === id);
-        if (goal) {
-            this.updateGoal(id, { completed: !goal.completed });
-        }
-    }
-
-    // Task methods
-    addTask(task: Omit<Task, 'id' | 'completed' | 'createdAt'>) {
-        const newTask: Task = {
-            id: crypto.randomUUID(),
-            completed: false,
-            createdAt: new Date().toISOString(),
-            ...task
-        };
-        this.tasksStore.value = [...this.tasksStore.value, newTask];
-        return newTask;
-    }
-
-    // Batch add tasks
-    async addTasksBatch(goalId: string, input: string): Promise<number> {
-        const { tasks, playlistTitle } = await parseBatchTasks(input);
-
-        // If it's a new goal and we have a playlist title, update the goal title
-        if (playlistTitle) {
-            const goal = this.goals.find(g => g.id === goalId);
-            if (goal && (goal.title === 'New Goal' || !goal.title)) {
-                this.updateGoal(goalId, { title: playlistTitle });
+        // Unlink tasks instead of deleting them? 
+        // Or delete them if they were exclusively created for this goal.
+        // For now, let's just unlink them to be safe.
+        tasksStore.tasks.forEach(t => {
+            if (t.goalId === id) {
+                tasksStore.update(t.id, { goalId: null });
             }
-        }
+        });
 
-        for (const { title, link } of tasks) {
-            this.addTask({ goalId, title, link });
-        }
-
-        return tasks.length;
+        this.goalsStore.value = this.goalsStore.value.filter(g => g.id !== id);
+        this.logsStore.value = this.logsStore.value.filter(l => l.goalId !== id);
     }
 
-    updateTask(id: string, updates: Partial<Task>) {
-        this.tasksStore.value = this.tasksStore.value.map(t =>
-            t.id === id ? { ...t, ...updates } : t
-        );
+    // Logging / Journaling
+    addLog(log: Omit<GoalLog, 'id' | 'date'>) {
+        const newLog: GoalLog = {
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            ...log
+        };
+        this.logsStore.value = [newLog, ...this.logsStore.value];
+        return newLog;
     }
 
-    deleteTask(id: string) {
-        this.tasksStore.value = this.tasksStore.value.filter(t => t.id !== id);
-    }
-
-    toggleTask(id: string) {
-        const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            this.updateTask(id, { completed: !task.completed });
-        }
-    }
-
-    getGoalTasks(goalId: string) {
-        return this.tasks.filter(t => t.goalId === goalId);
+    getGoalLogs(goalId: string) {
+        return this.logs.filter(l => l.goalId === goalId);
     }
 
     // Hierarchy helpers
@@ -221,41 +186,41 @@ class GoalsStore {
 
     getGoalParent(goalId: string) {
         const goal = this.goals.find(g => g.id === goalId);
-        if (!goal || !goal.parentId) return null;
-        return this.goals.find(g => g.id === goal.parentId);
+        return goal?.parentId ? this.goals.find(g => g.id === goal.parentId) : null;
     }
 
-    // Life Balance metrics
-    getAreaProgress(area: GoalArea): number {
-        const areaGoals = this.goals.filter(g => g.area === area);
-        if (areaGoals.length === 0) return 0;
-
-        let totalProgress = 0;
-        areaGoals.forEach(goal => {
-            totalProgress += this.getGoalProgress(goal.id);
-        });
-
-        return Math.round(totalProgress / areaGoals.length);
-    }
-
-    // Progress calculation
+    // Integrated Progress calculation
     getGoalProgress(goalId: string): number {
-        const tasks = this.getGoalTasks(goalId);
+        const tasks = tasksStore.tasks.filter(t => t.goalId === goalId);
         const children = this.getGoalChildren(goalId);
 
         if (tasks.length === 0 && children.length === 0) {
             const goal = this.goals.find(g => g.id === goalId);
-            return goal?.completed ? 100 : 0;
+            return goal?.completed || goal?.status === 'completed' ? 100 : 0;
         }
 
         let totalWeight = tasks.length + children.length;
-        let completedWeight = tasks.filter(t => t.completed).length;
+        let completedWeight = tasks.filter(t => t.status === 'completed').length;
 
         children.forEach(child => {
             completedWeight += this.getGoalProgress(child.id) / 100;
         });
 
         return Math.round((completedWeight / totalWeight) * 100);
+    }
+
+    // Health metrics
+    getGoalHealth(goalId: string): 'on-track' | 'at-risk' | 'stalled' {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal) return 'stalled';
+
+        const logs = this.getGoalLogs(goalId);
+        const lastLogDate = logs.length > 0 ? new Date(logs[0].date) : new Date(goal.createdAt);
+        const daysSinceLastUpdate = (Date.now() - lastLogDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        if (daysSinceLastUpdate > 14) return 'stalled';
+        if (daysSinceLastUpdate > 7) return 'at-risk';
+        return 'on-track';
     }
 }
 

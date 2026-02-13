@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import "../app.css";
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
@@ -13,6 +13,7 @@
   import { userStore } from "$lib/stores/user.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
+  import LoadingScreen from "$lib/components/ui/LoadingScreen.svelte";
 
   let { children } = $props();
   let isAuthenticated = $state(false);
@@ -52,6 +53,24 @@
     settings.applyTheme();
   });
 
+  // Dynamic favicon color syncing
+  $effect(() => {
+    if (typeof document === "undefined") return;
+
+    const color = settings.accentColor;
+    const svg = `<svg width="32" height="32" viewBox="0 0 59.52298 59.594643" version="1.1" xmlns="http://www.w3.org/2000/svg"><g transform="translate(189.77842,-81.662422)"><path style="fill:${color}" d="m -160.01694,97.315205 -22.38416,34.213415 c 5.2901,4.88467 10.6208,7.93591 17.10696,9.15396 l 0.19844,-3.61114 c -2.35978,-0.28051 -5.9781,-1.2295 -12.91291,-6.32623 l 17.92656,-27.34769 0.0651,0.0987 0.0651,-0.0987 17.92656,27.34769 c -6.93481,5.09673 -10.55313,6.04572 -12.91291,6.32623 l 0.19844,3.61114 c 6.48616,-1.21805 11.81686,-4.26929 17.10696,-9.15396 z" /><path style="fill:${color}" d="m -161.65596,141.25706 3.57188,-0.15647 0.0134,-24.80418 -1.94629,-5.21661 -1.66242,5.21662 z" /><path style="fill:${color}" d="m -160.01694,81.662414 a 29.761417,29.761417 0 0 0 -29.76149,29.761496 29.761417,29.761417 0 0 0 4.74803,16.12614 l 2.10788,-3.22202 a 26.290359,26.290359 0 0 1 -3.3848,-12.90412 26.290359,26.290359 0 0 1 26.29038,-26.29039 26.290359,26.290359 0 0 1 26.29039,26.29039 26.290359,26.290359 0 0 1 -3.38481,12.90412 l 2.10788,3.22202 a 29.761417,29.761417 0 0 0 4.74803,-16.12614 29.761417,29.761417 0 0 0 -29.76149,-29.761496 z" /></g></svg>`;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.querySelector('link[rel*="icon"]') as HTMLLinkElement;
+    if (link) {
+      link.href = url;
+    }
+
+    return () => URL.revokeObjectURL(url);
+  });
+
   let lastTap = 0;
   function handleDoubleTap() {
     const currentTime = new Date().getTime();
@@ -83,17 +102,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isLoading}
-  <!-- Loading state while checking authentication -->
-  <div class="min-h-screen bg-background flex items-center justify-center">
-    <div class="text-center">
-      <div
-        class="w-16 h-16 mx-auto rounded-2xl bg-primary/20 flex items-center justify-center mb-4"
-      >
-        <div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
-      </div>
-      <p class="text-muted">Loading...</p>
-    </div>
-  </div>
+  <LoadingScreen bind:isLoading />
 {:else if isAuthRoute}
   <!-- Auth pages (login/signup) - no layout, no guards -->
   {@render children()}
@@ -114,16 +123,7 @@
   </div>
 {:else}
   <!-- Redirecting to login -->
-  <div class="min-h-screen bg-background flex items-center justify-center">
-    <div class="text-center">
-      <div
-        class="w-16 h-16 mx-auto rounded-2xl bg-primary/20 flex items-center justify-center mb-4"
-      >
-        <div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
-      </div>
-      <p class="text-muted">Redirecting to login...</p>
-    </div>
-  </div>
+  <LoadingScreen isLoading={true} />
 {/if}
 
 {#if focusStore.zenMode && !focusStore.sessionComplete}

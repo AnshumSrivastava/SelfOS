@@ -32,7 +32,7 @@ SelfOS aims to be a single source of truth for your digital life, prioritizing:
 | **🎯 Dashboard** | Central overview of your day and priority tasks. | ✅ Done |
 | **✅ Tasks** | PARA-based task management with scratchpad support. | ✅ Done |
 | **📅 Habits** | Visual habit tracker with streak mechanics. | ✅ Done |
-| **🎯 Goals** | A robust goal tracking system with board views. | ✅ Done |
+| **🎯 Goals** | Strategic 'War Room' dashboard with hierarchy, Roadmaps, and Playlist Importer. | ✅ Done |
 | **🧘 Focus** | Zen mode with pomodoro-style timers. | ✅ Done |
 | **💰 Finance** | Expense tracking, budgeting, and financial goals. | ✅ Done |
 | **🍎 Nutrition** | Macronutrient calculation and meal tracking. | ✅ Done |

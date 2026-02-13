@@ -23,6 +23,7 @@
         PanelLeft,
         User, // Moved User import into the main lucide-svelte block
     } from "lucide-svelte";
+    import Logo from "$lib/components/ui/Logo.svelte";
 
     import { settings } from "$lib/stores/settings.svelte"; // Retained one settings import
 
@@ -199,26 +200,14 @@
     >
         {#if !isCollapsed}
             <div class="flex items-center gap-3">
-                <div
-                    class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center"
-                >
-                    <div
-                        class="w-4 h-4 bg-primary rounded-full animate-pulse"
-                    ></div>
-                </div>
+                <Logo size={32} className="text-primary" />
                 <span
                     class="text-xl font-bold tracking-tight text-[var(--color-text)]"
                     >SelfOS</span
                 >
             </div>
         {:else}
-            <div
-                class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center"
-            >
-                <div
-                    class="w-4 h-4 bg-primary rounded-full animate-pulse"
-                ></div>
-            </div>
+            <Logo size={32} className="text-primary" />
         {/if}
 
         <button
