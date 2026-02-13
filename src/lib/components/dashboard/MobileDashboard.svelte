@@ -7,10 +7,25 @@
         Edit3,
         Target,
         Search,
+        Activity,
+        Utensils,
+        Wallet,
+        BookOpen,
+        Calendar as CalendarIcon,
+        Book,
+        Trophy,
     } from "lucide-svelte";
     import { habitsStore } from "$lib/stores/habits.svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { focusStore } from "$lib/stores/focus.svelte";
+    import { fitnessStore } from "$lib/stores/fitness.svelte";
+    import { nutritionStore } from "$lib/stores/nutrition.svelte";
+    import { financeStore } from "$lib/stores/finance.svelte";
+    import { goalsStore } from "$lib/stores/goals.svelte";
+    import { libraryStore } from "$lib/stores/library.svelte";
+    import { calendarStore } from "$lib/stores/calendar.svelte";
+    import { journalStore } from "$lib/stores/journal.svelte";
+    import { gamificationStore } from "$lib/stores/gamification.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
     import ConsistencyChart from "$lib/components/habits/ConsistencyChart.svelte";
     import StreakFire from "$lib/components/ui/StreakFire.svelte";
@@ -34,9 +49,26 @@
             ? Math.round((completedTasks / totalTasksStr) * 100)
             : 0,
     );
+
+    // Module specific derivations
+    let nextEvent = $derived(
+        calendarStore.events
+            .filter(
+                (e) =>
+                    e.date === new Date().toISOString().split("T")[0] ||
+                    new Date(e.date) > new Date(),
+            )
+            .sort(
+                (a, b) =>
+                    new Date(a.date).getTime() - new Date(b.date).getTime(),
+            )[0],
+    );
+
+    let topGoal = $derived(goalsStore.activeGoals[0]);
+    let currentBook = $derived(libraryStore.reading[0]);
 </script>
 
-<div class="page-container relative px-6 pb-24">
+<div class="page-container relative px-6 pb-32">
     <StreakFire bind:this={fire} />
 
     <!-- Summary Row -->
@@ -307,6 +339,293 @@
                         No active tasks
                     </div>
                 {/if}
+            </div>
+        </section>
+
+        <!-- Module Insights -->
+        <section class="space-y-6">
+            <div
+                class="flex items-center justify-between border-b border-[var(--color-line)] pb-2"
+            >
+                <h2
+                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-muted)]"
+                >
+                    Module Insights
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Fitness -->
+                <button
+                    onclick={() => (window.location.href = `${base}/fitness`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Activity
+                            size={16}
+                            class="text-[var(--color-primary)]"
+                        />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Fitness</span
+                        >
+                    </div>
+                    <div>
+                        <p
+                            class="text-sm font-bold text-[var(--color-text)] truncate"
+                        >
+                            {fitnessStore.stats.todaySteps.toLocaleString()} steps
+                        </p>
+                        <div
+                            class="w-full h-1 bg-[var(--color-line)] rounded-full mt-1.5 overflow-hidden"
+                        >
+                            <div
+                                class="h-full bg-[var(--color-primary)] transition-all"
+                                style="width: {Math.min(
+                                    100,
+                                    (fitnessStore.stats.todaySteps /
+                                        fitnessStore.stats.stepGoal) *
+                                        100,
+                                )}%"
+                            ></div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Nutrition -->
+                <button
+                    onclick={() => (window.location.href = `${base}/nutrition`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Utensils size={16} class="text-emerald-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Nutrition</span
+                        >
+                    </div>
+                    <div>
+                        <p
+                            class="text-sm font-bold text-[var(--color-text)] truncate"
+                        >
+                            {nutritionStore.todayStats.calories} / {nutritionStore
+                                .goals.calories} kcal
+                        </p>
+                        <div
+                            class="w-full h-1 bg-[var(--color-line)] rounded-full mt-1.5 overflow-hidden"
+                        >
+                            <div
+                                class="h-full bg-emerald-500 transition-all"
+                                style="width: {Math.min(
+                                    100,
+                                    (nutritionStore.todayStats.calories /
+                                        nutritionStore.goals.calories) *
+                                        100,
+                                )}%"
+                            ></div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Finance -->
+                <button
+                    onclick={() => (window.location.href = `${base}/finance`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Wallet size={16} class="text-blue-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Finance</span
+                        >
+                    </div>
+                    <div>
+                        <p
+                            class="text-sm font-bold text-[var(--color-text)] truncate"
+                        >
+                            ${financeStore.balance.toLocaleString()}
+                        </p>
+                        <p
+                            class="text-[9px] font-medium text-[var(--color-muted)] mt-0.5 uppercase"
+                        >
+                            Current Balance
+                        </p>
+                    </div>
+                </button>
+
+                <!-- Goals -->
+                <button
+                    onclick={() => (window.location.href = `${base}/goals`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Target size={16} class="text-purple-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Goals</span
+                        >
+                    </div>
+                    <div>
+                        {#if topGoal}
+                            <p
+                                class="text-sm font-bold text-[var(--color-text)] truncate"
+                            >
+                                {goalsStore.getGoalProgress(topGoal.id)}%
+                            </p>
+                            <p
+                                class="text-[9px] font-medium text-[var(--color-muted)] mt-0.5 truncate uppercase"
+                            >
+                                {topGoal.title}
+                            </p>
+                        {:else}
+                            <p
+                                class="text-sm font-bold text-[var(--color-muted)] italic"
+                            >
+                                No active goals
+                            </p>
+                        {/if}
+                    </div>
+                </button>
+
+                <!-- Library -->
+                <button
+                    onclick={() => (window.location.href = `${base}/library`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <BookOpen size={16} class="text-orange-400" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Library</span
+                        >
+                    </div>
+                    <div>
+                        {#if currentBook}
+                            <p
+                                class="text-sm font-bold text-[var(--color-text)] truncate"
+                            >
+                                {currentBook.title}
+                            </p>
+                            <p
+                                class="text-[9px] font-medium text-[var(--color-muted)] mt-0.5 truncate uppercase"
+                            >
+                                {currentBook.author}
+                            </p>
+                        {:else}
+                            <p
+                                class="text-sm font-bold text-[var(--color-muted)] italic"
+                            >
+                                Not reading
+                            </p>
+                        {/if}
+                    </div>
+                </button>
+
+                <!-- Calendar -->
+                <button
+                    onclick={() => (window.location.href = `${base}/calendar`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <CalendarIcon size={16} class="text-rose-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Calendar</span
+                        >
+                    </div>
+                    <div>
+                        {#if nextEvent}
+                            <p
+                                class="text-sm font-bold text-[var(--color-text)] truncate"
+                            >
+                                {nextEvent.startTime || "All Day"}
+                            </p>
+                            <p
+                                class="text-[9px] font-medium text-[var(--color-muted)] mt-0.5 truncate uppercase"
+                            >
+                                {nextEvent.title}
+                            </p>
+                        {:else}
+                            <p
+                                class="text-sm font-bold text-[var(--color-muted)] italic"
+                            >
+                                No events
+                            </p>
+                        {/if}
+                    </div>
+                </button>
+
+                <!-- Journal -->
+                <button
+                    onclick={() => (window.location.href = `${base}/journal`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Book size={16} class="text-cyan-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Journal</span
+                        >
+                    </div>
+                    <div>
+                        {#if journalStore.entries.length > 0}
+                            <p
+                                class="text-sm font-bold text-[var(--color-text)] truncate"
+                            >
+                                {journalStore.entries[0].title}
+                            </p>
+                            <p
+                                class="text-[9px] font-medium text-[var(--color-muted)] mt-0.5 truncate uppercase"
+                            >
+                                {journalStore.entries[0].date}
+                            </p>
+                        {:else}
+                            <p
+                                class="text-sm font-bold text-[var(--color-muted)] italic"
+                            >
+                                No entries
+                            </p>
+                        {/if}
+                    </div>
+                </button>
+
+                <!-- Gamification -->
+                <button
+                    onclick={() =>
+                        (window.location.href = `${base}/gamification`)}
+                    class="p-4 rounded-2xl bg-[var(--theme-surface)]/50 border border-[var(--color-line)]/50 flex flex-col gap-3 text-left active:scale-[0.98] transition-all"
+                >
+                    <div class="flex items-center justify-between">
+                        <Trophy size={16} class="text-yellow-500" />
+                        <span
+                            class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                            >Player</span
+                        >
+                    </div>
+                    <div>
+                        {#if gamificationStore.profile}
+                            <p
+                                class="text-sm font-bold text-[var(--color-text)] truncate"
+                            >
+                                Level {gamificationStore.profile.level}
+                            </p>
+                            <div
+                                class="w-full h-1 bg-[var(--color-line)] rounded-full mt-1.5 overflow-hidden"
+                            >
+                                <div
+                                    class="h-full bg-yellow-500 transition-all"
+                                    style="width: {gamificationStore.xpProgress}%"
+                                ></div>
+                            </div>
+                        {:else}
+                            <p
+                                class="text-sm font-bold text-[var(--color-muted)] italic"
+                            >
+                                No profile
+                            </p>
+                        {/if}
+                    </div>
+                </button>
             </div>
         </section>
     </div>
