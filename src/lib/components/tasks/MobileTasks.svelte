@@ -80,7 +80,7 @@
     <!-- Floating Add Button -->
     <button
         onclick={() => (isQuickCaptureOpen = true)}
-        class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-black flex items-center justify-center shadow-2xl shadow-primary/30 active:scale-90 transition-transform z-30"
+        class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-black flex items-center justify-center shadow-2xl shadow-primary/30 active:scale-95 transition-transform z-30"
         aria-label="Add new task"
     >
         <Plus size={28} />

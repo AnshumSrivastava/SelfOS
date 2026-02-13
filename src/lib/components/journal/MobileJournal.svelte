@@ -116,9 +116,9 @@
             </div>
             <button
                 onclick={createNewEntry}
-                class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-90 transition-all"
+                class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
             >
-                <Plus size={28} />
+                <Plus size={24} />
             </button>
         </div>
 

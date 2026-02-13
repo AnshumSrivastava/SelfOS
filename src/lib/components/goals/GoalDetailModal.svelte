@@ -48,9 +48,9 @@
             goalId: goal.id,
             project: goal.area,
             priority: goal.priority === "high" ? "high" : "medium",
-            deadline: undefined,
-            link: undefined,
-            scheduled: undefined,
+            deadline: null,
+            link: null,
+            scheduled: null,
         });
         newTaskTitle = "";
     }
@@ -58,14 +58,14 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-xl"
         transition:fade={{ duration: 200 }}
         onclick={onClose}
         onkeydown={(e) => (e.key === "Escape" || e.key === " ") && onClose()}
         role="presentation"
     >
         <div
-            class="bg-slate-900 border border-slate-800 w-full max-w-4xl h-[85vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col lg:flex-row"
+            class="bg-surface border border-line w-full max-w-4xl h-[85vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col lg:flex-row"
             onclick={(e) => e.stopPropagation()}
             onkeydown={(e) => e.stopPropagation()}
             role="dialog"
@@ -74,18 +74,18 @@
         >
             <!-- Sidebar: Vision & Stats -->
             <div
-                class="w-full lg:w-80 bg-slate-950/50 border-b lg:border-b-0 lg:border-r border-slate-800 p-8 flex flex-col shrink-0"
+                class="w-full lg:w-80 bg-background/50 border-b lg:border-b-0 lg:border-r border-line p-8 flex flex-col shrink-0"
             >
                 <div class="flex items-center justify-between mb-8">
                     <button
                         onclick={onClose}
-                        class="p-2 hover:bg-slate-800 rounded-full text-slate-500"
+                        class="p-2 hover:bg-surface rounded-full text-muted"
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <button
                         onclick={() => onEdit(goal)}
-                        class="p-2 hover:bg-slate-800 rounded-full text-blue-500"
+                        class="p-2 hover:bg-surface rounded-full text-primary"
                     >
                         <PenLine size={20} />
                     </button>
@@ -97,7 +97,7 @@
                         {goal.title}
                     </h2>
                     <span
-                        class="px-2 py-0.5 rounded-full bg-blue-500/10 text-[9px] font-black text-blue-400 border border-blue-500/20 uppercase tracking-widest mt-2"
+                        class="px-2 py-0.5 rounded-full bg-primary/10 text-[9px] font-black text-primary border border-primary/20 uppercase tracking-widest mt-2"
                     >
                         {goal.horizon} • {goal.area}
                     </span>
@@ -107,11 +107,11 @@
                     {#if goal.vision}
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 block"
+                                class="text-[9px] font-black text-muted uppercase tracking-[0.2em] mb-2 block"
                                 >The Core Vision</span
                             >
                             <p
-                                class="text-sm text-slate-300 font-serif italic italic leading-relaxed"
+                                class="text-sm text-white/80 font-serif italic italic leading-relaxed"
                             >
                                 "{goal.vision}"
                             </p>
@@ -121,18 +121,18 @@
                     {#if goal.description}
                         <div>
                             <span
-                                class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 block"
+                                class="text-[9px] font-black text-muted uppercase tracking-[0.2em] mb-2 block"
                                 >Strategic Notes</span
                             >
-                            <p class="text-xs text-slate-400 leading-relaxed">
+                            <p class="text-xs text-muted leading-relaxed">
                                 {goal.description}
                             </p>
                         </div>
                     {/if}
 
-                    <div class="pt-4 border-t border-slate-800/50">
+                    <div class="pt-4 border-t border-line">
                         <div
-                            class="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-2"
+                            class="flex items-center justify-between text-[10px] font-bold text-muted mb-2"
                         >
                             <span>HEALTH</span>
                             <span
@@ -143,10 +143,10 @@
                             >
                         </div>
                         <div
-                            class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"
+                            class="h-1.5 w-full bg-line rounded-full overflow-hidden"
                         >
                             <div
-                                class="h-full bg-blue-500 transition-all duration-1000"
+                                class="h-full bg-primary transition-all duration-1000"
                                 style="width: {progress}%"
                             ></div>
                         </div>
@@ -155,22 +155,22 @@
             </div>
 
             <!-- Main Content Area -->
-            <div class="flex-1 flex flex-col min-w-0 bg-slate-900/40">
+            <div class="flex-1 flex flex-col min-w-0 bg-surface/40">
                 <!-- Tab Header -->
                 <div
-                    class="flex items-center gap-6 px-8 h-16 border-b border-slate-800/50"
+                    class="flex items-center gap-6 px-8 h-16 border-b border-line"
                 >
                     <button
                         class="text-sm font-bold transition-all relative {activeTab ===
                         'execution'
                             ? 'text-white'
-                            : 'text-slate-500 hover:text-slate-300'}"
+                            : 'text-muted hover:text-white'}"
                         onclick={() => (activeTab = "execution")}
                     >
                         Execution Board
                         {#if activeTab === "execution"}
                             <div
-                                class="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                                class="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_var(--color-primary-low)]"
                             ></div>
                         {/if}
                     </button>
@@ -178,13 +178,13 @@
                         class="text-sm font-bold transition-all relative {activeTab ===
                         'reflection'
                             ? 'text-white'
-                            : 'text-slate-500 hover:text-slate-300'}"
+                            : 'text-muted hover:text-white'}"
                         onclick={() => (activeTab = "reflection")}
                     >
                         Reflection Journal
                         {#if activeTab === "reflection"}
                             <div
-                                class="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+                                class="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_var(--color-primary-low)]"
                             ></div>
                         {/if}
                     </button>
@@ -193,7 +193,7 @@
 
                     <button
                         onclick={() => (showLogModal = true)}
-                        class="hidden md:flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all"
+                        class="hidden md:flex items-center gap-2 px-4 py-1.5 bg-surface hover:bg-background border border-line text-white rounded-xl text-xs font-bold transition-all"
                     >
                         <History size={14} />
                         Log Reflection
@@ -206,9 +206,9 @@
                         <div in:fade={{ duration: 200 }}>
                             <!-- Quick Add Task -->
                             <div
-                                class="mb-8 p-1 bg-slate-950/50 border border-slate-800 rounded-2xl flex items-center focus-within:border-blue-500/50 transition-all"
+                                class="mb-8 p-1 bg-surface/50 border border-line rounded-2xl flex items-center focus-within:border-primary/50 transition-all"
                             >
-                                <div class="px-4 text-slate-500">
+                                <div class="px-4 text-muted">
                                     <Plus size={18} />
                                 </div>
                                 <input
@@ -216,11 +216,11 @@
                                     onkeydown={(e) =>
                                         e.key === "Enter" && addTask()}
                                     placeholder="Add an atomic task to this goal..."
-                                    class="flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-slate-700"
+                                    class="flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-muted/30"
                                 />
                                 <button
                                     onclick={addTask}
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all mr-1"
+                                    class="px-4 py-2 bg-primary hover:opacity-90 text-black text-[10px] font-black uppercase tracking-widest rounded-xl transition-all mr-1 shadow-lg shadow-primary/10"
                                     >Add Task</button
                                 >
                             </div>
@@ -229,15 +229,15 @@
                             <div class="space-y-2">
                                 {#each tasks as task (task.id)}
                                     <div
-                                        class="group flex items-center gap-4 p-4 bg-slate-950/30 border border-slate-800/30 rounded-2xl hover:border-slate-700/50 transition-all"
+                                        class="group flex items-center gap-4 p-4 bg-surface/30 border border-line/30 rounded-2xl hover:border-line transition-all"
                                     >
                                         <button
                                             onclick={() =>
                                                 tasksStore.toggle(task.id)}
                                             class="w-5 h-5 rounded-md border-2 transition-all {task.status ===
                                             'completed'
-                                                ? 'bg-blue-500 border-blue-500 flex items-center justify-center text-white'
-                                                : 'border-slate-800 hover:border-slate-700'}"
+                                                ? 'bg-primary border-primary flex items-center justify-center text-black'
+                                                : 'border-line hover:border-muted'}"
                                         >
                                             {#if task.status === "completed"}<Check
                                                     size={12}
@@ -248,16 +248,16 @@
                                             <p
                                                 class="text-sm font-medium transition-all {task.status ===
                                                 'completed'
-                                                    ? 'text-slate-600 line-through'
-                                                    : 'text-slate-200'}"
+                                                    ? 'text-muted/50 line-through'
+                                                    : 'text-white'}"
                                             >
                                                 {task.title}
                                             </p>
                                         </div>
                                         <button
                                             onclick={() =>
-                                                tasksStore.delete(task.id)}
-                                            class="opacity-0 group-hover:opacity-100 p-2 text-slate-600 hover:text-rose-500 transition-all"
+                                                tasksStore.remove(task.id)}
+                                            class="opacity-0 group-hover:opacity-100 p-2 text-muted hover:text-rose-500 transition-all"
                                         >
                                             <Trash2 size={16} />
                                         </button>

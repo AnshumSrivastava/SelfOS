@@ -56,11 +56,11 @@
 </script>
 
 <div
-    class="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-6 backdrop-blur-sm overflow-hidden relative"
+    class="bg-surface/40 border border-line rounded-3xl p-6 backdrop-blur-sm overflow-hidden relative"
 >
     <!-- Background Sparkle -->
     <div
-        class="absolute -right-8 -top-8 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full"
+        class="absolute -right-8 -top-8 w-32 h-32 bg-primary/5 blur-3xl rounded-full"
     ></div>
 
     <div class="flex flex-col md:flex-row items-center gap-8 relative">
@@ -75,7 +75,7 @@
 
             <div class="flex-1 text-center md:text-left">
                 <div
-                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4"
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-widest mb-4"
                 >
                     <Zap size={12} />
                     Next Logical Move
@@ -85,10 +85,10 @@
                     {nextAction.task.title}
                 </h3>
                 <p
-                    class="text-sm text-slate-400 flex items-center justify-center md:justify-start gap-2"
+                    class="text-sm text-muted flex items-center justify-center md:justify-start gap-2"
                 >
-                    <span class="text-slate-500 font-medium">Part of:</span>
-                    <span class="text-slate-300 font-bold"
+                    <span class="text-muted/50 font-medium">Part of:</span>
+                    <span class="text-white/80 font-bold"
                         >{nextAction.goal.title}</span
                     >
                 </p>
@@ -101,7 +101,7 @@
                             tasksStore.update(nextAction.task.id, {
                                 status: "completed",
                             })}
-                        class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/20"
+                        class="flex items-center gap-2 px-6 py-2.5 bg-primary hover:opacity-90 text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-primary/20"
                     >
                         Mark Done
                         <ArrowRight size={18} />
@@ -122,17 +122,17 @@
                 class="flex-1 flex flex-col items-center justify-center py-4 text-center"
             >
                 <div
-                    class="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center text-blue-500 mb-4 border border-slate-700"
+                    class="w-16 h-16 rounded-full bg-surface flex items-center justify-center text-primary mb-4 border border-line"
                 >
                     <Trophy size={32} />
                 </div>
                 <h3 class="text-lg font-bold text-white mb-1">Board Cleared</h3>
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-muted">
                     You're currently ahead of your objectives. Time to
                     strategize?
                 </p>
                 <button
-                    class="mt-6 text-blue-500 font-bold text-xs uppercase tracking-widest hover:text-blue-400 transition-colors"
+                    class="mt-6 text-primary font-bold text-xs uppercase tracking-widest hover:opacity-80 transition-colors"
                 >
                     View Roadmap
                 </button>
@@ -140,12 +140,12 @@
         {/if}
 
         <!-- Side Stats (Optional) -->
-        <div class="hidden lg:block w-[1px] h-24 bg-slate-800"></div>
+        <div class="hidden lg:block w-[1px] h-24 bg-line"></div>
 
         <div class="hidden lg:flex flex-col gap-4 min-w-[140px]">
             <div>
                 <p
-                    class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1"
+                    class="text-[9px] font-black text-muted uppercase tracking-widest mb-1"
                 >
                     Strategic Momentum
                 </p>
@@ -154,14 +154,14 @@
                 >
                     {completionStats.completed}
                     <span
-                        class="text-sm text-slate-500 font-medium pb-1.5 capitalize"
+                        class="text-sm text-muted font-medium pb-1.5 capitalize"
                         >/ {completionStats.total} Goals</span
                     >
                 </div>
             </div>
-            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div class="w-full bg-surface h-1.5 rounded-full overflow-hidden">
                 <div
-                    class="bg-blue-500 h-full transition-all duration-1000"
+                    class="bg-primary h-full transition-all duration-1000"
                     style="width: {completionStats.percentage}%"
                 ></div>
             </div>

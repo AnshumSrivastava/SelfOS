@@ -49,8 +49,8 @@
             id: "Professional",
             name: "Prof",
             icon: Briefcase,
-            color: "text-blue-500",
-            bg: "bg-blue-500",
+            color: "text-primary",
+            bg: "bg-primary",
         },
         {
             id: "Personal",
@@ -159,7 +159,7 @@
 
     const priorityColors = {
         high: "text-red-500",
-        normal: "text-blue-500",
+        normal: "text-primary",
         low: "text-gray-500",
     };
 </script>
@@ -173,7 +173,7 @@
         </div>
         <button
             onclick={() => openGoalModal()}
-            class="w-10 h-10 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+            class="w-12 h-12 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>
@@ -186,7 +186,7 @@
             <button
                 class="flex-shrink-0 card-subtle p-3 min-w-[100px] transition-all {activeArea ===
                 area.id
-                    ? 'border-primary bg-primary/5'
+                    ? 'border-primary ring-1 ring-primary/20'
                     : ''}"
                 onclick={() =>
                     (activeArea = activeArea === area.id ? "All" : area.id)}
@@ -261,13 +261,18 @@
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                         <span
-                            class="text-xs font-bold {priorityColors[
-                                goal.priority
-                            ]} uppercase">{goal.priority}</span
+                            class="text-xs font-bold {(() => {
+                                const colors = {
+                                    high: 'text-red-500',
+                                    medium: 'text-amber-500',
+                                    low: 'text-primary',
+                                };
+                                return colors[goal.priority] || 'text-muted';
+                            })()} uppercase">{goal.priority}</span
                         >
                         <span class="text-[10px] text-muted">•</span>
                         <span class="text-[10px] text-muted uppercase"
-                            >{goal.type}</span
+                            >{goal.horizon}</span
                         >
                         <span class="text-[10px] text-muted">•</span>
                         <span class="text-[10px] text-muted">{goal.area}</span>
@@ -275,11 +280,11 @@
                     <h3 class="text-lg font-bold text-white truncate mb-1">
                         {goal.title}
                     </h3>
-                    {#if goal.reason}
+                    {#if goal.vision}
                         <p
                             class="text-xs text-primary font-medium line-clamp-1 mb-2"
                         >
-                            {goal.reason}
+                            {goal.vision}
                         </p>
                     {/if}
 
@@ -302,7 +307,7 @@
                         {progress}%
                     </div>
                     <div class="flex items-center gap-2">
-                        {#if goal.type !== "short"}
+                        {#if goal.horizon !== "short"}
                             <button
                                 class="p-2 text-muted active:text-primary transition-colors"
                                 onclick={(e) => {
@@ -323,9 +328,7 @@
                     </div>
                 </div>
             </div>
-            <div
-                class="mt-3 h-1 w-full bg-background rounded-full overflow-hidden"
-            >
+            <div class="mt-3 h-1 w-full bg-line rounded-full overflow-hidden">
                 <div
                     class="h-full bg-primary transition-all duration-300"
                     style="width: {progress}%"
@@ -335,7 +338,7 @@
 
         {#if isExpanded}
             <div
-                class="p-4 pt-0 space-y-4 border-t border-line/50 bg-surface/10"
+                class="p-4 pt-0 space-y-4 border-t border-line/50 bg-surface/30"
                 transition:slide
             >
                 <div class="flex justify-between items-center pt-3">
@@ -360,7 +363,7 @@
                     </button>
                 </div>
 
-                {#if children.length > 0 || goal.type !== "short"}
+                {#if children.length > 0 || goal.horizon !== "short"}
                     <div class="space-y-3 pt-1 border-t border-line/10">
                         <div class="flex items-center justify-between">
                             <h4
@@ -368,7 +371,7 @@
                             >
                                 Sub-Goals
                             </h4>
-                            {#if goal.type !== "short"}
+                            {#if goal.horizon !== "short"}
                                 <button
                                     onclick={() => openGoalModal(null, goal.id)}
                                     class="text-[9px] font-black text-primary uppercase"
@@ -399,11 +402,12 @@
                                 class="flex-shrink-0"
                             >
                                 <div
-                                    class="w-5 h-5 rounded border-2 {task.completed
+                                    class="w-5 h-5 rounded border-2 {task.status ===
+                                    'completed'
                                         ? 'bg-primary border-primary flex items-center justify-center text-black'
                                         : 'border-muted'}"
                                 >
-                                    {#if task.completed}
+                                    {#if task.status === "completed"}
                                         <svg
                                             class="w-3.5 h-3.5"
                                             fill="none"
@@ -421,7 +425,8 @@
                                 </div>
                             </button>
                             <span
-                                class="text-sm text-white flex-1 truncate {task.completed
+                                class="text-sm text-white flex-1 truncate {task.status ===
+                                'completed'
                                     ? 'opacity-30 line-through'
                                     : ''}">{task.title}</span
                             >
@@ -450,9 +455,7 @@
 
                 <!-- Task Scratchpad -->
                 <div class="pt-3">
-                    <div
-                        class="bg-background/60 border border-line rounded-xl p-3 shadow-inner"
-                    >
+                    <div class="bg-surface border border-line rounded-xl p-3">
                         <div class="flex items-center justify-between mb-2">
                             <h5
                                 class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5"

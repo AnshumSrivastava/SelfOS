@@ -9,12 +9,11 @@ import { fitnessStore } from './fitness.svelte';
 import { notesStore } from './notes.svelte';
 import { goalsStore } from './goals.svelte';
 import { journalStore } from './journal.svelte';
-import { lifeBalanceStore } from './lifeBalance.svelte';
 import { base } from '$app/paths';
 
 export type SearchResult = {
     id: string;
-    type: 'Task' | 'Habit' | 'Finance' | 'Project' | 'Book' | 'Focus' | 'Calendar' | 'Navigation' | 'Nutrition' | 'Fitness' | 'Note' | 'Goal' | 'Journal' | 'Balance';
+    type: 'Task' | 'Habit' | 'Finance' | 'Project' | 'Book' | 'Focus' | 'Calendar' | 'Navigation' | 'Nutrition' | 'Fitness' | 'Note' | 'Goal' | 'Journal';
     title: string;
     subtitle?: string;
     href: string;
@@ -45,7 +44,6 @@ class SearchStore {
             { name: "Focus", href: `${base}/focus` },
             { name: "Journal", href: `${base}/journal` },
             { name: "Settings", href: `${base}/settings` },
-            { name: "Life Balance", href: `${base}/life-balance` },
             { name: "Notes", href: `${base}/notes` },
             { name: "Goals", href: `${base}/goals` },
         ];
@@ -176,14 +174,14 @@ class SearchStore {
 
         // Notes
         notesStore.notes.forEach(n => {
-            if (n.title.toLowerCase().includes(q) || (n.content && n.content.toLowerCase().includes(q)) || n.folder.toLowerCase().includes(q)) {
+            if (n.title.toLowerCase().includes(q) || (n.content && n.content.toLowerCase().includes(q))) {
                 results.push({
                     id: n.id,
                     type: 'Note',
                     title: n.title,
-                    subtitle: `${n.folder} • ${n.content ? n.content.substring(0, 30) + '...' : ''}`,
+                    subtitle: `${n.content ? n.content.substring(0, 30) + '...' : ''}`,
                     href: `${base}/notes`,
-                    date: undefined // Date in note store is string "2h ago" etc
+                    date: undefined
                 });
             }
         });
@@ -195,7 +193,7 @@ class SearchStore {
                     id: g.id,
                     type: 'Goal',
                     title: g.title,
-                    subtitle: `${g.progress}% • Deadline: ${g.deadline}`,
+                    subtitle: `${goalsStore.getGoalProgress(g.id)}% • Deadline: ${g.deadline || 'No Deadline'}`,
                     href: `${base}/goals`,
                     date: undefined
                 });
@@ -204,27 +202,13 @@ class SearchStore {
 
         // Journal
         journalStore.entries.forEach(j => {
-            if (j.title.toLowerCase().includes(q) || j.preview.toLowerCase().includes(q) || (j.content && j.content.toLowerCase().includes(q))) {
+            if (j.title.toLowerCase().includes(q) || (j.content && j.content.toLowerCase().includes(q))) {
                 results.push({
                     id: j.id,
                     type: 'Journal',
                     title: j.title,
-                    subtitle: `Mood: ${j.mood} • ${j.preview.substring(0, 30)}...`,
+                    subtitle: `Mood: ${j.mood} • ${j.content.substring(0, 30)}...`,
                     href: `${base}/journal`,
-                    date: undefined
-                });
-            }
-        });
-
-        // Life Balance
-        lifeBalanceStore.tasks.forEach(t => {
-            if (t.title.toLowerCase().includes(q)) {
-                results.push({
-                    id: String(t.id),
-                    type: 'Balance',
-                    title: t.title,
-                    subtitle: `${t.category} • ${t.completed ? 'Completed' : 'Pending'}`,
-                    href: `${base}/life-balance`,
                     date: undefined
                 });
             }

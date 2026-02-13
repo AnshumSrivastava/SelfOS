@@ -46,7 +46,7 @@
     let vision = $state("");
     let description = $state("");
     let targetDate = $state("");
-    let priority: Priority = $state("normal");
+    let priority: Priority = $state("medium");
     let horizon: GoalHorizon = $state("short");
     let area: GoalArea = $state("Personal");
     let status: GoalStatus = $state("active");
@@ -147,7 +147,7 @@
         vision = "";
         description = "";
         targetDate = "";
-        priority = "normal";
+        priority = "medium";
         horizon = "short";
         area = "Personal";
         status = "active";
@@ -236,6 +236,9 @@
                         project: parentGoal.area,
                         priority:
                             parentGoal.priority === "high" ? "high" : "medium",
+                        deadline: null,
+                        link: null,
+                        scheduled: null,
                     });
                 });
             }
@@ -261,7 +264,7 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
         transition:fade={{ duration: 200 }}
         onclick={onClose}
         onkeydown={(e) => (e.key === "Escape" || e.key === " ") && onClose()}
@@ -269,7 +272,7 @@
         tabindex="-1"
     >
         <div
-            class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]"
+            class="bg-surface border border-line w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]"
             onclick={(e) => e.stopPropagation()}
             onkeydown={(e) => e.stopPropagation()}
             role="dialog"
@@ -277,10 +280,10 @@
             tabindex="-1"
         >
             <!-- Header & Progress -->
-            <div class="p-8 pb-4 relative border-b border-slate-800/50">
+            <div class="p-8 pb-4 relative border-b border-line">
                 <button
                     onclick={onClose}
-                    class="absolute top-8 right-8 p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-500 hover:text-white"
+                    class="absolute top-8 right-8 p-2 hover:bg-background rounded-full transition-colors text-muted hover:text-white"
                 >
                     <X size={20} />
                 </button>
@@ -291,21 +294,21 @@
                             class="h-1 flex-1 rounded-full transition-all duration-500 {i +
                                 1 <=
                             currentStep
-                                ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'
-                                : 'bg-slate-800'}"
+                                ? 'bg-primary shadow-lg shadow-primary/20'
+                                : 'bg-background'}"
                         ></div>
                     {/each}
                 </div>
 
                 <span
-                    class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-1 block"
+                    class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1 block"
                 >
                     Step {currentStep} of {totalSteps}
                 </span>
                 <h2 class="text-2xl font-bold text-white leading-tight">
                     {stepTitles[currentStep - 1]}
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">
+                <p class="text-xs text-muted mt-1">
                     {stepSubs[currentStep - 1]}
                 </p>
             </div>
@@ -317,27 +320,27 @@
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
                                     >Goal Title</span
                                 >
                                 <input
                                     bind:value={title}
                                     placeholder="e.g., Become a Senior Architect"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-700"
+                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30"
                                 />
                             </label>
                         </div>
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
                                     >The Vision (Why?)</span
                                 >
                                 <textarea
                                     bind:value={vision}
                                     placeholder="The core purpose... 'So I can design systems that help millions.'"
                                     rows="3"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-700 resize-none italic font-serif"
+                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30 resize-none italic font-serif"
                                 ></textarea>
                             </label>
                         </div>
@@ -350,16 +353,16 @@
                                     type="button"
                                     class="p-4 rounded-2xl border transition-all text-left flex items-center justify-between {horizon ===
                                     h.value
-                                        ? 'border-blue-500/50 bg-blue-500/5'
-                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700'}"
+                                        ? 'border-primary/50 bg-primary/5'
+                                        : 'border-line bg-background/40 hover:border-muted'}"
                                     onclick={() => (horizon = h.value)}
                                 >
                                     <div class="flex items-center gap-4">
                                         <div
-                                            class="p-2 rounded-xl bg-slate-900 border border-slate-800 {horizon ===
+                                            class="p-2 rounded-xl bg-surface border border-line {horizon ===
                                             h.value
-                                                ? 'text-blue-400'
-                                                : 'text-slate-500'}"
+                                                ? 'text-primary'
+                                                : 'text-muted'}"
                                         >
                                             {#if h.value === "life"}<Sparkles
                                                     size={18}
@@ -378,16 +381,14 @@
                                             >
                                                 {h.label}
                                             </div>
-                                            <div
-                                                class="text-[10px] text-slate-500"
-                                            >
+                                            <div class="text-[10px] text-muted">
                                                 {h.desc}
                                             </div>
                                         </div>
                                     </div>
                                     {#if horizon === h.value}
                                         <div
-                                            class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white"
+                                            class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-black"
                                         >
                                             <Check size={12} strokeWidth={4} />
                                         </div>
@@ -400,7 +401,7 @@
                     <div class="space-y-8" in:fly={{ x: 20, duration: 400 }}>
                         <div>
                             <span
-                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
                                 >Life Area</span
                             >
                             <div class="flex flex-wrap gap-2">
@@ -409,8 +410,8 @@
                                         type="button"
                                         class="px-4 py-2 rounded-xl border text-xs font-bold transition-all {area ===
                                         a
-                                            ? 'border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                            : 'border-slate-800 text-slate-500 hover:border-slate-700'}"
+                                            ? 'border-primary bg-primary text-black shadow-lg shadow-primary/20'
+                                            : 'border-line text-muted hover:border-muted'}"
                                         onclick={() => (area = a)}
                                     >
                                         {a}
@@ -423,12 +424,12 @@
                             <div>
                                 <label class="block">
                                     <span
-                                        class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                        class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
                                         >Parent Objective (Optional)</span
                                     >
                                     <select
                                         bind:value={parentId}
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all appearance-none"
+                                        class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all appearance-none"
                                     >
                                         <option value={undefined}
                                             >No Parent (Standalone)</option
@@ -448,17 +449,17 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <span
-                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
                                     >Priority</span
                                 >
                                 <div class="flex flex-col gap-2">
-                                    {#each ["low", "normal", "high"] as p}
+                                    {#each ["low", "medium", "high"] as p}
                                         <button
                                             type="button"
                                             class="p-3 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all capitalize {priority ===
                                             p
                                                 ? 'border-amber-500/50 bg-amber-500/5 text-amber-500'
-                                                : 'border-slate-800 text-slate-500 hover:border-slate-700'}"
+                                                : 'border-line text-muted hover:border-muted'}"
                                             onclick={() =>
                                                 (priority = p as Priority)}
                                         >
@@ -476,13 +477,13 @@
                             <div>
                                 <label class="block">
                                     <span
-                                        class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-3"
+                                        class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
                                         >Target Date</span
                                     >
                                     <input
                                         type="date"
                                         bind:value={targetDate}
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3 text-white focus:border-blue-500 outline-none color-scheme-dark"
+                                        class="w-full bg-background border border-line rounded-2xl px-5 py-3 text-white focus:border-primary outline-none color-scheme-dark"
                                     />
                                 </label>
                             </div>
@@ -490,14 +491,14 @@
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
                                     >Strategic Notes</span
                                 >
                                 <textarea
                                     bind:value={description}
                                     placeholder="Resources, obstacles, or starting context..."
                                     rows="3"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all placeholder:text-slate-700 resize-none"
+                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all placeholder:text-muted/30 resize-none"
                                 ></textarea>
                             </label>
                         </div>
@@ -505,18 +506,15 @@
                 {:else if currentStep === 5}
                     <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
                         <div
-                            class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-4"
+                            class="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex gap-4"
                         >
-                            <Sparkles
-                                class="text-blue-400 shrink-0"
-                                size={20}
-                            />
+                            <Sparkles class="text-primary/70" size={20} />
                             <div>
-                                <p class="text-xs font-bold text-blue-400 mb-1">
+                                <p class="text-xs font-bold text-primary mb-1">
                                     Atomic Breakdown
                                 </p>
                                 <p
-                                    class="text-[10px] text-slate-400 leading-relaxed"
+                                    class="text-[10px] text-muted leading-relaxed"
                                 >
                                     Quickly architect your plan. Lines starting
                                     with <span class="text-white font-black"
@@ -527,13 +525,13 @@
                         </div>
 
                         <div
-                            class="bg-slate-950 border border-slate-800 rounded-2xl p-4 min-h-[250px] relative"
+                            class="bg-background border border-line rounded-2xl p-4 min-h-[250px] relative"
                         >
                             <textarea
                                 bind:value={structurePlan}
                                 placeholder="> Milestone: First Prototype&#10;- Design schema&#10;- Implement store&#10;&#10;> Milestone: UI Polish"
                                 rows="10"
-                                class="w-full bg-transparent border-none text-sm text-white focus:ring-0 outline-none placeholder:text-slate-800 leading-relaxed resize-none font-mono"
+                                class="w-full bg-transparent border-none text-sm text-white focus:ring-0 outline-none placeholder:text-muted/30 leading-relaxed resize-none font-mono"
                             ></textarea>
                         </div>
                     </div>
@@ -542,12 +540,12 @@
 
             <!-- Footer -->
             <div
-                class="p-8 pb-10 pt-4 flex gap-3 bg-slate-900 border-t border-slate-800/50"
+                class="p-8 pb-10 pt-4 flex gap-3 bg-surface border-t border-line"
             >
                 {#if currentStep > 1}
                     <button
                         onclick={prevStep}
-                        class="px-6 py-4 rounded-2xl border border-slate-800 text-slate-300 font-bold hover:bg-slate-800 transition-all flex items-center gap-2"
+                        class="px-6 py-4 rounded-2xl border border-line text-muted font-bold hover:bg-background transition-all flex items-center gap-2"
                     >
                         <ChevronLeft size={18} />
                         Back
@@ -556,7 +554,7 @@
                 <button
                     onclick={nextStep}
                     disabled={currentStep === 1 && !title.trim()}
-                    class="flex-1 px-6 py-4 rounded-2xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                    class="flex-1 px-6 py-4 rounded-2xl bg-primary text-black font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                 >
                     {#if currentStep === totalSteps}
                         <span>Finish & {goal ? "Save" : "Create"}</span>

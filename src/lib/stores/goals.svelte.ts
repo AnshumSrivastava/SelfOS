@@ -2,7 +2,7 @@ import { LocalStore } from './localStore.svelte';
 import { tasksStore } from './tasks.svelte';
 
 // Simplified data types
-export type Priority = 'high' | 'normal' | 'low';
+export type Priority = 'high' | 'medium' | 'low';
 export type GoalHorizon = 'life' | 'long' | 'mid' | 'short';
 export type GoalStatus = 'planned' | 'active' | 'completed' | 'paused';
 export type GoalArea = 'Professional' | 'Personal' | 'Health' | 'Family' | 'Fun' | 'Spiritual' | 'Other';
@@ -221,6 +221,46 @@ class GoalsStore {
         if (daysSinceLastUpdate > 14) return 'stalled';
         if (daysSinceLastUpdate > 7) return 'at-risk';
         return 'on-track';
+    }
+
+    // Mobile UI Helper Methods
+    async addTasksBatch(goalId: string, input: string) {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal) return 0;
+
+        const { tasks } = await parseBatchTasks(input);
+        tasks.forEach(task => {
+            tasksStore.add({
+                title: task.title,
+                link: task.link || null,
+                goalId: goalId,
+                project: goal.area,
+                priority: goal.priority,
+                deadline: null,
+                scheduled: null
+            });
+        });
+        return tasks.length;
+    }
+
+    getAreaProgress(area: GoalArea): number {
+        const areaGoals = this.goals.filter(g => g.area === area && !g.parentId);
+        if (areaGoals.length === 0) return 0;
+
+        const totalProgress = areaGoals.reduce((acc, goal) => acc + this.getGoalProgress(goal.id), 0);
+        return Math.round(totalProgress / areaGoals.length);
+    }
+
+    getGoalTasks(goalId: string) {
+        return tasksStore.tasks.filter(t => t.goalId === goalId);
+    }
+
+    toggleTask(taskId: string) {
+        tasksStore.toggle(taskId);
+    }
+
+    deleteTask(taskId: string) {
+        tasksStore.remove(taskId);
     }
 }
 

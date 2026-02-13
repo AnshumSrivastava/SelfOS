@@ -37,7 +37,7 @@
         <h1 class="text-3xl font-light text-white">Habits</h1>
         <button
             onclick={() => (isAdding = true)}
-            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
             <Plus size={24} />
         </button>

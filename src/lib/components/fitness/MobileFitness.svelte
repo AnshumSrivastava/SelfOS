@@ -15,8 +15,19 @@
     import LogWorkoutModal from "./LogWorkoutModal.svelte";
     import UpdateStatsModal from "./UpdateStatsModal.svelte";
 
+    import { onMount } from "svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);
+    let isLoading = $state(true);
+
+    onMount(() => {
+        const timer = setTimeout(() => {
+            isLoading = false;
+        }, 800);
+        return () => clearTimeout(timer);
+    });
 
     let stats = $derived(fitnessStore.stats);
     let workouts = $derived(fitnessStore.workouts);
@@ -47,157 +58,214 @@
         </button>
     </div>
 
-    <div class="space-y-10">
-        <!-- Daily Activity Rings-style -->
-        <div class="grid grid-cols-2 gap-4">
-            <button
-                onclick={() => (isUpdateStatsOpen = true)}
-                class="card-subtle aspect-square flex flex-col justify-between relative overflow-hidden group active:scale-[0.98] transition-all"
-            >
+    {#if isLoading}
+        <div class="space-y-10">
+            <div class="grid grid-cols-2 gap-4">
                 <div
-                    class="absolute inset-0 flex items-center justify-center opacity-5 group-hover:opacity-10 transition-opacity"
+                    class="card-subtle aspect-square p-6 flex flex-col justify-between"
                 >
-                    <Footprints size={80} />
+                    <SkeletonLoader circle width="w-10" height="h-10" />
+                    <SkeletonLoader lines={1} height="h-8" width="w-3/4" />
                 </div>
-                <Footprints class="text-primary relative z-10" size={24} />
-                <div class="relative z-10">
-                    <span class="text-2xl font-bold text-white block"
-                        >{stats.todaySteps.toLocaleString()}</span
-                    >
-                    <span
-                        class="text-xs text-muted uppercase tracking-wider font-bold"
-                        >Steps today</span
-                    >
-                </div>
-            </button>
-
-            <div class="flex flex-col gap-4">
-                <button
-                    onclick={() => (isUpdateStatsOpen = true)}
-                    class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
-                >
-                    <div
-                        class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary"
-                    >
-                        <Droplets size={20} />
+                <div class="flex flex-col gap-4">
+                    <div class="card-subtle flex-1 p-4 flex items-center gap-3">
+                        <SkeletonLoader circle width="w-10" height="h-10" />
+                        <SkeletonLoader lines={1} height="h-4" width="w-12" />
                     </div>
-                    <div>
-                        <span
-                            class="text-xs text-muted block uppercase tracking-tighter font-bold"
-                            >Water</span
-                        >
-                        <span class="text-lg font-bold text-white block"
-                            >{stats.todayWater.toFixed(1)}L</span
-                        >
+                    <div class="card-subtle flex-1 p-4 flex items-center gap-3">
+                        <SkeletonLoader circle width="w-10" height="h-10" />
+                        <SkeletonLoader lines={1} height="h-4" width="w-12" />
                     </div>
-                </button>
-                <button
-                    onclick={() => (isUpdateStatsOpen = true)}
-                    class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
-                >
-                    <div
-                        class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"
-                    >
-                        <Moon size={20} />
-                    </div>
-                    <div>
-                        <span
-                            class="text-xs text-muted block uppercase tracking-tighter font-bold"
-                            >Sleep</span
-                        >
-                        <span class="text-lg font-bold text-white block"
-                            >{fitnessStore.latestSleep}h</span
-                        >
-                    </div>
-                </button>
-            </div>
-        </div>
-
-        <!-- Today's Plan -->
-        <div
-            class="card-subtle bg-gradient-to-br from-primary/5 to-transparent border-primary/20"
-        >
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-light text-white text-lg">Next Session</h3>
-                <span
-                    class="text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-black uppercase tracking-widest"
-                    >Strength</span
-                >
-            </div>
-            <div class="flex items-center gap-4 mb-6">
-                <div
-                    class="w-14 h-14 rounded-2xl bg-surface border border-line flex items-center justify-center text-primary shadow-inner"
-                >
-                    <Dumbbell size={28} />
-                </div>
-                <div>
-                    <h4 class="font-bold text-white">Pull Day (Back & Bi)</h4>
-                    <p class="text-xs text-muted">
-                        45-60 mins • Hard Difficulty
-                    </p>
                 </div>
             </div>
-            <button
-                class="w-full py-4 rounded-2xl bg-primary text-black font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
-            >
-                Start Workout
-            </button>
-        </div>
 
-        <!-- Recent Activity -->
-        <div class="space-y-6">
-            <div class="flex items-center justify-between px-1">
-                <h3 class="text-lg font-light text-white">Recent Workouts</h3>
-                <button
-                    class="text-xs text-muted font-bold uppercase tracking-wider"
-                    >All Workouts</button
-                >
+            <div class="card-subtle p-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <SkeletonLoader lines={1} width="w-24" />
+                    <SkeletonLoader lines={1} width="w-16" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <SkeletonLoader circle width="w-14" height="h-14" />
+                    <div class="flex-1 space-y-2">
+                        <SkeletonLoader lines={1} width="w-3/4" />
+                        <SkeletonLoader lines={1} width="w-1/2" />
+                    </div>
+                </div>
+                <SkeletonLoader lines={1} height="h-12" />
             </div>
 
-            <div class="space-y-3">
-                {#each workouts as w (w.id)}
-                    <div
-                        class="card-subtle flex items-center justify-between p-4 active:bg-surface/50 transition-colors"
-                    >
-                        <div class="flex items-center gap-4">
-                            <div
-                                class="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-primary shadow-sm"
-                            >
-                                <Activity size={20} />
-                            </div>
-                            <div>
-                                <p class="font-bold text-white text-sm">
-                                    {w.title}
-                                </p>
-                                <p
-                                    class="text-[10px] text-muted uppercase tracking-wider font-medium"
-                                >
-                                    {formatDate(w.date)} • {w.type}
-                                </p>
+            <div class="space-y-4">
+                <SkeletonLoader lines={1} width="w-32" />
+                <div class="space-y-3">
+                    {#each Array(3) as _}
+                        <div class="card-subtle p-4 flex items-center gap-4">
+                            <SkeletonLoader circle width="w-12" height="h-12" />
+                            <div class="flex-1 space-y-2">
+                                <SkeletonLoader lines={1} width="w-1/3" />
+                                <SkeletonLoader lines={1} width="w-1/4" />
                             </div>
                         </div>
-                        <div class="text-right">
-                            <span class="block text-white font-bold text-sm"
-                                >{w.calories} kcal</span
-                            >
+                    {/each}
+                </div>
+            </div>
+        </div>
+    {:else}
+        <div class="space-y-10">
+            <!-- Daily Activity Rings-style -->
+            <div class="grid grid-cols-2 gap-4">
+                <button
+                    onclick={() => (isUpdateStatsOpen = true)}
+                    class="card-subtle aspect-square flex flex-col justify-between relative overflow-hidden group active:scale-[0.98] transition-all"
+                >
+                    <div
+                        class="absolute inset-0 flex items-center justify-center opacity-5 group-hover:opacity-10 transition-opacity"
+                    >
+                        <Footprints size={80} />
+                    </div>
+                    <Footprints class="text-primary relative z-10" size={24} />
+                    <div class="relative z-10">
+                        <span class="text-2xl font-bold text-white block"
+                            >{stats.todaySteps.toLocaleString()}</span
+                        >
+                        <span
+                            class="text-xs text-muted uppercase tracking-wider font-bold"
+                            >Steps today</span
+                        >
+                    </div>
+                </button>
+
+                <div class="flex flex-col gap-4">
+                    <button
+                        onclick={() => (isUpdateStatsOpen = true)}
+                        class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
+                    >
+                        <div
+                            class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary"
+                        >
+                            <Droplets size={20} />
+                        </div>
+                        <div>
                             <span
-                                class="block text-[10px] text-muted uppercase tracking-widest font-black"
-                                >{w.duration}</span
+                                class="text-xs text-muted block uppercase tracking-tighter font-bold"
+                                >Water</span
+                            >
+                            <span class="text-lg font-bold text-white block"
+                                >{stats.todayWater.toFixed(1)}L</span
                             >
                         </div>
-                    </div>
-                {/each}
-
-                {#if workouts.length === 0}
-                    <div
-                        class="py-10 text-center opacity-40 italic text-sm text-muted"
+                    </button>
+                    <button
+                        onclick={() => (isUpdateStatsOpen = true)}
+                        class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
                     >
-                        No activity recorded yet.
+                        <div
+                            class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"
+                        >
+                            <Moon size={20} />
+                        </div>
+                        <div>
+                            <span
+                                class="text-xs text-muted block uppercase tracking-tighter font-bold"
+                                >Sleep</span
+                            >
+                            <span class="text-lg font-bold text-white block"
+                                >{fitnessStore.latestSleep}h</span
+                            >
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Today's Plan -->
+            <div
+                class="card-subtle bg-gradient-to-br from-primary/5 to-transparent border-primary/20"
+            >
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-light text-white text-lg">Next Session</h3>
+                    <span
+                        class="text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-black uppercase tracking-widest"
+                        >Strength</span
+                    >
+                </div>
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-surface border border-line flex items-center justify-center text-primary shadow-inner"
+                    >
+                        <Dumbbell size={28} />
                     </div>
-                {/if}
+                    <div>
+                        <h4 class="font-bold text-white">
+                            Pull Day (Back & Bi)
+                        </h4>
+                        <p class="text-xs text-muted">
+                            45-60 mins • Hard Difficulty
+                        </p>
+                    </div>
+                </div>
+                <button
+                    class="w-full py-4 rounded-2xl bg-primary text-black font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+                >
+                    Start Workout
+                </button>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="text-lg font-light text-white">
+                        Recent Workouts
+                    </h3>
+                    <button
+                        class="text-xs text-muted font-bold uppercase tracking-wider"
+                        >All Workouts</button
+                    >
+                </div>
+
+                <div class="space-y-3">
+                    {#each workouts as w (w.id)}
+                        <div
+                            class="card-subtle flex items-center justify-between p-4 active:bg-surface/50 transition-colors"
+                        >
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-primary shadow-sm"
+                                >
+                                    <Activity size={20} />
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-sm">
+                                        {w.title}
+                                    </p>
+                                    <p
+                                        class="text-[10px] text-muted uppercase tracking-wider font-medium"
+                                    >
+                                        {formatDate(w.date)} • {w.type}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-white font-bold text-sm"
+                                    >{w.calories} kcal</span
+                                >
+                                <span
+                                    class="block text-[10px] text-muted uppercase tracking-widest font-black"
+                                    >{w.duration}</span
+                                >
+                            </div>
+                        </div>
+                    {/each}
+
+                    {#if workouts.length === 0}
+                        <div
+                            class="py-10 text-center opacity-40 italic text-sm text-muted"
+                        >
+                            No activity recorded yet.
+                        </div>
+                    {/if}
+                </div>
             </div>
         </div>
-    </div>
+    {/if}
 </div>
 
 <LogWorkoutModal bind:isOpen={isLogWorkoutOpen} />

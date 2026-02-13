@@ -89,12 +89,6 @@
                     href: `${base}/nutrition`,
                     key: "nutrition",
                 },
-                {
-                    label: "Life Balance",
-                    icon: Heart,
-                    href: `${base}/life-balance`,
-                    key: "lifeBalance",
-                },
             ],
         },
         {

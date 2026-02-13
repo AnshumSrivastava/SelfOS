@@ -4,7 +4,7 @@
         goalsStore,
         type Goal,
         type GoalArea,
-        type GoalType,
+        type GoalHorizon,
     } from "$lib/stores/goals.svelte";
     import {
         Target,
@@ -27,14 +27,14 @@
     let { activeArea, focusedGoalId, onOpenModal }: Props = $props();
 
     // Board columns configuration
-    const columns: { id: GoalType; title: string; color: string }[] = [
-        { id: "long", title: "Long Term", color: "border-blue-500/20" },
+    const columns: { id: GoalHorizon; title: string; color: string }[] = [
+        { id: "long", title: "Long Term", color: "border-primary/20" },
         { id: "mid", title: "Mid Term", color: "border-purple-500/20" },
         { id: "short", title: "Short Term", color: "border-green-500/20" },
     ];
 
     // Local state for dndzone
-    let boardData = $state<Record<GoalType, Goal[]>>({
+    let boardData = $state<Record<string, Goal[]>>({
         long: [],
         mid: [],
         short: [],
@@ -61,29 +61,31 @@
         }
 
         boardData = {
-            long: filteredGoals.filter((g) => g.type === "long"),
-            mid: filteredGoals.filter((g) => g.type === "mid"),
-            short: filteredGoals.filter((g) => g.type === "short"),
+            long: filteredGoals.filter((g) => g.horizon === "long"),
+            mid: filteredGoals.filter((g) => g.horizon === "mid"),
+            short: filteredGoals.filter((g) => g.horizon === "short"),
         };
     });
 
     const flipDurationMs = 300;
 
     function handleDndConsider(
-        columnId: GoalType,
+        columnId: string,
         e: CustomEvent<DndEvent<Goal>>,
     ) {
         boardData[columnId] = e.detail.items;
     }
 
     function handleDndFinalize(
-        columnId: GoalType,
+        columnId: string,
         e: CustomEvent<DndEvent<Goal>>,
     ) {
         boardData[columnId] = e.detail.items;
         e.detail.items.forEach((item) => {
-            if (item.type !== columnId) {
-                goalsStore.updateGoal(item.id, { type: columnId });
+            if (item.horizon !== columnId) {
+                goalsStore.updateGoal(item.id, {
+                    horizon: columnId as GoalHorizon,
+                });
             }
         });
     }
@@ -101,16 +103,16 @@
 <div class="flex gap-4 h-full min-h-[600px] overflow-x-auto pb-10">
     {#each columns as column}
         <div
-            class="flex-1 flex flex-col min-w-[320px] max-w-[400px] bg-surface/10 rounded-2xl border border-line/10 overflow-hidden"
+            class="flex-1 flex flex-col min-w-[320px] max-w-[400px] bg-surface rounded-2xl border border-line overflow-hidden"
         >
             <!-- Column Header -->
             <div
-                class="p-3 px-4 bg-surface/20 border-b border-line/10 flex items-center justify-between"
+                class="p-3 px-4 bg-surface/40 border-b border-line flex items-center justify-between"
             >
                 <div class="flex items-center gap-3">
                     <div
                         class="w-1.5 h-1.5 rounded-full {column.id === 'long'
-                            ? 'bg-blue-500'
+                            ? 'bg-primary'
                             : column.id === 'mid'
                               ? 'bg-purple-500'
                               : 'bg-green-500'}"
@@ -158,7 +160,7 @@
 
                 {#if boardData[column.id].length === 0}
                     <div
-                        class="flex flex-col items-center justify-center py-12 border border-dashed border-line/10 rounded-xl text-muted text-[10px] uppercase font-bold tracking-widest opacity-30"
+                        class="flex flex-col items-center justify-center py-12 border border-dashed border-line rounded-xl text-muted text-[10px] uppercase font-bold tracking-widest opacity-30"
                     >
                         <p>Empty</p>
                     </div>
@@ -176,7 +178,7 @@
     {@const parent = goalsStore.getGoalParent(goal.id)}
 
     <div
-        class="bg-surface/30 border border-line/10 rounded-xl p-3 hover:border-primary/20 transition-all group/card cursor-grab active:cursor-grabbing shadow-sm"
+        class="bg-surface/50 border border-line rounded-xl p-3 hover:border-primary/20 transition-all group/card cursor-grab active:cursor-grabbing shadow-sm"
         onclick={() => onOpenModal(goal)}
         onkeydown={(e) => e.key === "Enter" && onOpenModal(goal)}
         role="button"
@@ -200,7 +202,7 @@
                     {goal.title}
                 </h4>
                 <span
-                    class="text-[11px] font-black text-white bg-background/40 px-1.5 py-0.5 rounded border border-line/5"
+                    class="text-[11px] font-black text-white bg-background/40 px-1.5 py-0.5 rounded border border-white/5"
                 >
                     {progress}%
                 </span>

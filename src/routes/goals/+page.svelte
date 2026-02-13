@@ -20,9 +20,10 @@
 </svelte:head>
 
 <div class="h-full">
-    {#if isMobile}
+    <div class="md:hidden">
         <MobileGoals />
-    {:else}
+    </div>
+    <div class="hidden md:block">
         <DesktopGoals />
-    {/if}
+    </div>
 </div>

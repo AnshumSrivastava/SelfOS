@@ -90,11 +90,6 @@
             label: "Calendar & Schedule",
             description: "Appointments and daily time-blocking",
         },
-        {
-            id: "lifeBalance",
-            label: "Life Balance",
-            description: "Health, Family, Fun, and Spiritual goals",
-        },
     ];
 </script>
 

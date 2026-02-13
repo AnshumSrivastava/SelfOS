@@ -38,7 +38,6 @@ class SettingsStore {
         journal: true,
         focus: true,
         calendar: true,
-        lifeBalance: true,
         settings: true
     });
 

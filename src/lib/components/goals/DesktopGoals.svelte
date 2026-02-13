@@ -69,11 +69,10 @@
     >
         <div class="flex-1">
             <h1 class="text-4xl font-light text-white mb-2 tracking-tight">
-                Strategic <span class="text-blue-500 font-medium"
-                    >Dashboard</span
+                Strategic <span class="text-primary font-medium">Dashboard</span
                 >
             </h1>
-            <p class="text-slate-400 text-sm max-w-lg">
+            <p class="text-muted text-sm max-w-lg">
                 Your mission control for long-term vision and daily execution.
                 Architecting future trajectories via intentional action.
             </p>
@@ -82,7 +81,7 @@
             <div class="flex gap-6 mt-6">
                 {#each topGoals as goal}
                     <div
-                        class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/50 p-3 rounded-2xl"
+                        class="flex items-center gap-3 bg-surface border border-line p-3 rounded-2xl"
                     >
                         <GoalProgressRing
                             progress={goalsStore.getGoalProgress(goal.id)}
@@ -91,12 +90,12 @@
                         />
                         <div class="min-w-0 max-w-[120px]">
                             <p
-                                class="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate"
+                                class="text-[10px] font-bold text-muted uppercase tracking-wider truncate"
                             >
                                 {goal.title}
                             </p>
                             <p
-                                class="text-xs text-slate-300 font-medium truncate"
+                                class="text-xs text-white/70 font-medium truncate"
                             >
                                 {goalsStore.getGoalProgress(goal.id)}% Complete
                             </p>
@@ -107,14 +106,12 @@
         </div>
 
         <div class="flex items-center gap-4 self-end lg:self-center">
-            <div
-                class="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800"
-            >
+            <div class="flex bg-surface p-1 rounded-2xl border border-line">
                 <button
                     class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
                     'strategic'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                        : 'text-slate-400 hover:text-slate-200'}"
+                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
+                        : 'text-muted hover:text-white'}"
                     onclick={() => (viewMode = "strategic")}
                 >
                     <Network size={16} />
@@ -123,8 +120,8 @@
                 <button
                     class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
                     'board'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                        : 'text-slate-400 hover:text-slate-200'}"
+                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
+                        : 'text-muted hover:text-white'}"
                     onclick={() => (viewMode = "board")}
                 >
                     <LayoutGrid size={16} />
@@ -133,8 +130,8 @@
                 <button
                     class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
                     'roadmap'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                        : 'text-slate-400 hover:text-slate-200'}"
+                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
+                        : 'text-muted hover:text-white'}"
                     onclick={() => (viewMode = "roadmap")}
                 >
                     <Map size={16} />
@@ -143,8 +140,8 @@
                 <button
                     class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
                     'importer'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                        : 'text-slate-400 hover:text-slate-200'}"
+                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
+                        : 'text-muted hover:text-white'}"
                     onclick={() => (viewMode = "importer")}
                 >
                     <Upload size={16} />
@@ -154,7 +151,7 @@
 
             <button
                 onclick={() => openGoalModal()}
-                class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-blue-600/20"
+                class="flex items-center gap-2 px-6 py-2.5 bg-primary hover:opacity-90 text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-primary/10"
             >
                 <Plus size={20} />
                 New Initiative
@@ -164,14 +161,14 @@
 
     <!-- Horizon Tabs -->
     <div
-        class="flex gap-2 overflow-x-auto pb-6 scrollbar-hide border-b border-slate-800/50 mb-8"
+        class="flex gap-2 overflow-x-auto pb-6 scrollbar-hide border-b border-line mb-8"
     >
         {#each horizons as horizon}
             <button
                 class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-all border shrink-0 {activeHorizon ===
                 horizon.id
-                    ? 'bg-blue-500/10 border-blue-500/30 text-blue-400 font-bold'
-                    : 'bg-transparent border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-900/40'}"
+                    ? 'bg-primary/10 border-primary/30 text-primary font-bold'
+                    : 'bg-transparent border-transparent text-muted hover:text-white hover:bg-surface'}"
                 onclick={() => (activeHorizon = horizon.id)}
             >
                 <horizon.icon size={18} />
@@ -190,10 +187,10 @@
     <!-- Main Content -->
     <div class="min-h-[500px]">
         {#if viewMode === "strategic"}
-            <div in:fade text-slate-100>
+            <div in:fade class="text-white">
                 <GoalHierarchyTree
                     horizon={activeHorizon}
-                    onGoalClick={(g) => {
+                    onGoalClick={(g: Goal) => {
                         selectedGoal = g;
                         showDetailModal = true;
                     }}
@@ -201,7 +198,11 @@
             </div>
         {:else if viewMode === "board"}
             <div in:fade>
-                <GoalBoard />
+                <GoalBoard
+                    {activeArea}
+                    focusedGoalId={null}
+                    onOpenModal={openGoalModal}
+                />
             </div>
         {:else if viewMode === "roadmap"}
             <div in:fade>

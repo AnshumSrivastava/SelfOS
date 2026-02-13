@@ -48,14 +48,14 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-background/90 backdrop-blur-xl"
         transition:fade={{ duration: 200 }}
         onclick={onClose}
         onkeydown={(e) => (e.key === "Escape" || e.key === " ") && onClose()}
         role="presentation"
     >
         <div
-            class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+            class="bg-surface border border-line w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col"
             onclick={(e) => e.stopPropagation()}
             onkeydown={(e) => e.stopPropagation()}
             role="dialog"
@@ -63,19 +63,19 @@
             tabindex="-1"
         >
             <div
-                class="p-6 border-b border-slate-800/50 flex items-center justify-between"
+                class="p-6 border-b border-line flex items-center justify-between"
             >
                 <div>
                     <h2 class="text-lg font-bold text-white">Log Progress</h2>
                     <p
-                        class="text-[10px] font-bold text-blue-500 uppercase tracking-widest"
+                        class="text-[10px] font-bold text-primary uppercase tracking-widest"
                     >
                         {goal.title}
                     </p>
                 </div>
                 <button
                     onclick={onClose}
-                    class="p-2 hover:bg-slate-800 rounded-full text-slate-500"
+                    class="p-2 hover:bg-surface rounded-full text-muted"
                 >
                     <X size={20} />
                 </button>
@@ -88,14 +88,14 @@
                 <div>
                     <label class="block">
                         <span
-                            class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2"
+                            class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2"
                             >What did you achieve today?</span
                         >
                         <textarea
                             bind:value={workDone}
                             placeholder="Captured the core logic... Fixed the bug... Drafted the vision..."
                             rows="3"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/10 outline-none transition-all resize-none"
+                            class="w-full bg-background border border-line rounded-2xl px-4 py-3 text-sm text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/10 outline-none transition-all resize-none placeholder:text-muted/30"
                         ></textarea>
                     </label>
                 </div>
@@ -105,22 +105,22 @@
                     <div>
                         <label class="block">
                             <span
-                                class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2 flex items-center gap-1.5"
+                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2 flex items-center gap-1.5"
                             >
-                                <Brain size={12} class="text-blue-500" />
+                                <Brain size={12} class="text-primary" />
                                 Lessons Learned
                             </span>
                             <input
                                 bind:value={lessons}
                                 placeholder="Don't underestimate CSS grid..."
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                                class="w-full bg-background border border-line rounded-xl px-4 py-2.5 text-xs text-white focus:border-primary/50 outline-none transition-all placeholder:text-muted/30"
                             />
                         </label>
                     </div>
                     <div>
                         <label class="block">
                             <span
-                                class="text-[10px) font-bold text-slate-500 uppercase tracking-widest block mb-2 flex items-center gap-1.5"
+                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-2 flex items-center gap-1.5"
                             >
                                 <Trophy size={12} class="text-amber-500" />
                                 Immediate Next Step
@@ -128,7 +128,7 @@
                             <input
                                 bind:value={nextStep}
                                 placeholder="Connect the API..."
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:border-blue-500/50 outline-none transition-all"
+                                class="w-full bg-background border border-line rounded-xl px-4 py-2.5 text-xs text-white focus:border-primary/50 outline-none transition-all placeholder:text-muted/30"
                             />
                         </label>
                     </div>
@@ -137,14 +137,21 @@
                 <!-- Mood & Difficulty -->
                 <div class="grid grid-cols-2 gap-6 pt-2">
                     <div>
-                        <label
-                            class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-4"
-                            >Mood / Energy</label
+                        <div
+                            class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-4"
+                            id="mood-label"
                         >
-                        <div class="flex items-center justify-between">
+                            Mood / Energy
+                        </div>
+                        <div
+                            class="flex items-center justify-between"
+                            role="radiogroup"
+                            aria-labelledby="mood-label"
+                        >
                             {#each [1, 2, 3, 4, 5] as m}
                                 <button
                                     onclick={() => (mood = m)}
+                                    aria-label="Mood level {m}"
                                     class="text-xl grayscale hover:grayscale-0 transition-all transform hover:scale-125 {mood ===
                                     m
                                         ? 'grayscale-0 scale-125'
@@ -156,18 +163,25 @@
                         </div>
                     </div>
                     <div>
-                        <label
-                            class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-4"
-                            >Effort Level</label
+                        <div
+                            class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-4"
+                            id="effort-label"
                         >
-                        <div class="flex gap-1.5">
+                            Effort Level
+                        </div>
+                        <div
+                            class="flex gap-1.5"
+                            role="radiogroup"
+                            aria-labelledby="effort-label"
+                        >
                             {#each [1, 2, 3, 4, 5] as d}
                                 <button
                                     onclick={() => (difficulty = d)}
+                                    aria-label="Effort level {d}"
                                     class="h-2 flex-1 rounded-full transition-all {difficulty >=
                                     d
-                                        ? 'bg-blue-500'
-                                        : 'bg-slate-800'}"
+                                        ? 'bg-primary'
+                                        : 'bg-background border border-line'}"
                                 ></button>
                             {/each}
                         </div>
@@ -175,11 +189,11 @@
                 </div>
             </div>
 
-            <div class="p-6 border-t border-slate-800/50">
+            <div class="p-6 border-t border-line">
                 <button
                     onclick={handleSubmit}
                     disabled={!workDone.trim()}
-                    class="w-full py-3.5 rounded-2xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                    class="w-full py-3.5 rounded-2xl bg-primary text-black font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                 >
                     <Check size={18} />
                     Submit Entry
@@ -197,7 +211,7 @@
         background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(59, 130, 246, 0.1);
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 10px;
     }
 </style>

@@ -129,14 +129,6 @@
             key: "calendar",
         },
         {
-            name: "Balance",
-            icon: Heart,
-            href: `${base}/life-balance`,
-            color: "text-rose-400",
-            bg: "bg-rose-400/10",
-            key: "lifeBalance",
-        },
-        {
             name: "Settings",
             icon: Settings,
             href: `${base}/settings`,

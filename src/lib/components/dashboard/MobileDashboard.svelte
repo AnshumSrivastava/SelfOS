@@ -46,7 +46,7 @@
         >
         <div class="flex items-end justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-white">45m</h2>
+                <h2 class="text-2xl font-bold text-white">45m</h2>
                 <p class="text-muted text-sm mt-1">Remaining today</p>
             </div>
             <button

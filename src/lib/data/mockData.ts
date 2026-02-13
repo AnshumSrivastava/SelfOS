@@ -300,27 +300,6 @@ export interface CalendarEvent {
 }
 
 // ============================================================================
-// LIFE BALANCE
-// ============================================================================
-
-export interface LifeBalanceData {
-    categories: LifeCategory[];
-    reflections: Reflection[];
-}
-
-export interface LifeCategory {
-    name: string;
-    score: number; // 0-10
-    notes?: string;
-}
-
-export interface Reflection {
-    date: Date;
-    content: string;
-    insights: string[];
-}
-
-// ============================================================================
 // USER DATA CONTAINER
 // ============================================================================
 
@@ -337,7 +316,6 @@ export interface UserData {
     journal: JournalEntry[];
     focus: FocusSession[];
     calendar: CalendarEvent[];
-    lifeBalance: LifeBalanceData;
 }
 
 // ============================================================================
@@ -662,17 +640,6 @@ export const mockUser: User = {
                 type: 'appointment',
             },
         ],
-        lifeBalance: {
-            categories: [
-                { name: 'Health', score: 8 },
-                { name: 'Career', score: 7 },
-                { name: 'Relationships', score: 6 },
-                { name: 'Personal Growth', score: 8 },
-                { name: 'Finance', score: 7 },
-                { name: 'Fun & Recreation', score: 5 },
-            ],
-            reflections: [],
-        },
     },
 };
 

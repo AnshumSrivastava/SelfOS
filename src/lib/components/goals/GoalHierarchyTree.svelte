@@ -9,10 +9,12 @@
         parentId = null,
         horizon = "all",
         depth = 0,
+        onGoalClick,
     } = $props<{
         parentId?: string | null;
         horizon?: string | "all";
         depth?: number;
+        onGoalClick?: (goal: Goal) => void;
     }>();
 
     const goals = $derived.by(() => {
@@ -33,25 +35,19 @@
     }
 </script>
 
-<div
-    class="space-y-4 {depth > 0
-        ? 'ml-8 border-l border-slate-800/50 pl-6 mt-4'
-        : ''}"
->
+<div class="space-y-4 {depth > 0 ? 'ml-8 border-l border-line pl-6 mt-4' : ''}">
     {#each goals as goal (goal.id)}
         <div class="relative">
             <!-- Connector Line for Nesting -->
             {#if depth > 0}
-                <div
-                    class="absolute -left-6 top-8 w-6 h-[1px] bg-slate-800/50"
-                ></div>
+                <div class="absolute -left-6 top-8 w-6 h-[1px] bg-line"></div>
             {/if}
 
             <div class="flex items-start gap-2">
                 {#if goalsStore.getGoalChildren(goal.id).length > 0}
                     <button
                         onclick={() => toggle(goal.id)}
-                        class="mt-4 p-1 rounded-md hover:bg-slate-800 text-slate-500 transition-colors"
+                        class="mt-4 p-1 rounded-md hover:bg-surface text-muted transition-colors"
                     >
                         {#if expanded[goal.id]}
                             <ChevronDown size={16} />
@@ -74,6 +70,7 @@
                         parentId={goal.id}
                         {horizon}
                         depth={depth + 1}
+                        {onGoalClick}
                     />
                 </div>
             {/if}
@@ -82,11 +79,9 @@
 
     {#if goals.length === 0 && depth === 0}
         <div
-            class="flex flex-col items-center justify-center p-12 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800"
+            class="flex flex-col items-center justify-center p-12 bg-surface rounded-3xl border border-dashed border-line"
         >
-            <p class="text-slate-500 text-sm">
-                No goals found for this horizon.
-            </p>
+            <p class="text-muted text-sm">No goals found for this horizon.</p>
         </div>
     {/if}
 </div>
