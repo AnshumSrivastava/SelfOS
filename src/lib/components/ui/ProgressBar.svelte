@@ -5,8 +5,9 @@
         value = 0,
         max = 100,
         color = "primary",
-        label,
+        label = undefined,
         showValue = true,
+        height = "h-2",
     } = $props();
 
     let percentage = $derived((value / max) * 100);
@@ -24,7 +25,7 @@
     {/if}
 
     <div
-        class="h-2 w-full bg-surface border border-line rounded-full overflow-hidden"
+        class="{height} w-full bg-surface border border-line rounded-full overflow-hidden"
     >
         <div
             class="{isMinimal

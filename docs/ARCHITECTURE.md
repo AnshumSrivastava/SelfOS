@@ -37,7 +37,7 @@ class FeatureStore {
 The application uses the PARA (Projects, Areas, Resources, Archives) system for organization, as popularized by Tiago Forte.
 
 - **Projects**: Active goals with a deadline.
-- **Areas**: Ongoing responsibilities (e.g., Finance, Health).
+- **Areas**: Ongoing responsibilities (e.g., Finance, Health, Goals).
 - **Resources**: Topics of interest.
 - **Archives**: Completed or abandoned items.
 

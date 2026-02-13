@@ -2,13 +2,19 @@ import { LocalStore } from './localStore.svelte';
 
 // Simplified data types
 export type Priority = 'high' | 'normal' | 'low';
+export type GoalType = 'short' | 'mid' | 'long';
+export type GoalArea = 'Professional' | 'Personal' | 'Health' | 'Family' | 'Fun' | 'Spiritual' | 'Other';
 
 export interface Goal {
     id: string;
     title: string;
     description?: string;
+    reason?: string;
     deadline?: string;
     priority: Priority;
+    type: GoalType;
+    area: GoalArea;
+    parentId?: string;
     completed: boolean;
     createdAt: string;
 }
@@ -18,6 +24,8 @@ export interface Task {
     goalId: string;
     title: string;
     link?: string; // Optional link for the task
+    date?: string; // ISO date string
+    startTime?: string; // HH:mm format
     completed: boolean;
     createdAt: string;
 }
@@ -29,7 +37,7 @@ interface YouTubeVideo {
 }
 
 // YouTube playlist parsing via server-side API
-async function parseYouTubePlaylist(url: string): Promise<YouTubeVideo[]> {
+async function parseYouTubePlaylist(url: string): Promise<{ videos: YouTubeVideo[], playlistTitle?: string }> {
     try {
         const response = await fetch('/api/youtube-playlist', {
             method: 'POST',
@@ -41,14 +49,17 @@ async function parseYouTubePlaylist(url: string): Promise<YouTubeVideo[]> {
 
         if (!response.ok) {
             console.error('Failed to parse YouTube playlist');
-            return [];
+            return { videos: [] };
         }
 
         const data = await response.json();
-        return data.videos || [];
+        return {
+            videos: data.videos || [],
+            playlistTitle: data.playlistTitle
+        };
     } catch (error) {
         console.error('Failed to parse YouTube playlist:', error);
-        return [];
+        return { videos: [] };
     }
 }
 
@@ -72,21 +83,26 @@ function parseTaskLine(line: string): { title: string; link?: string } {
 }
 
 // Parse batch task input (multiple lines or YouTube playlist)
-export async function parseBatchTasks(input: string): Promise<Array<{ title: string; link?: string }>> {
+export async function parseBatchTasks(input: string): Promise<{ tasks: Array<{ title: string; link?: string }>, playlistTitle?: string }> {
     const trimmed = input.trim();
 
     // Check if it's a YouTube playlist URL
     if (isYouTubePlaylistUrl(trimmed)) {
-        const videos = await parseYouTubePlaylist(trimmed);
-        return videos.map(v => ({ title: v.title, link: v.url }));
+        const { videos, playlistTitle } = await parseYouTubePlaylist(trimmed);
+        return {
+            tasks: videos.map(v => ({ title: v.title, link: v.url })),
+            playlistTitle
+        };
     }
 
     // Otherwise, split by newlines and parse each line
-    return trimmed
+    const tasks = trimmed
         .split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0)
         .map(line => parseTaskLine(line));
+
+    return { tasks };
 }
 
 // Simple store class
@@ -130,7 +146,11 @@ class GoalsStore {
     }
 
     deleteGoal(id: string) {
-        // Delete goal and its tasks
+        // Find child goals and delete them or update them
+        const childGoals = this.goals.filter(g => g.parentId === id);
+        childGoals.forEach(child => this.deleteGoal(child.id));
+
+        // Delete tasks
         this.tasksStore.value = this.tasksStore.value.filter(t => t.goalId !== id);
         this.goalsStore.value = this.goalsStore.value.filter(g => g.id !== id);
     }
@@ -151,37 +171,36 @@ class GoalsStore {
             ...task
         };
         this.tasksStore.value = [...this.tasksStore.value, newTask];
-        this.updateGoalProgress(task.goalId);
         return newTask;
     }
 
     // Batch add tasks
     async addTasksBatch(goalId: string, input: string): Promise<number> {
-        const parsedTasks = await parseBatchTasks(input);
+        const { tasks, playlistTitle } = await parseBatchTasks(input);
 
-        for (const { title, link } of parsedTasks) {
+        // If it's a new goal and we have a playlist title, update the goal title
+        if (playlistTitle) {
+            const goal = this.goals.find(g => g.id === goalId);
+            if (goal && (goal.title === 'New Goal' || !goal.title)) {
+                this.updateGoal(goalId, { title: playlistTitle });
+            }
+        }
+
+        for (const { title, link } of tasks) {
             this.addTask({ goalId, title, link });
         }
 
-        return parsedTasks.length;
+        return tasks.length;
     }
 
     updateTask(id: string, updates: Partial<Task>) {
-        const task = this.tasks.find(t => t.id === id);
         this.tasksStore.value = this.tasksStore.value.map(t =>
             t.id === id ? { ...t, ...updates } : t
         );
-        if (task) {
-            this.updateGoalProgress(task.goalId);
-        }
     }
 
     deleteTask(id: string) {
-        const task = this.tasks.find(t => t.id === id);
         this.tasksStore.value = this.tasksStore.value.filter(t => t.id !== id);
-        if (task) {
-            this.updateGoalProgress(task.goalId);
-        }
     }
 
     toggleTask(id: string) {
@@ -195,17 +214,48 @@ class GoalsStore {
         return this.tasks.filter(t => t.goalId === goalId);
     }
 
+    // Hierarchy helpers
+    getGoalChildren(parentId: string) {
+        return this.goals.filter(g => g.parentId === parentId);
+    }
+
+    getGoalParent(goalId: string) {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal || !goal.parentId) return null;
+        return this.goals.find(g => g.id === goal.parentId);
+    }
+
+    // Life Balance metrics
+    getAreaProgress(area: GoalArea): number {
+        const areaGoals = this.goals.filter(g => g.area === area);
+        if (areaGoals.length === 0) return 0;
+
+        let totalProgress = 0;
+        areaGoals.forEach(goal => {
+            totalProgress += this.getGoalProgress(goal.id);
+        });
+
+        return Math.round(totalProgress / areaGoals.length);
+    }
+
     // Progress calculation
     getGoalProgress(goalId: string): number {
         const tasks = this.getGoalTasks(goalId);
-        if (tasks.length === 0) return 0;
+        const children = this.getGoalChildren(goalId);
 
-        const completedTasks = tasks.filter(t => t.completed).length;
-        return Math.round((completedTasks / tasks.length) * 100);
-    }
+        if (tasks.length === 0 && children.length === 0) {
+            const goal = this.goals.find(g => g.id === goalId);
+            return goal?.completed ? 100 : 0;
+        }
 
-    private updateGoalProgress(goalId: string) {
-        // Progress is calculated on-the-fly, no need to store it
+        let totalWeight = tasks.length + children.length;
+        let completedWeight = tasks.filter(t => t.completed).length;
+
+        children.forEach(child => {
+            completedWeight += this.getGoalProgress(child.id) / 100;
+        });
+
+        return Math.round((completedWeight / totalWeight) * 100);
     }
 }
 

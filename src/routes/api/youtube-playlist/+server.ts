@@ -65,12 +65,16 @@ export const POST: RequestHandler = async ({ request }) => {
             });
         }
 
+        // Get playlist title
+        const playlistTitle = data?.header?.playlistHeaderRenderer?.title?.simpleText ||
+            data?.metadata?.playlistMetadataRenderer?.title;
+
         // Navigate the YouTube data structure to find videos
         const contents = data?.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer?.contents;
 
         if (!contents) {
-            return new Response(JSON.stringify({ error: 'Could not find videos in playlist' }), {
-                status: 500,
+            return new Response(JSON.stringify({ error: 'Could not find videos in playlist', playlistTitle }), {
+                status: 200, // Return 200 even if no videos but title found
                 headers: { 'Content-Type': 'application/json' }
             });
         }
@@ -89,7 +93,7 @@ export const POST: RequestHandler = async ({ request }) => {
             }
         }
 
-        return new Response(JSON.stringify({ videos }), {
+        return new Response(JSON.stringify({ videos, playlistTitle }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
