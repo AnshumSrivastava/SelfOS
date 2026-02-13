@@ -1,23 +1,31 @@
 <script lang="ts">
-    import { Flame, Check, ArrowRight, Plus } from "lucide-svelte";
+    import {
+        Flame,
+        Check,
+        Plus,
+        Zap,
+        Edit3,
+        Target,
+        Search,
+    } from "lucide-svelte";
     import { habitsStore } from "$lib/stores/habits.svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
+    import { focusStore } from "$lib/stores/focus.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
     import ConsistencyChart from "$lib/components/habits/ConsistencyChart.svelte";
     import StreakFire from "$lib/components/ui/StreakFire.svelte";
     import NumberTicker from "$lib/components/ui/NumberTicker.svelte";
+    import { base } from "$app/paths";
 
     let showQuickCapture = $state(false);
     let fire: StreakFire;
 
     // Derived stats
-    let totalHabits = $derived(habitsStore.totalCount);
-    let completedHabits = $derived(habitsStore.completedCount);
     let activeTasks = $derived(tasksStore.activeCount);
-    let completedTasks = $derived(tasksStore.completedCount);
+    let completedHabits = $derived(habitsStore.completedCount);
     let totalTasksStr = $derived(tasksStore.tasks.length);
+    let completedTasks = $derived(tasksStore.completedCount);
 
-    // Simple streak calculation (sum of all habit streaks for now or max streak? Let's use max streak of any habit for visual)
     let maxStreak = $derived(
         Math.max(0, ...habitsStore.habits.map((h) => h.streak)),
     );
@@ -28,220 +36,279 @@
     );
 </script>
 
-<div class="page-container relative px-6">
+<div class="page-container relative px-6 pb-24">
     <StreakFire bind:this={fire} />
-    <!-- Greeting & Status -->
-    <div class="space-y-1 mt-6 mb-8">
-        <h1
-            class="text-3xl font-bold tracking-tight text-[var(--color-text)] line-clamp-1"
-        >
-            Good Morning
-        </h1>
-        <p class="text-[var(--color-muted)] text-sm">
-            You have {activeTasks} priorities today.
-        </p>
-    </div>
 
-    <!-- Main Focus Card -->
-    <div
-        class="card-subtle relative overflow-hidden group bg-gradient-to-br from-[var(--theme-surface)] to-[var(--theme-surface)]/50 border-[var(--color-line)]/50"
-    >
-        <div
-            class="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 blur-3xl rounded-full -mr-16 -mt-16"
-        ></div>
-
-        <span
-            class="px-2.5 py-0.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-wider mb-4 inline-block border border-[var(--color-primary)]/20"
-            >Deep Work</span
-        >
-        <div class="flex items-end justify-between relative z-10">
-            <div>
-                <h2
-                    class="text-4xl font-bold text-[var(--color-text)] tracking-tight"
-                >
-                    45m
-                </h2>
-                <p class="text-[var(--color-muted)] text-xs mt-1 font-medium">
-                    Remaining today
-                </p>
-            </div>
-            <button
-                onclick={() => (showQuickCapture = true)}
-                class="w-12 h-12 rounded-full bg-[var(--color-primary)] text-black flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/20 active:scale-90 transition-all"
+    <!-- Summary Row -->
+    <div class="flex items-center justify-between mt-4 mb-8">
+        <div class="space-y-0.5">
+            <h1
+                class="text-2xl font-bold tracking-tight text-[var(--color-text)]"
             >
-                <Plus size={24} strokeWidth={2.5} />
-            </button>
+                Today
+            </h1>
+            <p
+                class="text-[var(--color-muted)] text-xs font-medium uppercase tracking-wider"
+            >
+                {activeTasks} urgent • {completedHabits} habits
+            </p>
         </div>
-    </div>
-
-    <!-- Quick Stats Row -->
-    <div class="grid grid-cols-2 gap-4 my-8">
-        <div
-            class="card-subtle flex flex-col justify-between h-28 border-[var(--color-line)]/50"
-        >
-            <Flame class="text-orange-500" size={20} />
-            <div>
+        <div class="flex items-center gap-4">
+            <div class="flex flex-col items-end">
+                <div class="flex items-center gap-1 text-orange-500 font-bold">
+                    <Flame size={16} />
+                    <NumberTicker value={maxStreak} />
+                </div>
                 <span
-                    class="text-2xl font-bold text-[var(--color-text)] block tracking-tight"
-                    ><NumberTicker value={maxStreak} /></span
+                    class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                    >Streak</span
                 >
+            </div>
+            <div
+                class="flex flex-col items-end border-l border-[var(--color-line)] pl-4"
+            >
+                <div class="text-[var(--color-primary)] font-bold">
+                    <NumberTicker value={taskCompletionRate} />%
+                </div>
                 <span
-                    class="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
-                    >Day Streak</span
+                    class="text-[8px] font-bold uppercase tracking-widest text-[var(--color-muted)]"
+                    >Rate</span
                 >
             </div>
         </div>
-        <div
-            class="card-subtle flex flex-col justify-between h-28 border-[var(--color-line)]/50"
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-4 gap-4 mb-10">
+        <button
+            onclick={() => (showQuickCapture = true)}
+            class="flex flex-col items-center gap-2 group"
         >
             <div
-                class="text-[var(--color-primary)] text-sm font-bold tracking-tight"
+                class="w-full aspect-square rounded-2xl bg-[var(--color-primary)] text-black flex items-center justify-center active:scale-90 transition-all shadow-lg shadow-[var(--color-primary)]/10"
             >
-                <NumberTicker value={taskCompletionRate} />%
+                <Plus size={20} strokeWidth={3} />
             </div>
-            <div>
-                <span
-                    class="text-2xl font-bold text-[var(--color-text)] block tracking-tight"
-                    >{completedTasks}/{totalTasksStr}</span
-                >
-                <span
-                    class="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
-                    >Tasks Done</span
-                >
-            </div>
-        </div>
-    </div>
-
-    <!-- Habits Section -->
-    <div class="space-y-4 my-10">
-        <div class="flex items-center justify-between">
-            <h3
-                class="text-sm font-bold uppercase tracking-widest text-[var(--color-muted)]"
-            >
-                Habits
-            </h3>
             <span
-                class="text-[10px] font-medium text-[var(--color-muted)]/60 bg-[var(--color-line)]/30 px-2 py-0.5 rounded-full"
-                >{completedHabits}/{habitsStore.totalCount}</span
+                class="text-[9px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
+                >Task</span
             >
-        </div>
-
-        <!-- Consistency Graph -->
-        <div
-            class="card-subtle p-3 border-[var(--color-line)]/50 bg-[var(--theme-surface)]/30"
+        </button>
+        <button
+            onclick={() => (window.location.href = `${base}/habits`)}
+            class="flex flex-col items-center gap-2 group"
         >
-            <ConsistencyChart height="h-16" showLabels={false} />
-        </div>
-
-        <div class="space-y-2">
-            {#each habitsStore.habits.slice(0, 3) as habit}
-                {@const isCompleted = habitsStore.isCompleted(habit.id)}
-                <button
-                    onclick={(e) => {
-                        if (!isCompleted) {
-                            fire.ignite(e.clientX, e.clientY);
-                        }
-                        habitsStore.toggle(habit.id);
-                    }}
-                    class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all py-3 border-[var(--color-line)]/30 hover:border-[var(--color-line)]"
-                >
-                    <span
-                        class="text-sm font-medium {isCompleted
-                            ? 'text-[var(--color-muted)] line-through'
-                            : 'text-[var(--color-text)]'}">{habit.name}</span
-                    >
-                    <div
-                        class="w-5 h-5 rounded-full border-2 {isCompleted
-                            ? 'bg-[var(--color-primary)] border-[var(--color-primary)]'
-                            : 'border-[var(--color-line)]'} flex items-center justify-center transition-all"
-                    >
-                        {#if isCompleted}
-                            <Check
-                                size={12}
-                                class="text-black"
-                                strokeWidth={3}
-                            />
-                        {/if}
-                    </div>
-                </button>
-            {/each}
-        </div>
+            <div
+                class="w-full aspect-square rounded-2xl bg-[var(--theme-surface)] border border-[var(--color-line)] text-[var(--color-text)] flex items-center justify-center active:scale-90 transition-all"
+            >
+                <Check size={18} strokeWidth={2.5} />
+            </div>
+            <span
+                class="text-[9px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
+                >Habit</span
+            >
+        </button>
+        <button
+            onclick={() => focusStore.toggle()}
+            class="flex flex-col items-center gap-2 group"
+        >
+            <div
+                class="w-full aspect-square rounded-2xl bg-[var(--theme-surface)] border border-[var(--color-line)] text-[var(--color-text)] flex items-center justify-center active:scale-90 transition-all {focusStore.isRunning
+                    ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                    : ''}"
+            >
+                <Zap size={18} strokeWidth={2.5} />
+            </div>
+            <span
+                class="text-[9px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
+                >Focus</span
+            >
+        </button>
+        <button
+            onclick={() => (window.location.href = `${base}/notes`)}
+            class="flex flex-col items-center gap-2 group"
+        >
+            <div
+                class="w-full aspect-square rounded-2xl bg-[var(--theme-surface)] border border-[var(--color-line)] text-[var(--color-text)] flex items-center justify-center active:scale-90 transition-all"
+            >
+                <Edit3 size={18} strokeWidth={2.5} />
+            </div>
+            <span
+                class="text-[9px] font-bold uppercase tracking-wider text-[var(--color-muted)]"
+                >Note</span
+            >
+        </button>
     </div>
 
-    <!-- Tasks Section -->
-    <div class="space-y-4 my-10">
-        <div class="flex items-center justify-between">
-            <h3
-                class="text-sm font-bold uppercase tracking-widest text-[var(--color-muted)]"
-            >
-                Tasks
-            </h3>
-            <button
-                class="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary)] hover:underline"
-                >View All</button
-            >
-        </div>
-
-        <div class="space-y-2">
-            {#each tasksStore.tasks.slice(0, 3) as task}
+    <!-- Focus Header (Minimal) -->
+    {#if focusStore.isRunning || focusStore.timeLeft < 25 * 60}
+        <div
+            class="mb-10 px-4 py-3 rounded-2xl border border-[var(--color-line)] bg-[var(--theme-surface)]/50 flex items-center justify-between"
+        >
+            <div class="flex items-center gap-3">
                 <div
-                    class="card-subtle flex items-center justify-between py-3 border-[var(--color-line)]/30"
+                    class="w-2 h-2 rounded-full bg-[var(--color-primary)] {focusStore.isRunning
+                        ? 'animate-pulse'
+                        : ''}"
+                ></div>
+                <span
+                    class="text-sm font-bold tracking-tight text-[var(--color-text)]"
+                    >{focusStore.mode === "focus" ? "Focusing" : "Break"}</span
                 >
-                    <div class="flex flex-col items-start text-left">
-                        <p
-                            class="text-[var(--color-text)] text-sm font-medium {task.status ===
-                            'completed'
-                                ? 'line-through text-[var(--color-muted)]'
-                                : ''}"
-                        >
-                            {task.title}
-                        </p>
-                        <p
-                            class="text-[10px] text-[var(--color-muted)] mt-0.5 font-medium uppercase tracking-tight"
-                        >
-                            {task.project}
-                            {#if task.deadline}
-                                • {new Date(task.deadline).toLocaleDateString(
-                                    undefined,
-                                    { month: "short", day: "numeric" },
-                                )}{/if}
-                        </p>
-                    </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span
+                    class="text-xl font-mono font-bold text-[var(--color-text)]"
+                    >{focusStore.formattedTime}</span
+                >
+                <button
+                    onclick={() => focusStore.toggle()}
+                    class="text-[var(--color-muted)]"
+                >
+                    {#if focusStore.isRunning}<Plus
+                            class="rotate-45"
+                            size={20}
+                        />{:else}<Zap size={20} />{/if}
+                </button>
+            </div>
+        </div>
+    {/if}
+
+    <!-- Standardized List Blocks -->
+    <div class="space-y-10">
+        <!-- Habits -->
+        <section class="space-y-4">
+            <div
+                class="flex items-center justify-between border-b border-[var(--color-line)] pb-2"
+            >
+                <h2
+                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-muted)]"
+                >
+                    Primary Habits
+                </h2>
+                <div class="w-16 h-4">
+                    <ConsistencyChart height="h-full" showLabels={false} />
+                </div>
+            </div>
+            <div class="space-y-1">
+                {#each habitsStore.habits.slice(0, 3) as habit}
+                    {@const isCompleted = habitsStore.isCompleted(habit.id)}
                     <button
                         onclick={(e) => {
-                            if (task.status !== "completed") {
-                                fire.ignite(e.clientX, e.clientY);
-                            }
-                            tasksStore.toggle(task.id);
+                            if (!isCompleted) fire.ignite(e.clientX, e.clientY);
+                            habitsStore.toggle(habit.id);
                         }}
-                        aria-label="Toggle task status"
-                        class="w-5 h-5 rounded-full border-2 {task.status ===
-                        'completed'
-                            ? 'bg-[var(--color-primary)] border-[var(--color-primary)]'
-                            : 'border-[var(--color-line)]'} transition-all active:scale-90"
+                        class="w-full flex items-center justify-between py-3 px-1 active:bg-[var(--color-line)]/20 transition-colors group"
                     >
-                        {#if task.status === "completed"}
+                        <div
+                            class="flex items-center gap-4 text-left overflow-hidden"
+                        >
                             <div
-                                class="flex items-center justify-center w-full h-full"
+                                class="w-6 h-6 rounded-lg border-2 {isCompleted
+                                    ? 'bg-[var(--color-primary)] border-[var(--color-primary)]'
+                                    : 'border-[var(--color-line)]'} flex items-center justify-center transition-all shrink-0"
                             >
-                                <Check
-                                    size={12}
-                                    class="text-black"
-                                    strokeWidth={3}
-                                />
+                                {#if isCompleted}<Check
+                                        size={14}
+                                        class="text-black"
+                                        strokeWidth={3}
+                                    />{/if}
                             </div>
-                        {/if}
+                            <span
+                                class="text-sm font-medium truncate {isCompleted
+                                    ? 'text-[var(--color-muted)] line-through'
+                                    : 'text-[var(--color-text)]'}"
+                            >
+                                {habit.name}
+                            </span>
+                        </div>
+                        <span
+                            class="text-[10px] font-bold text-[var(--color-muted)]/50 shrink-0"
+                            >{habit.streak}d</span
+                        >
                     </button>
-                </div>
-            {/each}
-            {#if tasksStore.tasks.length === 0}
-                <div
-                    class="text-center py-8 text-[var(--color-muted)] text-sm font-medium italic"
+                {/each}
+            </div>
+        </section>
+
+        <!-- Tasks -->
+        <section class="space-y-4">
+            <div
+                class="flex items-center justify-between border-b border-[var(--color-line)] pb-2"
+            >
+                <h2
+                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-muted)]"
                 >
-                    No tasks yet. Add one!
-                </div>
-            {/if}
-        </div>
+                    Top Priorities
+                </h2>
+                <button
+                    onclick={() => (window.location.href = `${base}/tasks`)}
+                    class="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-wider"
+                    >All</button
+                >
+            </div>
+            <div class="space-y-1">
+                {#each tasksStore.tasks.slice(0, 3) as task}
+                    <div
+                        class="w-full flex items-center justify-between py-3 px-1 group"
+                    >
+                        <div
+                            class="flex items-center gap-4 text-left overflow-hidden"
+                        >
+                            <button
+                                onclick={(e) => {
+                                    if (task.status !== "completed")
+                                        fire.ignite(e.clientX, e.clientY);
+                                    tasksStore.toggle(task.id);
+                                }}
+                                class="w-6 h-6 rounded-full border-2 {task.status ===
+                                'completed'
+                                    ? 'bg-[var(--color-primary)] border-[var(--color-primary)]'
+                                    : 'border-[var(--color-line)]'} flex items-center justify-center transition-all shrink-0"
+                            >
+                                {#if task.status === "completed"}<Check
+                                        size={14}
+                                        class="text-black"
+                                        strokeWidth={3}
+                                    />{/if}
+                            </button>
+                            <div class="flex flex-col min-w-0">
+                                <span
+                                    class="text-sm font-medium truncate {task.status ===
+                                    'completed'
+                                        ? 'text-[var(--color-muted)] line-through'
+                                        : 'text-[var(--color-text)]'}"
+                                >
+                                    {task.title}
+                                </span>
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-tight text-[var(--color-muted)] truncate"
+                                >
+                                    {task.project}
+                                </span>
+                            </div>
+                        </div>
+                        {#if task.deadline}
+                            <span
+                                class="text-[9px] font-medium text-[var(--color-muted)] shrink-0 border border-[var(--color-line)] px-1.5 py-0.5 rounded"
+                            >
+                                {new Date(task.deadline).toLocaleDateString(
+                                    undefined,
+                                    { month: "short", day: "numeric" },
+                                )}
+                            </span>
+                        {/if}
+                    </div>
+                {/each}
+                {#if tasksStore.tasks.length === 0}
+                    <div
+                        class="py-8 bg-[var(--theme-surface)]/30 rounded-2xl border border-dashed border-[var(--color-line)] flex items-center justify-center text-[var(--color-muted)] text-sm italic"
+                    >
+                        No active tasks
+                    </div>
+                {/if}
+            </div>
+        </section>
     </div>
 
     <QuickCapture bind:isOpen={showQuickCapture} />

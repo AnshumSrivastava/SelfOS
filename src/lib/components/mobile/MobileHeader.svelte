@@ -5,28 +5,29 @@
 </script>
 
 <header
-    class="h-16 flex items-center justify-between px-6 sticky top-0 z-40 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-line)]/50"
+    class="h-14 flex items-center justify-between px-6 sticky top-0 z-40 bg-[var(--color-background)]"
 >
     <div class="flex items-center gap-2">
-        <Logo size={24} />
-        <span class="text-lg font-bold tracking-tight text-[var(--color-text)]"
+        <Logo size={20} />
+        <span
+            class="text-base font-bold tracking-tight text-[var(--color-text)]"
             >SelfOS</span
         >
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-5">
         <button
             onclick={() => searchStore.open()}
-            class="text-[var(--color-muted)] hover:text-[var(--color-text)] active:scale-90 transition-all"
+            class="text-[var(--color-muted)] hover:text-[var(--color-text)] active:scale-95 transition-all"
         >
-            <Search size={20} />
+            <Search size={18} />
         </button>
         <button
-            class="text-[var(--color-muted)] hover:text-[var(--color-text)] active:scale-90 transition-all relative"
+            class="text-[var(--color-muted)] hover:text-[var(--color-text)] active:scale-95 transition-all relative"
         >
-            <Bell size={20} />
+            <Bell size={18} />
             <span
-                class="absolute top-0 right-0 w-2 h-2 bg-[var(--color-primary)] rounded-full border border-[var(--color-background)]"
+                class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full"
             ></span>
         </button>
     </div>
