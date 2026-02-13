@@ -41,16 +41,20 @@
 
     <!-- Drawer -->
     <div
-        class="fixed bottom-0 left-0 right-0 bg-[#111] rounded-t-3xl z-50 p-6 border-t border-neutral-800 max-h-[85vh] overflow-y-auto"
-        transition:fly={{ y: 100, duration: 300 }}
+        class="fixed bottom-0 left-0 right-0 bg-[var(--color-background)] rounded-t-3xl z-50 p-6 border-t border-[var(--color-line)]/50 max-h-[85vh] overflow-y-auto shadow-2xl"
+        transition:fly={{ y: 200, duration: 300, easing: (t) => t * (2 - t) }}
     >
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-medium text-white">New Task</h2>
+        <div class="flex items-center justify-between mb-8">
+            <h2
+                class="text-xl font-bold tracking-tight text-[var(--color-text)]"
+            >
+                New Task
+            </h2>
             <button
                 onclick={() => (isOpen = false)}
-                class="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-gray-400"
+                class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-text)] active:scale-90 transition-all"
             >
-                <X size={18} />
+                <X size={20} />
             </button>
         </div>
 
@@ -59,13 +63,13 @@
                 e.preventDefault();
                 handleSubmit();
             }}
-            class="space-y-6"
+            class="space-y-8"
         >
             <textarea
                 bind:value={title}
-                placeholder="What's on your mind?&#10;Paste tasks (one per line) or a YouTube playlist URL..."
-                class="w-full bg-transparent text-xl text-white placeholder:text-neutral-600 focus:outline-none resize-none"
-                rows="3"
+                placeholder="What's on your mind?"
+                class="w-full bg-transparent text-2xl font-medium text-[var(--color-text)] placeholder:text-[var(--color-muted)]/30 focus:outline-none resize-none border-b border-[var(--color-line)]/30 pb-4"
+                rows="2"
                 onkeydown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault();
@@ -75,10 +79,10 @@
             ></textarea>
 
             <!-- Projects -->
-            <div class="space-y-2">
-                <label
-                    class="text-xs text-neutral-500 font-medium uppercase tracking-wider"
-                    >Project</label
+            <div class="space-y-3">
+                <span
+                    class="text-[10px] text-[var(--color-muted)] font-bold uppercase tracking-widest block"
+                    >Project</span
                 >
                 <div
                     class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide"
@@ -87,10 +91,10 @@
                         <button
                             type="button"
                             onclick={() => (tag = t)}
-                            class="px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap {tag ===
+                            class="px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border {tag ===
                             t
-                                ? 'bg-white text-black'
-                                : 'bg-neutral-900 text-gray-400 border border-neutral-800'}"
+                                ? 'bg-[var(--color-primary)] text-black border-[var(--color-primary)]'
+                                : 'bg-[var(--theme-surface)] text-[var(--color-muted)] border-[var(--color-line)]/50'}"
                         >
                             {t}
                         </button>
@@ -99,22 +103,22 @@
             </div>
 
             <!-- Priority -->
-            <div class="space-y-2">
-                <label
-                    class="text-xs text-neutral-500 font-medium uppercase tracking-wider"
-                    >Priority</label
+            <div class="space-y-3">
+                <span
+                    class="text-[10px] text-[var(--color-muted)] font-bold uppercase tracking-widest block"
+                    >Priority</span
                 >
                 <div
-                    class="flex bg-neutral-900 rounded-xl p-1 border border-neutral-800 w-full"
+                    class="flex bg-[var(--theme-surface)] rounded-2xl p-1.5 border border-[var(--color-line)]/50 w-full"
                 >
                     {#each ["low", "medium", "high"] as p}
                         <button
                             type="button"
                             onclick={() => (priority = p as any)}
-                            class="flex-1 py-2 rounded-lg text-sm capitalize transition-all {priority ===
+                            class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {priority ===
                             p
-                                ? 'bg-neutral-700 text-white shadow-sm'
-                                : 'text-neutral-500'}"
+                                ? 'bg-[var(--color-line)] text-[var(--color-text)] shadow-sm'
+                                : 'text-[var(--color-muted)]'}"
                         >
                             {p}
                         </button>
@@ -124,48 +128,48 @@
 
             <!-- Dates -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-2">
+                <div class="space-y-3">
                     <label
-                        class="text-xs text-neutral-500 font-medium uppercase tracking-wider flex items-center gap-1"
+                        class="text-[10px] text-[var(--color-muted)] font-bold uppercase tracking-widest flex items-center gap-1.5"
                     >
-                        <AlertCircle size={12} /> Deadline
+                        <AlertCircle size={14} /> Deadline
                     </label>
                     <div
-                        class="relative bg-neutral-900 rounded-xl border border-neutral-800 p-3 flex items-center gap-2"
+                        class="relative bg-[var(--theme-surface)] rounded-2xl border border-[var(--color-line)]/50 p-3.5 flex items-center gap-2"
                     >
                         <input
                             type="date"
                             bind:value={deadline}
-                            class="bg-transparent text-white w-full text-sm focus:outline-none [-webkit-calendar-picker-indicator]:invert"
+                            class="bg-transparent text-[var(--color-text)] w-full text-sm font-medium focus:outline-none [-webkit-calendar-picker-indicator]:invert"
                         />
                     </div>
                 </div>
 
-                <div class="space-y-2">
+                <div class="space-y-3">
                     <label
-                        class="text-xs text-neutral-500 font-medium uppercase tracking-wider flex items-center gap-1"
+                        class="text-[10px] text-[var(--color-muted)] font-bold uppercase tracking-widest flex items-center gap-1.5"
                     >
-                        <Calendar size={12} /> Do On
+                        <Calendar size={14} /> Do On
                     </label>
                     <div
-                        class="relative bg-neutral-900 rounded-xl border border-neutral-800 p-3 flex items-center gap-2"
+                        class="relative bg-[var(--theme-surface)] rounded-2xl border border-[var(--color-line)]/50 p-3.5 flex items-center gap-2"
                     >
                         <input
                             type="date"
                             bind:value={scheduled}
-                            class="bg-transparent text-white w-full text-sm focus:outline-none [-webkit-calendar-picker-indicator]:invert"
+                            class="bg-transparent text-[var(--color-text)] w-full text-sm font-medium focus:outline-none [-webkit-calendar-picker-indicator]:invert"
                         />
                     </div>
                 </div>
             </div>
 
-            <div class="pt-4 flex justify-end">
+            <div class="pt-6 flex justify-end">
                 <button
                     type="submit"
                     disabled={!title.trim()}
-                    class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-900/20 active:scale-95 transition-all"
+                    class="w-full py-4 rounded-2xl bg-[var(--color-primary)] text-black font-bold uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-[var(--color-primary)]/10 active:scale-95 transition-all"
                 >
-                    <ArrowUp size={28} />
+                    Add Task <ArrowUp size={20} strokeWidth={3} />
                 </button>
             </div>
         </form>

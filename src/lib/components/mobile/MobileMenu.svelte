@@ -13,7 +13,7 @@
         Layers,
         BookOpen,
         Zap,
-        Settings, // Import Settings
+        Settings,
         Calendar,
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
@@ -36,8 +36,8 @@
             name: "Tasks",
             icon: CheckSquare,
             href: `${base}/tasks`,
-            color: "text-blue-400",
-            bg: "bg-blue-400/10",
+            color: "text-[var(--color-primary)]",
+            bg: "bg-[var(--color-primary)]/10",
             key: "tasks",
         },
         {
@@ -52,8 +52,8 @@
             name: "Finance",
             icon: DollarSign,
             href: `${base}/finance`,
-            color: "text-green-400",
-            bg: "bg-green-400/10",
+            color: "text-emerald-400",
+            bg: "bg-emerald-400/10",
             key: "finance",
         },
         {
@@ -132,8 +132,8 @@
             name: "Settings",
             icon: Settings,
             href: `${base}/settings`,
-            color: "text-gray-400",
-            bg: "bg-gray-400/10",
+            color: "text-[var(--color-muted)]",
+            bg: "bg-[var(--color-line)]/50",
             key: "settings",
         },
     ];
@@ -148,12 +148,10 @@
 
     function togglePin(key: string) {
         if (settings.mobileNavItems.includes(key)) {
-            // Remove
             settings.mobileNavItems = settings.mobileNavItems.filter(
                 (k) => k !== key,
             );
         } else {
-            // Add if less than 4
             if (settings.mobileNavItems.length < 4) {
                 settings.mobileNavItems = [...settings.mobileNavItems, key];
             }
@@ -163,37 +161,42 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[60] flex flex-col bg-[var(--color-background)]/95 backdrop-blur-xl transition-colors duration-300"
+        class="fixed inset-0 z-[60] flex flex-col bg-[var(--color-background)]"
         transition:fade={{ duration: 200 }}
     >
         <!-- Header -->
         <div
-            class="flex items-center justify-between px-6 py-4 border-b border-[var(--color-line)]"
+            class="flex items-center justify-between px-6 py-6 border-b border-[var(--color-line)]/50"
         >
-            <div class="flex items-center gap-3">
-                <span class="text-lg font-medium text-[var(--color-text)]"
+            <div class="flex items-center gap-4">
+                <span
+                    class="text-xl font-bold tracking-tight text-[var(--color-text)]"
                     >Menu</span
                 >
                 <button
                     onclick={() => (isEditing = !isEditing)}
-                    class="text-xs px-2 py-1 rounded bg-neutral-800 text-neutral-400 font-medium uppercase tracking-wider {isEditing
-                        ? 'text-primary bg-primary/10'
+                    class="text-[10px] px-3 py-1 rounded-full bg-[var(--color-line)] text-[var(--color-muted)] font-bold uppercase tracking-widest transition-all {isEditing
+                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 ring-1 ring-[var(--color-primary)]/20 shadow-[0_0_12px_var(--color-primary)]/10'
                         : ''}"
                 >
-                    {isEditing ? "Done" : "Customize"}
+                    {isEditing ? "Done" : "Customize Nav"}
                 </button>
             </div>
             <button
                 onclick={() => (isOpen = false)}
-                class="p-2 rounded-full bg-[var(--color-text)]/10 text-[var(--color-text)]"
+                class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all"
             >
                 <X size={20} />
             </button>
         </div>
 
         {#if isEditing}
-            <div class="px-6 py-2 bg-neutral-900 border-b border-neutral-800">
-                <p class="text-xs text-neutral-400 text-center">
+            <div
+                class="px-6 py-3 bg-[var(--color-primary)]/5 border-b border-[var(--color-primary)]/10"
+            >
+                <p
+                    class="text-[10px] text-[var(--color-primary)]/70 text-center font-bold uppercase tracking-widest"
+                >
                     Select up to 4 items to pin to the bottom bar ({settings
                         .mobileNavItems.length}/4)
                 </p>
@@ -202,7 +205,7 @@
 
         <!-- Grid -->
         <div
-            class="flex-1 overflow-y-auto p-6 grid grid-cols-3 gap-4 content-start"
+            class="flex-1 overflow-y-auto p-6 grid grid-cols-3 gap-3 content-start pb-24"
         >
             {#each filteredLinks as link}
                 {@const isActive =
@@ -211,9 +214,7 @@
                         : $page.url.pathname.startsWith(link.href)}
                 {@const isPinned = settings.mobileNavItems.includes(link.key)}
 
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <div
+                <button
                     onclick={() => {
                         if (isEditing) {
                             togglePin(link.key);
@@ -222,29 +223,34 @@
                             window.location.href = link.href;
                         }
                     }}
-                    class="relative flex flex-col items-center gap-3 p-4 rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] active:scale-95 transition-all cursor-pointer
-                    {isActive ? 'ring-1 ring-primary/50 bg-primary/5' : ''}
-                    {isEditing && isPinned
-                        ? 'ring-2 ring-primary border-primary'
+                    class="relative flex flex-col items-center gap-3 p-4 rounded-2xl border border-[var(--color-line)]/50 bg-[var(--theme-surface)]/50 active:scale-[0.94] transition-all cursor-pointer backdrop-blur-sm
+                    {isActive
+                        ? 'ring-1 ring-[var(--color-primary)]/50 bg-[var(--color-primary)]/5'
                         : ''}
-                    {isEditing && !isPinned ? 'opacity-50' : ''}
+                    {isEditing && isPinned
+                        ? 'ring-2 ring-[var(--color-primary)] bg-[var(--color-primary)]/5 border-transparent'
+                        : ''}
+                    {isEditing && !isPinned ? 'opacity-40 grayscale-[0.5]' : ''}
                     "
                 >
                     {#if isEditing && isPinned}
                         <div
-                            class="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]"
+                            class="absolute top-2 right-2 w-2 h-2 rounded-full bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)]"
                         ></div>
                     {/if}
 
                     <div
-                        class="w-12 h-12 rounded-full {link.bg} {link.color} flex items-center justify-center"
+                        class="w-12 h-12 rounded-2xl {link.bg} {link.color} flex items-center justify-center transition-all {isActive
+                            ? 'shadow-[0_0_15px_currentColor]/20'
+                            : ''}"
                     >
-                        <link.icon size={24} />
+                        <link.icon size={26} strokeWidth={isActive ? 2.5 : 2} />
                     </div>
-                    <span class="text-xs font-medium text-muted text-center"
+                    <span
+                        class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted)] text-center"
                         >{link.name}</span
                     >
-                </div>
+                </button>
             {/each}
         </div>
     </div>
