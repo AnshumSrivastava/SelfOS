@@ -1,214 +1,394 @@
-<script>
-    import StatCard from "$lib/components/ui/StatCard.svelte";
-    import ProgressBar from "$lib/components/ui/ProgressBar.svelte";
+<script lang="ts">
     import {
-        Utensils,
-        Flame,
-        Droplets,
-        Apple,
         Plus,
+        User,
+        Utensils,
+        Droplets,
+        Flame,
         ChevronRight,
+        Trash2,
+        Calendar,
+        Star,
+        Apple,
     } from "lucide-svelte";
+    import { nutritionStore } from "$lib/stores/nutrition.svelte";
+    import NutritionProfileModal from "./NutritionProfileModal.svelte";
+    import LogMealModal from "./LogMealModal.svelte";
+    import MealPlanModal from "./MealPlanModal.svelte";
+
+    let isProfileOpen = $state(false);
+    let isLogMealOpen = $state(false);
+    let isPlanMealOpen = $state(false);
+
+    let stats = $derived(nutritionStore.todayStats);
+    let goals = $derived(nutritionStore.goals);
+    let meals = $derived(nutritionStore.meals);
+    let water = $derived(nutritionStore.water);
+
+    // Calculate percentages for rings/bars
+    let calPercent = $derived(
+        Math.min((stats.calories / goals.calories) * 100, 100),
+    );
+    let proteinPercent = $derived(
+        Math.min((stats.protein / goals.protein) * 100, 100),
+    );
+    let carbsPercent = $derived(
+        Math.min((stats.carbs / goals.carbs) * 100, 100),
+    );
+    let fatsPercent = $derived(Math.min((stats.fats / goals.fats) * 100, 100));
+    let waterPercent = $derived(Math.min((water / goals.water) * 100, 100));
+
+    function addWater(amount: number) {
+        nutritionStore.addWater(amount);
+    }
 </script>
 
-<div class="page-container h-full">
-    <div class="module-header">
+<div class="page-container h-full relative">
+    <div class="module-header mb-10">
         <div>
-            <h1 class="text-3xl font-light text-white">Macro Tracker</h1>
-            <p class="text-muted">Fuel your body efficiently.</p>
+            <h1 class="text-3xl font-light text-white">Nutrition & Macros</h1>
+            <p class="text-muted">Precision fueling for optimal performance.</p>
         </div>
-        <button class="btn btn-primary flex items-center gap-2">
-            <Plus size={18} /> Log Meal
-        </button>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card-subtle flex flex-col items-center justify-center p-8">
-            <div
-                class="relative w-40 h-40 mb-4 flex items-center justify-center"
+        <div class="flex gap-3">
+            <button
+                onclick={() => (isProfileOpen = true)}
+                class="btn btn-ghost border-line flex items-center gap-2"
             >
-                <!-- Circular Progress Placeholder -->
-                <svg class="w-full h-full transform -rotate-90">
-                    <circle
-                        cx="80"
-                        cy="80"
-                        r="70"
-                        stroke="currentColor"
-                        stroke-width="12"
-                        fill="transparent"
-                        class="text-background"
-                    />
-                    <circle
-                        cx="80"
-                        cy="80"
-                        r="70"
-                        stroke="currentColor"
-                        stroke-width="12"
-                        fill="transparent"
-                        stroke-dasharray="440"
-                        stroke-dashoffset="140"
-                        class="text-primary"
-                    />
-                </svg>
-                <div class="absolute text-center">
-                    <span class="text-3xl font-bold text-white block"
-                        >1,240</span
-                    >
-                    <span class="text-xs text-muted">Kcal left</span>
-                </div>
-            </div>
-            <p class="text-sm text-muted">Daily Goal: 2,400 Kcal</p>
-        </div>
-
-        <div
-            class="card-subtle md:col-span-2 space-y-6 flex flex-col justify-center"
-        >
-            <h3 class="text-lg font-light text-white mb-2">Macronutrients</h3>
-            <div>
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="text-blue-400 font-bold">Protein</span>
-                    <span class="text-muted">120g / 180g</span>
-                </div>
-                <div
-                    class="h-2 w-full bg-background rounded-full overflow-hidden mb-1"
-                >
-                    <div
-                        class="h-full bg-blue-500 w-[66%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
-                    ></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="text-yellow-400 font-bold">Carbs</span>
-                    <span class="text-muted">140g / 250g</span>
-                </div>
-                <div
-                    class="h-2 w-full bg-background rounded-full overflow-hidden mb-1"
-                >
-                    <div
-                        class="h-full bg-yellow-500 w-[56%] rounded-full shadow-[0_0_8px_rgba(234,179,8,0.5)]"
-                    ></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-2">
-                    <span class="text-red-400 font-bold">Fats</span>
-                    <span class="text-muted">35g / 70g</span>
-                </div>
-                <div
-                    class="h-2 w-full bg-background rounded-full overflow-hidden mb-1"
-                >
-                    <div
-                        class="h-full bg-red-500 w-[50%] rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                    ></div>
-                </div>
-            </div>
+                <User size={18} /> Profile & Goals
+            </button>
+            <button
+                onclick={() => (isLogMealOpen = true)}
+                class="btn btn-primary flex items-center gap-2"
+            >
+                <Plus size={18} /> Log Intake
+            </button>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card-subtle">
-            <h3 class="text-lg font-light text-white mb-6">Today's Meals</h3>
-            <div class="space-y-4">
-                {#each [{ name: "Breakfast", cal: 450, time: "8:00 AM", items: "Oatmeal, Eggs, Coffee" }, { name: "Lunch", cal: 850, time: "1:00 PM", items: "Chicken Salad, Rice" }, { name: "Snack", cal: 200, time: "4:30 PM", items: "Protein Bar" }] as meal}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-10">
+            <!-- Meal Log -->
+            <div class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-light text-white">
+                        Today's Intake
+                    </h3>
                     <div
-                        class="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-transparent hover:border-line transition-all group cursor-pointer"
+                        class="flex gap-4 text-xs font-bold text-muted uppercase tracking-widest"
                     >
-                        <div>
-                            <h4
-                                class="font-bold text-white group-hover:text-primary transition-colors"
-                            >
-                                {meal.name}
-                            </h4>
-                            <p class="text-xs text-muted mt-1">{meal.items}</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="block font-bold text-white"
-                                >{meal.cal} kcal</span
-                            >
-                            <span class="text-xs text-muted">{meal.time}</span>
-                        </div>
+                        <span>P: {stats.protein}g</span>
+                        <span>C: {stats.carbs}g</span>
+                        <span>F: {stats.fats}g</span>
                     </div>
-                {/each}
-
-                <button
-                    class="w-full border-t border-line pt-4 text-center text-sm text-muted hover:text-[var(--color-text)] transition-colors"
-                >
-                    + Add Dinner
-                </button>
-            </div>
-        </div>
-
-        <div class="card-subtle bg-surface/30">
-            <div class="flex items-center justify-between mb-4">
-                <h3
-                    class="text-lg font-light text-white flex items-center gap-2"
-                >
-                    <Utensils size={18} class="text-primary" /> Meal Planner
-                </h3>
-                <button class="text-xs text-primary hover:underline"
-                    >View Week</button
-                >
-            </div>
-            <div class="space-y-3">
-                <div class="p-3 bg-surface rounded-lg border border-line">
-                    <span class="text-xs text-muted block mb-1"
-                        >Tomorrow • Breakfast</span
-                    >
-                    <span class="font-medium text-white"
-                        >Avocado Toast & Eggs</span
-                    >
                 </div>
-                <div class="p-3 bg-surface rounded-lg border border-line">
-                    <span class="text-xs text-muted block mb-1"
-                        >Tomorrow • Lunch</span
-                    >
-                    <span class="font-medium text-white"
-                        >Grilled Salmon & Quinoa</span
-                    >
+
+                <div class="space-y-3">
+                    {#each meals as meal (meal.id)}
+                        <div
+                            class="card-subtle flex items-center justify-between p-4 group hover:bg-surface/50 transition-all"
+                        >
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-primary group-hover:scale-110 transition-transform"
+                                >
+                                    <Utensils size={20} />
+                                </div>
+                                <div>
+                                    <h4
+                                        class="font-bold text-white group-hover:text-primary transition-colors"
+                                    >
+                                        {meal.name}
+                                    </h4>
+                                    <p
+                                        class="text-[10px] text-muted uppercase tracking-wider"
+                                    >
+                                        {meal.time} • P:{meal.protein} C:{meal.carbs}
+                                        F:{meal.fats}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <span class="text-lg font-bold text-white"
+                                    >{meal.calories}
+                                    <span
+                                        class="text-[10px] text-muted font-normal uppercase"
+                                        >kcal</span
+                                    ></span
+                                >
+                                <button
+                                    onclick={() =>
+                                        nutritionStore.removeMeal(meal.id)}
+                                    class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    {/each}
+
+                    {#if meals.length === 0}
+                        <div
+                            class="card-subtle text-center py-20 border-dashed opacity-50"
+                        >
+                            <Apple
+                                size={48}
+                                class="mx-auto mb-4 text-muted/20"
+                            />
+                            <p class="text-muted">No food logged yet today.</p>
+                            <button
+                                onclick={() => (isLogMealOpen = true)}
+                                class="text-primary text-sm hover:underline mt-2"
+                                >Add your first meal</button
+                            >
+                        </div>
+                    {/if}
                 </div>
             </div>
-            <button class="w-full btn btn-sm btn-secondary mt-4"
-                >Plan Next Meal</button
+
+            <!-- Water Tracking -->
+            <div
+                class="card-subtle relative overflow-hidden p-8 bg-blue-500/5 group"
             >
+                <div
+                    class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity"
+                >
+                    <Droplets size={160} />
+                </div>
+
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-lg font-light text-white">
+                            Hydration Tracker
+                        </h3>
+                        <p class="text-xs text-muted uppercase tracking-widest">
+                            Goal: {goals.water} Liters
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-3xl font-bold text-blue-400"
+                            >{water.toFixed(1)}L</span
+                        >
+                        <span class="text-xs text-muted block"
+                            >({waterPercent.toFixed(0)}%)</span
+                        >
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mb-8">
+                    {#each Array(10) as _, i}
+                        <div
+                            class="flex-1 h-3 rounded-full bg-background border border-line overflow-hidden"
+                        >
+                            <div
+                                class="h-full bg-blue-500 transition-all duration-700"
+                                style="width: {Math.max(
+                                    0,
+                                    Math.min(100, (waterPercent - i * 10) * 10),
+                                )}%"
+                            ></div>
+                        </div>
+                    {/each}
+                </div>
+
+                <div class="flex gap-4">
+                    <button
+                        onclick={() => addWater(0.25)}
+                        class="flex-1 btn btn-ghost border-line text-xs font-bold uppercase py-4 hover:bg-blue-500 hover:text-white transition-all"
+                        >+ 250ml</button
+                    >
+                    <button
+                        onclick={() => addWater(0.5)}
+                        class="flex-1 btn btn-ghost border-line text-xs font-bold uppercase py-4 hover:bg-blue-500 hover:text-white transition-all"
+                        >+ 500ml</button
+                    >
+                    <button
+                        onclick={() => nutritionStore.resetWater()}
+                        class="px-6 btn btn-ghost text-muted hover:text-red-400"
+                        ><Trash2 size={16} /></button
+                    >
+                </div>
+            </div>
         </div>
 
-        <div class="card-subtle relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-8 opacity-5">
-                <Apple size={160} />
+        <!-- Sidebar Summary -->
+        <div class="space-y-10">
+            <!-- Calorie Ring -->
+            <div
+                class="card-subtle flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary/10 to-transparent border-primary/20"
+            >
+                <div
+                    class="relative w-48 h-48 mb-6 flex items-center justify-center"
+                >
+                    <svg
+                        class="w-full h-full transform -rotate-90 drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
+                    >
+                        <circle
+                            cx="96"
+                            cy="96"
+                            r="88"
+                            stroke="currentColor"
+                            stroke-width="8"
+                            fill="transparent"
+                            class="text-background"
+                        />
+                        <circle
+                            cx="96"
+                            cy="96"
+                            r="88"
+                            stroke="currentColor"
+                            stroke-width="8"
+                            fill="transparent"
+                            stroke-dasharray="552"
+                            stroke-dashoffset={552 - (552 * calPercent) / 100}
+                            class="text-primary transition-all duration-1000 ease-out"
+                        />
+                    </svg>
+                    <div class="absolute text-center">
+                        <span class="text-4xl font-bold text-white block"
+                            >{(
+                                goals.calories - stats.calories
+                            ).toLocaleString()}</span
+                        >
+                        <span
+                            class="text-[10px] text-muted uppercase tracking-[0.2em] font-black"
+                            >Kcal Left</span
+                        >
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-bold text-white">
+                        {stats.calories.toLocaleString()}
+                        <span class="text-xs text-muted font-normal italic"
+                            >Eaten</span
+                        >
+                    </p>
+                    <p class="text-xs text-muted">
+                        Daily Target: {goals.calories.toLocaleString()} kcal
+                    </p>
+                </div>
             </div>
-            <h3 class="text-lg font-light text-white mb-4">Water Tracker</h3>
 
-            <div class="flex items-center justify-center gap-2 mb-8">
-                {#each Array(8) as _, i}
+            <!-- Macros Split -->
+            <div class="card-subtle p-6 space-y-8">
+                <h3
+                    class="text-sm font-bold text-muted uppercase tracking-widest text-center border-b border-line pb-4"
+                >
+                    Daily Macros
+                </h3>
+
+                <!-- Protein -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span
+                            class="text-xs font-black text-blue-400 uppercase tracking-widest"
+                            >Protein</span
+                        >
+                        <span class="text-sm font-bold text-white"
+                            >{stats.protein}g
+                            <span class="text-[10px] text-muted font-normal"
+                                >/ {goals.protein}g</span
+                            ></span
+                        >
+                    </div>
                     <div
-                        class="h-12 w-8 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-end justify-center overflow-hidden cursor-pointer hover:bg-blue-500/20 transition-all {i <
-                        4
-                            ? 'bg-blue-500/20'
-                            : ''}"
+                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
                     >
                         <div
-                            class="w-full bg-blue-500 rounded-b-full {i < 4
-                                ? 'h-full'
-                                : 'h-0'} transition-all duration-500"
+                            class="h-full bg-blue-500 transition-all duration-1000"
+                            style="width: {proteinPercent}%"
                         ></div>
                     </div>
-                {/each}
+                </div>
+
+                <!-- Carbs -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span
+                            class="text-xs font-black text-yellow-500 uppercase tracking-widest"
+                            >Carbs</span
+                        >
+                        <span class="text-sm font-bold text-white"
+                            >{stats.carbs}g
+                            <span class="text-[10px] text-muted font-normal"
+                                >/ {goals.carbs}g</span
+                            ></span
+                        >
+                    </div>
+                    <div
+                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full bg-yellow-500 transition-all duration-1000"
+                            style="width: {carbsPercent}%"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Fats -->
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span
+                            class="text-xs font-black text-red-500 uppercase tracking-widest"
+                            >Fats</span
+                        >
+                        <span class="text-sm font-bold text-white"
+                            >{stats.fats}g
+                            <span class="text-[10px] text-muted font-normal"
+                                >/ {goals.fats}g</span
+                            ></span
+                        >
+                    </div>
+                    <div
+                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full bg-red-500 transition-all duration-1000"
+                            style="width: {fatsPercent}%"
+                        ></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="text-center">
-                <span class="text-4xl font-bold text-white block mb-1"
-                    >1,250ml</span
-                >
-                <span class="text-sm text-muted">Goal: 2,500ml</span>
-            </div>
-
-            <div class="mt-8 flex justify-center">
-                <button
-                    class="btn bg-blue-500 text-white hover:bg-blue-600 rounded-full px-8"
-                    >+ Add 250ml</button
-                >
+            <!-- Meal Suggestions / Planner -->
+            <div class="card-subtle p-6 bg-surface/30">
+                <div class="flex items-center justify-between mb-6">
+                    <h3
+                        class="text-lg font-light text-white flex items-center gap-2"
+                    >
+                        <Calendar size={18} class="text-secondary" /> Meal Planner
+                    </h3>
+                    <button
+                        onclick={() => (isPlanMealOpen = true)}
+                        class="text-xs text-primary hover:underline"
+                        >Plan Ahead</button
+                    >
+                </div>
+                <div class="space-y-3">
+                    {#each nutritionStore.frequentMeals.slice(0, 3) as fav}
+                        <button
+                            onclick={() => nutritionStore.addMeal(fav)}
+                            class="w-full p-4 rounded-xl border border-line bg-surface hover:border-primary/50 transition-all text-left group"
+                        >
+                            <span
+                                class="text-[10px] text-primary font-black uppercase tracking-widest block mb-1"
+                                >Quick Add</span
+                            >
+                            <span
+                                class="text-sm font-bold text-white group-hover:text-primary transition-colors"
+                                >{fav.name}</span
+                            >
+                            <span class="text-[10px] text-muted block mt-1"
+                                >{fav.calories} kcal</span
+                            >
+                        </button>
+                    {/each}
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<NutritionProfileModal bind:isOpen={isProfileOpen} />
+<LogMealModal bind:isOpen={isLogMealOpen} />
+<MealPlanModal bind:isOpen={isPlanMealOpen} />

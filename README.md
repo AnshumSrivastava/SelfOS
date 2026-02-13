@@ -2,51 +2,51 @@
 
 SelfOS is a minimalist, intentional, and feature-rich personal dashboard designed to help you manage your life with clarity and focus. Built with SvelteKit and Tailwind CSS, it provides a seamless experience for tracking tasks, habits, finances, and focus sessions.
 
+## 🌟 Vision
+
+SelfOS aims to be a single source of truth for your digital life, prioritizing:
+
+- **Intentionality**: Focus on what matters, not just what's next.
+- **Privacy**: Your data stays local (Local-First architecture).
+- **Aesthetics**: A calm, premium interface that doesn't overwhelm.
+- **Modularity**: Individual modules for different aspects of life (PARA system).
+
 ---
 
 ## 📸 Screenshots
 
-### Dashboard
+| Dashboard | Tasks | Habits |
+|-----------|-------|--------|
+| ![Dashboard](./screenshots/dashboard.png) | ![Tasks](./screenshots/tasks.png) | ![Habits](./screenshots/habits.png) |
 
-![Dashboard](./screenshots/dashboard.png)
-
-### Tasks Management
-
-![Tasks](./screenshots/tasks.png)
-
-### Habit Tracking
-
-![Habits](./screenshots/habits.png)
-
-### Focus Zen Mode
-
-![Focus](./screenshots/focus.png)
-
-### Finance Tracker
-
-![Finance](./screenshots/finance.png)
+| Focus | Finance | Nutrition |
+|-------|---------|-----------|
+| ![Focus](./screenshots/focus.png) | ![Finish](./screenshots/finance.png) | ![Nutrition](./screenshots/nutrition.png) |
 
 ---
 
 ## ✨ Key Features
 
-- **🎯 Mindful Dashboard**: A clean overview of your day, highlighting what's important.
-- **✅ Task Management**: Organize your todos with ease and clarity.
-- **📅 Habit Tracking**: Build and maintain long-term habits with a visual progress tracker.
-- **🧘 Focus Zen Mode**: A distraction-free timer to help you enter flow state.
-- **💰 Finance Tracker**: Keep track of your expenses and stay on top of your financial health.
-- **📱 Responsive Design**: Fully optimized for both desktop and mobile devices.
-- **🔒 Local-First**: Your data stays on your device, ensuring privacy and speed.
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **🎯 Dashboard** | Central overview of your day and priority tasks. | ✅ Done |
+| **✅ Tasks** | PARA-based task management with scratchpad support. | ✅ Done |
+| **📅 Habits** | Visual habit tracker with streak mechanics. | ✅ Done |
+| **🧘 Focus** | Zen mode with pomodoro-style timers. | ✅ Done |
+| **💰 Finance** | Expense tracking, budgeting, and financial goals. | ✅ Done |
+| **🍎 Nutrition** | Macronutrient calculation and meal tracking. | ✅ Done |
+| **📁 PARA** | Projects, Areas, Resources, Archives organization. | ✅ Done |
+| **📱 Mobile** | Responsive design optimized for all devices. | ✅ Done |
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [SvelteKit](https://kit.svelte.dev/) (Svelte 5)
+- **Framework**: [SvelteKit](https://kit.svelte.dev/) (Svelte 5 Runes)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Icons**: [Lucide Svelte](https://lucide.dev/guide/svelte)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **Types**: [TypeScript](https://www.typescriptlang.org/)
+- **State Management**: Svelte 5 `$state` and `$derived` via custom stores
+- **Storage**: Browser LocalStorage (Local-First logic)
 
 ---
 
@@ -91,28 +91,23 @@ SelfOS is a minimalist, intentional, and feature-rich personal dashboard designe
 ```text
 SelfOS/
 ├── src/
-│   ├── lib/          # Reusable components and logic
-│   │   ├── components/ # UI components (Layout, UI, etc.)
-│   │   ├── stores/     # Svelte stores for state management
-│   │   └── utils/      # Helper functions
-│   ├── routes/       # Application pages (Dashboard, Tasks, etc.)
-│   └── app.html      # Main HTML entry point
-├── static/           # Static assets (images, favicon, etc.)
-├── screenshots/      # Project screenshots for documentation
-└── tailwind.config.ts # Tailwind CSS configuration
+│   ├── lib/              # Core application logic
+│   │   ├── components/   # UI components grouped by feature
+│   │   ├── stores/       # Svelte 5 state stores (LocalStore wrapper)
+│   │   ├── utils/        # Shared helper functions (date, math, etc.)
+│   │   └── types/        # TypeScript interfaces and types
+│   ├── routes/           # SvelteKit page routes
+│   └── app.html          # Main HTML entry point
+├── static/               # Public assets (images, fonts)
+├── screenshots/          # Documentation media
+└── tailwind.config.ts    # Styling configuration
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to improve SelfOS, please feel free to:
-
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to get started.
 
 ---
 

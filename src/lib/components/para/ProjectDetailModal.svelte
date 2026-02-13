@@ -18,6 +18,12 @@
     import { fade } from "svelte/transition";
     import Portal from "$lib/components/ui/Portal.svelte";
 
+    /**
+     * Modal for viewing and editing project details in PARA (Projects, Areas, Resources, Archives) system.
+     * Features a scratchpad for capturing thoughts, tasks, and resources.
+     * Includes automated parsing of input lines (e.g., '[]' for tasks, '{}' for links).
+     */
+
     let { project, onClose }: { project: Project; onClose: () => void } =
         $props();
 

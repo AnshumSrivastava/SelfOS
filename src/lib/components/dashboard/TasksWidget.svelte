@@ -10,6 +10,11 @@
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
 
+    /**
+     * Dashboard widget for displaying priority tasks.
+     * Calculated based on deadline and priority to show most urgent tasks first.
+     */
+
     // Get upcoming tasks with enhanced sorting and context
     let upcomingTasks = $derived.by(() => {
         const today = new Date();

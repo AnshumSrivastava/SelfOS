@@ -130,6 +130,7 @@
         onfinalize={handleDndFinalize}
     >
         {#each items as widget (widget.id)}
+            {@const WidgetComp = getWidgetComponent(widget.type)}
             <div class={getWidgetGridClass(widget.size)} data-id={widget.id}>
                 <div class="relative group">
                     <!-- Drag Handle -->
@@ -144,7 +145,6 @@
                     </div>
 
                     <!-- Widget Content -->
-                    {@const WidgetComp = getWidgetComponent(widget.type)}
                     {#if WidgetComp}
                         <WidgetComp />
                     {/if}

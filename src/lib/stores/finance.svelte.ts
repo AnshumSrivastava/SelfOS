@@ -126,6 +126,10 @@ class FinanceStore {
     }
 
     // --- Transactions ---
+    /**
+     * Adds a new transaction and updates budget progress if it's an expense.
+     * @param transaction - Transaction details excluding ID
+     */
     addTransaction(transaction: Omit<Transaction, 'id'>) {
         const newTransaction = { ...transaction, id: crypto.randomUUID() };
         this.transactionsStore.value = [newTransaction, ...this.transactionsStore.value];
@@ -181,6 +185,10 @@ class FinanceStore {
     }
 
     // --- Budgets ---
+    /**
+     * Adds a new budget category.
+     * @param budget - Budget details excluding ID and initial spent amount
+     */
     addBudget(budget: Omit<Budget, 'id' | 'spent'>) {
         this.budgetsStore.value = [...this.budgetsStore.value, { ...budget, id: crypto.randomUUID(), spent: 0 }];
     }
@@ -202,6 +210,10 @@ class FinanceStore {
 
 
     // --- Goals ---
+    /**
+     * Adds a new financial goal.
+     * @param goal - Goal details excluding ID and initial current amount
+     */
     addGoal(goal: Omit<Goal, 'id' | 'currentAmount'>) {
         this.goalsStore.value = [...this.goalsStore.value, { ...goal, id: crypto.randomUUID(), currentAmount: 0 }];
     }

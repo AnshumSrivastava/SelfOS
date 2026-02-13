@@ -97,6 +97,9 @@ class GamificationStore {
     // Initialization
     // ========================================================================
 
+    /**
+     * Initializes the store by loading profile, achievements, and notifications.
+     */
     async init() {
         await this.loadProfile();
         await this.loadAchievements();
@@ -144,6 +147,12 @@ class GamificationStore {
     // XP & Leveling
     // ========================================================================
 
+    /**
+     * Adds XP to the player profile. Handles leveling up and rewards.
+     * @param amount - Amount of XP to gain
+     * @param source - The source of XP (e.g., "task_complete")
+     * @param sourceId - ID of the source entity
+     */
     async gainXP(amount: number, source: XPGainEvent["source"], sourceId: string) {
         if (!this.profile) return;
 
@@ -320,6 +329,11 @@ class GamificationStore {
         );
     }
 
+    /**
+     * Updates progress for a specific achievement and unlocks it if target is reached.
+     * @param achievementId - ID of the achievement to check
+     * @param progress - Current progress value
+     */
     async checkAchievement(achievementId: string, progress: number) {
         const achievement = this.achievements.find((a) => a.id === achievementId);
         if (!achievement || achievement.isCompleted) return;
