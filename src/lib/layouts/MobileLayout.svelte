@@ -33,6 +33,11 @@
         class="flex-1 px-4 overflow-y-auto scrollbar-hide relative z-0 {uiState.showChrome
             ? 'pt-16 pb-24'
             : 'py-2'}"
+        style="padding-top: calc({uiState.showChrome
+            ? '4rem'
+            : '0.5rem'} + env(safe-area-inset-top)); padding-bottom: calc({uiState.showChrome
+            ? '6rem'
+            : '0.5rem'} + env(safe-area-inset-bottom));"
     >
         {@render children()}
     </main>

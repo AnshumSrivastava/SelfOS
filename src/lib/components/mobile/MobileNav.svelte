@@ -16,7 +16,8 @@
 </script>
 
 <nav
-    class="fixed bottom-0 left-0 right-0 h-16 bg-[#0A0A0A] border-t border-neutral-900 flex items-center justify-around px-4 z-50 safe-area-inset-bottom"
+    class="fixed bottom-0 left-0 right-0 bg-[#0A0A0A] border-t border-neutral-900 flex items-center justify-around px-4 z-50"
+    style="height: calc(4rem + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);"
 >
     {#each primaryLinks as link}
         <a

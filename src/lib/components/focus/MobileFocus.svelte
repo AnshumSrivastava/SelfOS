@@ -22,7 +22,7 @@
     }
 </script>
 
-<div class="flex flex-col items-center justify-between h-[70vh] py-8">
+<div class="flex flex-col items-center justify-between h-[60vh] py-4">
     <div class="text-center mt-12 relative group">
         <h2 class="text-gray-500 uppercase tracking-widest text-sm mb-4">
             {focusStore.mode === "shortBreak"

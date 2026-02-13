@@ -164,7 +164,7 @@
     };
 </script>
 
-<div class="p-4 pb-24 space-y-6">
+<div class="p-4 pb-24 space-y-4">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
