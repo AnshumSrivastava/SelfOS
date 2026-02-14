@@ -58,7 +58,7 @@ class AuthStore {
     async signIn(username: string, password: string) {
         if (!supabase || !supabase.auth) throw new Error("Supabase not initialized");
 
-        const email = `${username}@selfos.local`;
+        const email = username.includes('@') ? username : `${username}@example.com`;
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password
