@@ -163,6 +163,7 @@ class NutritionStore {
     async addMeal(meal: Omit<Meal, 'id' | 'date'>, customDate?: string) {
         await this.mealsStore.insert({
             ...meal,
+            time: meal.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
             date: customDate ? new Date(customDate).toISOString() : new Date().toISOString(),
             isFrequent: false
         });

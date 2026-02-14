@@ -104,6 +104,7 @@ CREATE TABLE nutrition_meals (
     fat INTEGER DEFAULT 0,
     type TEXT CHECK (type IN ('breakfast', 'lunch', 'dinner', 'snack')) DEFAULT 'snack',
     date TIMESTAMPTZ DEFAULT NOW(),
+    time TEXT,
     is_frequent BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
