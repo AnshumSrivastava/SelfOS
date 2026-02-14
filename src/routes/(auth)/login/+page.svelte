@@ -58,10 +58,7 @@
                     </div>
                 </div>
 
-                <form
-                    onsubmit={handleLogin}
-                    class="space-y-6 opacity-50 pointer-events-none"
-                >
+                <form onsubmit={handleLogin} class="space-y-6">
                     <!-- Username Field -->
                     <div>
                         <label

@@ -34,6 +34,40 @@ class AuthStore {
     get loading() { return this.#loading; }
     get isAuthenticated() { return !!this.#user; }
 
+    async signUp(username: string, password: string, displayName: string) {
+        if (!supabase || !supabase.auth) throw new Error("Supabase not initialized");
+
+        // Use a dummy email based on username for simplicity in this system
+        const email = `${username}@selfos.local`;
+
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: displayName,
+                    username: username
+                }
+            }
+        });
+
+        if (error) throw error;
+        return data;
+    }
+
+    async signIn(username: string, password: string) {
+        if (!supabase || !supabase.auth) throw new Error("Supabase not initialized");
+
+        const email = `${username}@selfos.local`;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+
+        if (error) throw error;
+        return data;
+    }
+
     async signInWithGoogle() {
         if (!supabase || !supabase.auth) {
             console.error("Supabase client is not initialized. Please check your PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY.");

@@ -20,7 +20,7 @@ class UserStore {
         return {
             id: sbUser.id,
             email: sbUser.email,
-            username: sbUser.email?.split("@")[0] || "user",
+            username: sbUser.user_metadata?.username || sbUser.email?.split("@")[0] || "user",
             displayName: sbUser.user_metadata?.full_name || sbUser.email?.split("@")[0] || "User",
             avatar: sbUser.user_metadata?.avatar_url,
         } as User;
@@ -31,6 +31,27 @@ class UserStore {
     constructor() {
         if (browser) {
             // Initialization if needed
+        }
+    }
+
+    // Auth actions
+    async register(username: string, displayName: string, password: string) {
+        try {
+            await auth.signUp(username, password, displayName);
+            return { success: true };
+        } catch (e: any) {
+            console.error("Signup error:", e);
+            return { success: false, error: e.message };
+        }
+    }
+
+    async login(username: string, password: string) {
+        try {
+            await auth.signIn(username, password);
+            return { success: true };
+        } catch (e: any) {
+            console.error("Login error:", e);
+            return { success: false, error: e.message };
         }
     }
 
