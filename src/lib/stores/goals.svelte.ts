@@ -1,23 +1,22 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
 import { tasksStore } from './tasks.svelte';
 
-// Simplified data types
 export type Priority = 'high' | 'medium' | 'low';
 export type GoalHorizon = 'life' | 'long' | 'mid' | 'short';
-export type GoalStatus = 'planned' | 'active' | 'completed' | 'paused';
+export type GoalStatus = 'planned' | 'active' | 'completed' | 'paused' | 'abandoned';
 export type GoalArea = 'Professional' | 'Personal' | 'Health' | 'Family' | 'Fun' | 'Spiritual' | 'Other';
 
 export interface Goal {
     id: string;
     title: string;
-    vision?: string;        // Why this goal matters
+    vision?: string;
     description?: string;
-    deadline?: string;      // ISO date
-    targetDate?: string;    // Target completion date
+    deadline?: string;
+    targetDate?: string;
     priority: Priority;
     horizon: GoalHorizon;
     area: GoalArea;
-    parentId?: string;      // For hierarchy
+    parentId?: string;
     status: GoalStatus;
     completed: boolean;
     createdAt: string;
@@ -27,159 +26,64 @@ export interface Goal {
 export interface GoalLog {
     id: string;
     goalId: string;
-    date: string;           // ISO date
+    date: string;
     workDone: string;
     lessons: string;
     nextStep: string;
-    mood: number;           // 1-5
-    difficulty: number;     // 1-5
-}
-
-// YouTube video data
-interface YouTubeVideo {
-    title: string;
-    url: string;
-}
-
-// YouTube playlist parsing via server-side API
-async function parseYouTubePlaylist(url: string): Promise<{ videos: YouTubeVideo[], playlistTitle?: string }> {
-    try {
-        const response = await fetch('/api/youtube-playlist', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url })
-        });
-
-        if (!response.ok) {
-            console.error('Failed to parse YouTube playlist');
-            return { videos: [] };
-        }
-
-        const data = await response.json();
-        return {
-            videos: data.videos || [],
-            playlistTitle: data.playlistTitle
-        };
-    } catch (error) {
-        console.error('Failed to parse YouTube playlist:', error);
-        return { videos: [] };
-    }
-}
-
-// Detect if text contains a YouTube playlist URL
-function isYouTubePlaylistUrl(text: string): boolean {
-    return /youtube\.com\/playlist\?list=|youtu\.be\/.*\?list=/.test(text);
-}
-
-// Parse a single line that might contain a link
-function parseTaskLine(line: string): { title: string; link?: string } {
-    // Check if line contains a URL (simple detection)
-    const urlMatch = line.match(/(https?:\/\/[^\s]+)/);
-
-    if (urlMatch) {
-        const url = urlMatch[1];
-        const title = line.replace(url, '').trim();
-        return { title: title || url, link: url };
-    }
-
-    return { title: line };
-}
-
-// Parse batch task input (multiple lines or YouTube playlist)
-export async function parseBatchTasks(input: string): Promise<{ tasks: Array<{ title: string; link?: string }>, playlistTitle?: string }> {
-    const trimmed = input.trim();
-
-    // Check if it's a YouTube playlist URL
-    if (isYouTubePlaylistUrl(trimmed)) {
-        const { videos, playlistTitle } = await parseYouTubePlaylist(trimmed);
-        return {
-            tasks: videos.map(v => ({ title: v.title, link: v.url })),
-            playlistTitle
-        };
-    }
-
-    // Otherwise, split by newlines and parse each line
-    const tasks = trimmed
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => parseTaskLine(line));
-
-    return { tasks };
+    mood: number;
+    difficulty: number;
 }
 
 class GoalsStore {
-    private goalsStore = new LocalStore<Goal[]>('goals', []);
-    private logsStore = new LocalStore<GoalLog[]>('goal-logs', []);
+    private goalsStore = new SupabaseStore<Goal>('goals', { migrationKey: 'goals' });
+    private logsStore = new SupabaseStore<GoalLog>('goal_logs', { migrationKey: 'goal-logs' });
 
-    // Getters
-    get goals() {
-        return this.goalsStore.value;
-    }
-
-    get logs() {
-        return this.logsStore.value;
-    }
+    get goals() { return this.goalsStore.value; }
+    get logs() { return this.logsStore.value; }
+    get loading() { return this.goalsStore.loading || this.logsStore.loading; }
 
     get activeGoals() {
         return this.goals.filter(g => g.status === 'active');
     }
 
-    // Goal methods
-    addGoal(goal: Omit<Goal, 'id' | 'completed' | 'createdAt' | 'status'>) {
-        const newGoal: Goal = {
-            id: crypto.randomUUID(),
+    async addGoal(goal: Omit<Goal, 'id' | 'completed' | 'createdAt' | 'status'>) {
+        return await this.goalsStore.insert({
+            ...goal,
             status: 'active',
             completed: false,
-            createdAt: new Date().toISOString(),
-            ...goal
-        };
-        this.goalsStore.value = [newGoal, ...this.goalsStore.value];
-        return newGoal;
+        } as any);
     }
 
-    updateGoal(id: string, updates: Partial<Goal>) {
-        this.goalsStore.value = this.goalsStore.value.map(g =>
-            g.id === id ? { ...g, ...updates } : g
-        );
+    async updateGoal(id: string, updates: Partial<Goal>) {
+        await this.goalsStore.update(id, updates);
     }
 
-    deleteGoal(id: string) {
-        // Recursive deletion for hierarchy
+    async deleteGoal(id: string) {
         const children = this.getGoalChildren(id);
-        children.forEach(child => this.deleteGoal(child.id));
+        for (const child of children) {
+            await this.deleteGoal(child.id);
+        }
 
-        // Unlink tasks instead of deleting them? 
-        // Or delete them if they were exclusively created for this goal.
-        // For now, let's just unlink them to be safe.
-        tasksStore.tasks.forEach(t => {
+        tasksStore.tasks.forEach(async t => {
             if (t.goalId === id) {
-                tasksStore.update(t.id, { goalId: null });
+                await tasksStore.update(t.id, { goalId: null });
             }
         });
 
-        this.goalsStore.value = this.goalsStore.value.filter(g => g.id !== id);
-        this.logsStore.value = this.logsStore.value.filter(l => l.goalId !== id);
+        await this.goalsStore.delete(id);
     }
 
-    // Logging / Journaling
-    addLog(log: Omit<GoalLog, 'id' | 'date'>) {
-        const newLog: GoalLog = {
-            id: crypto.randomUUID(),
-            date: new Date().toISOString(),
-            ...log
-        };
-        this.logsStore.value = [newLog, ...this.logsStore.value];
-        return newLog;
+    async addLog(log: Omit<GoalLog, 'id' | 'date'>) {
+        return await this.logsStore.insert({
+            ...log,
+            date: new Date().toISOString()
+        });
     }
 
     getGoalLogs(goalId: string) {
         return this.logs.filter(l => l.goalId === goalId);
     }
 
-    // Hierarchy helpers
     getGoalChildren(parentId: string) {
         return this.goals.filter(g => g.parentId === parentId);
     }
@@ -189,7 +93,6 @@ class GoalsStore {
         return goal?.parentId ? this.goals.find(g => g.id === goal.parentId) : null;
     }
 
-    // Integrated Progress calculation
     getGoalProgress(goalId: string): number {
         const tasks = tasksStore.tasks.filter(t => t.goalId === goalId);
         const children = this.getGoalChildren(goalId);
@@ -209,7 +112,6 @@ class GoalsStore {
         return Math.round((completedWeight / totalWeight) * 100);
     }
 
-    // Health metrics
     getGoalHealth(goalId: string): 'on-track' | 'at-risk' | 'stalled' {
         const goal = this.goals.find(g => g.id === goalId);
         if (!goal) return 'stalled';
@@ -223,44 +125,12 @@ class GoalsStore {
         return 'on-track';
     }
 
-    // Mobile UI Helper Methods
-    async addTasksBatch(goalId: string, input: string) {
-        const goal = this.goals.find(g => g.id === goalId);
-        if (!goal) return 0;
-
-        const { tasks } = await parseBatchTasks(input);
-        tasks.forEach(task => {
-            tasksStore.add({
-                title: task.title,
-                link: task.link || null,
-                goalId: goalId,
-                project: goal.area,
-                priority: goal.priority,
-                deadline: null,
-                scheduled: null
-            });
-        });
-        return tasks.length;
-    }
-
     getAreaProgress(area: GoalArea): number {
         const areaGoals = this.goals.filter(g => g.area === area && !g.parentId);
         if (areaGoals.length === 0) return 0;
 
         const totalProgress = areaGoals.reduce((acc, goal) => acc + this.getGoalProgress(goal.id), 0);
         return Math.round(totalProgress / areaGoals.length);
-    }
-
-    getGoalTasks(goalId: string) {
-        return tasksStore.tasks.filter(t => t.goalId === goalId);
-    }
-
-    toggleTask(taskId: string) {
-        tasksStore.toggle(taskId);
-    }
-
-    deleteTask(taskId: string) {
-        tasksStore.remove(taskId);
     }
 }
 

@@ -22,9 +22,10 @@
         PanelLeftClose,
         PanelLeft,
         User, // Moved User import into the main lucide-svelte block
+        LogOut,
     } from "lucide-svelte";
     import Logo from "$lib/components/ui/Logo.svelte";
-
+    import { auth } from "$lib/stores/auth.svelte";
     import { settings } from "$lib/stores/settings.svelte"; // Retained one settings import
 
     // Sidebar collapse state
@@ -369,29 +370,85 @@
         {/each}
     </nav>
 
-    <!-- Daily Progress -->
-    {#if !isCollapsed}
-        <div class="p-4 border-t border-line">
-            <div class="p-4 rounded-xl bg-surface border border-line">
-                <p class="text-xs text-muted mb-2">Daily Progress</p>
+    <!-- Bottom Section (Progress + User) -->
+    <div class="p-2 border-t border-line mt-auto space-y-1">
+        {#if !isCollapsed}
+            <div
+                class="px-2 py-3 mb-2 rounded-xl bg-surface/30 border border-line/50"
+            >
+                <p
+                    class="text-[10px] uppercase tracking-wider text-muted mb-2 font-bold"
+                >
+                    Daily Progress
+                </p>
                 <div
-                    class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                    class="h-1.5 w-full bg-background/50 rounded-full overflow-hidden"
                 >
                     <div
-                        class="h-full bg-primary w-[65%] rounded-full shadow-[0_0_10px_rgba(0,255,157,0.6)] animate-pulse"
+                        class="h-full bg-primary w-[65%] rounded-full shadow-[0_0_10px_rgba(0,255,157,0.4)]"
                     ></div>
                 </div>
             </div>
-        </div>
-    {:else}
-        <div class="p-2 border-t border-line">
+        {/if}
+
+        {#if auth.isAuthenticated && auth.user}
             <div
-                class="w-10 h-10 mx-auto rounded-lg bg-surface border border-line flex items-center justify-center"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface/50 transition-all group relative"
             >
                 <div
-                    class="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin"
-                ></div>
+                    class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 overflow-hidden flex-shrink-0 flex items-center justify-center"
+                >
+                    {#if auth.user.user_metadata?.avatar_url}
+                        <img
+                            src={auth.user.user_metadata.avatar_url}
+                            alt="Profile"
+                            class="w-full h-full object-cover"
+                        />
+                    {:else}
+                        <User size={16} class="text-primary" />
+                    {/if}
+                </div>
+                {#if !isCollapsed}
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-white truncate">
+                            {auth.user.user_metadata?.full_name ||
+                                auth.user.email?.split("@")[0]}
+                        </p>
+                        <p class="text-[10px] text-muted truncate">
+                            {auth.user.email}
+                        </p>
+                    </div>
+                {/if}
+
+                {#if isCollapsed}
+                    <div
+                        class="absolute left-full ml-2 px-2 py-1 bg-surface border border-line rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+                    >
+                        {auth.user.user_metadata?.full_name || auth.user.email}
+                    </div>
+                {/if}
             </div>
-        </div>
-    {/if}
+
+            <button
+                onclick={() => auth.signOut()}
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:text-red-400 hover:bg-red-500/10 transition-all group relative {isCollapsed
+                    ? 'justify-center'
+                    : ''}"
+                title={isCollapsed ? "Sign Out" : ""}
+            >
+                <LogOut size={18} class="group-hover:text-red-400" />
+                {#if !isCollapsed}
+                    <span class="font-medium text-sm">Sign Out</span>
+                {/if}
+
+                {#if isCollapsed}
+                    <div
+                        class="absolute left-full ml-2 px-2 py-1 bg-surface border border-line rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+                    >
+                        Sign Out
+                    </div>
+                {/if}
+            </button>
+        {/if}
+    </div>
 </aside>

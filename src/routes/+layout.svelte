@@ -10,35 +10,35 @@
   import { settings } from "$lib/stores/settings.svelte";
   import { searchStore } from "$lib/stores/search.svelte";
   import { uiState } from "$lib/stores/ui.svelte";
-  import { userStore } from "$lib/stores/user.svelte";
+  import { auth } from "$lib/stores/auth.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
   import LoadingScreen from "$lib/components/ui/LoadingScreen.svelte";
 
   let { children } = $props();
-  let isAuthenticated = $state(false);
-  let isLoading = $state(true);
 
   // Check if current route is a public auth route
   let isAuthRoute = $derived(
     $page.url.pathname.startsWith(`${base}/login`) ||
-      $page.url.pathname.startsWith(`${base}/signup`),
+      $page.url.pathname.startsWith(`${base}/signup`) ||
+      $page.url.pathname.startsWith(`${base}/auth/callback`),
   );
 
-  // Check authentication on mount
-  onMount(() => {
-    isAuthenticated = userStore.isAuthenticated;
-    isLoading = false;
+  // Use auth store state
+  let isAuthenticated = $derived(auth.isAuthenticated);
+  let isLoading = $derived(auth.loading);
 
-    // Only redirect to login if not authenticated AND not already on an auth page
-    if (!userStore.isAuthenticated && !isAuthRoute) {
+  // Redirect logic
+  $effect(() => {
+    if (!auth.loading && !auth.isAuthenticated && !isAuthRoute) {
       goto(`${base}/login`);
     }
-  });
-
-  // Watch for auth state changes
-  $effect(() => {
-    isAuthenticated = userStore.isAuthenticated;
+    if (!auth.loading && auth.isAuthenticated && isAuthRoute) {
+      // Don't redirect if we're on the callback page, it handles itself
+      if (!$page.url.pathname.includes("/auth/callback")) {
+        goto(`${base}/`);
+      }
+    }
   });
 
   $effect(() => {

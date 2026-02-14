@@ -1,19 +1,20 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
+import { auth } from './auth.svelte';
 
 export type UserProfile = {
     age: number;
     sex: 'male' | 'female';
-    height: number; // cm
-    weight: number; // kg
+    height: number;
+    weight: number;
     activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'extra';
 };
 
 export type NutritionGoals = {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fats: number;
-    water: number; // liters
+    targetCalories: number;
+    targetProtein: number;
+    targetCarbs: number;
+    targetFat: number;
+    targetWater: number;
 };
 
 export type Meal = {
@@ -23,68 +24,95 @@ export type Meal = {
     protein: number;
     carbs: number;
     fats: number;
-    time: string;
-    date: string; // ISO String
-    isFrequent?: boolean;
+    date: string;
+    isFrequent: boolean;
+    type?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 };
 
-const DEFAULT_PROFILE: UserProfile = {
-    age: 25,
-    sex: 'male',
-    height: 180,
-    weight: 75,
-    activityLevel: 'moderate'
+export type NutritionSettings = UserProfile & NutritionGoals & {
+    waterIntake: number;
 };
-
-const DEFAULT_GOALS: NutritionGoals = {
-    calories: 2500,
-    protein: 150,
-    carbs: 300,
-    fats: 70,
-    water: 3.0
-};
-
-const DEFAULT_MEALS: Meal[] = [
-    {
-        id: '1',
-        name: "Oatmeal with Berries",
-        calories: 350,
-        protein: 12,
-        carbs: 60,
-        fats: 8,
-        time: "08:00 AM",
-        date: new Date().toISOString(),
-        isFrequent: true
-    },
-    {
-        id: '2',
-        name: "Grilled Chicken & Rice",
-        calories: 650,
-        protein: 45,
-        carbs: 70,
-        fats: 15,
-        time: "01:30 PM",
-        date: new Date().toISOString(),
-        isFrequent: true
-    }
-];
 
 class NutritionStore {
-    private profileStore = new LocalStore<UserProfile>('selfos_nutrition_profile', DEFAULT_PROFILE);
-    private goalsStore = new LocalStore<NutritionGoals>('selfos_nutrition_goals', DEFAULT_GOALS);
-    private mealsStore = new LocalStore<Meal[]>('selfos_nutrition_meals', DEFAULT_MEALS);
-    private waterStore = new LocalStore<number>('selfos_nutrition_water', 1.2);
+    private mealsStore = new SupabaseStore<Meal>('nutrition_meals', { migrationKey: 'selfos_nutrition_meals' });
+    private settingsStore = new SupabaseStore<NutritionSettings & { id: string }>('nutrition_settings');
 
-    get profile() { return this.profileStore.value; }
-    get goals() { return this.goalsStore.value; }
+    constructor() {
+        this.initMigration();
+    }
+
+    private async initMigration() {
+        if (typeof window === 'undefined') return;
+
+        $effect.root(() => {
+            $effect(() => {
+                if (!auth.loading && auth.isAuthenticated) {
+                    this.migrateNutritionData();
+                }
+            });
+        });
+    }
+
+    private async migrateNutritionData() {
+        // Migration logic for profile and goals into settingsStore
+        if (this.settingsStore.value.length === 0) {
+            const profileStored = localStorage.getItem('selfos_nutrition_profile');
+            const goalsStored = localStorage.getItem('selfos_nutrition_goals');
+            const waterStored = localStorage.getItem('selfos_nutrition_water');
+
+            if (profileStored || goalsStored || waterStored) {
+                console.log("Migrating nutrition settings from localStorage...");
+                const profile = profileStored ? JSON.parse(profileStored) : {};
+                const goals = goalsStored ? JSON.parse(goalsStored) : {};
+                const water = waterStored ? JSON.parse(waterStored) : 0;
+
+                await this.settingsStore.upsertSingle({
+                    ...profile,
+                    targetCalories: goals.calories || 2500,
+                    targetProtein: goals.protein || 150,
+                    targetCarbs: goals.carbs || 300,
+                    targetFat: goals.fats || 70,
+                    targetWater: goals.water || 3.0,
+                    waterIntake: water
+                });
+            }
+        }
+    }
+
+    get profile(): UserProfile {
+        const s = this.settingsStore.value[0];
+        return {
+            age: s?.age || 25,
+            sex: s?.sex || 'male',
+            height: s?.height || 180,
+            weight: s?.weight || 75,
+            activityLevel: s?.activityLevel || 'moderate'
+        };
+    }
+
+    get goals(): NutritionGoals {
+        const s = this.settingsStore.value[0];
+        return {
+            targetCalories: s?.targetCalories || 2500,
+            targetProtein: s?.targetProtein || 150,
+            targetCarbs: s?.targetCarbs || 300,
+            targetFat: s?.targetFat || 70,
+            targetWater: s?.targetWater || 3.0
+        };
+    }
+
     get meals() {
         const today = new Date().toISOString().split('T')[0];
         return this.mealsStore.value.filter(m => m.date.startsWith(today));
     }
+
     get frequentMeals() {
         return this.mealsStore.value.filter(m => m.isFrequent);
     }
-    get water() { return this.waterStore.value; }
+
+    get water() {
+        return this.settingsStore.value[0]?.waterIntake || 0;
+    }
 
     get todayStats() {
         return this.meals.reduce((acc, meal) => ({
@@ -95,15 +123,16 @@ class NutritionStore {
         }), { calories: 0, protein: 0, carbs: 0, fats: 0 });
     }
 
-    updateProfile(newProfile: UserProfile) {
-        this.profileStore.value = newProfile;
-        this.calculateGoals();
+    async updateProfile(newProfile: UserProfile) {
+        // Calculate new goals based on profile
+        const goals = this.calculateTargetGoals(newProfile);
+        await this.settingsStore.upsertSingle({
+            ...newProfile,
+            ...goals
+        });
     }
 
-    private calculateGoals() {
-        const p = this.profileStore.value;
-
-        // Mifflin-St Jeor Equation
+    private calculateTargetGoals(p: UserProfile): NutritionGoals {
         let bmr = (10 * p.weight) + (6.25 * p.height) - (5 * p.age);
         bmr += p.sex === 'male' ? 5 : -161;
 
@@ -116,49 +145,46 @@ class NutritionStore {
         };
 
         const tdee = Math.round(bmr * multipliers[p.activityLevel]);
-
-        // Standard macro split: 30% Protein, 40% Carbs, 30% Fats
         const protein = Math.round((tdee * 0.3) / 4);
         const carbs = Math.round((tdee * 0.4) / 4);
         const fats = Math.round((tdee * 0.3) / 9);
-
-        // Water: 35ml per kg
         const water = Math.round((p.weight * 0.035) * 10) / 10;
 
-        this.goalsStore.value = {
-            calories: tdee,
-            protein,
-            carbs,
-            fats,
-            water
+        return {
+            targetCalories: tdee,
+            targetProtein: protein,
+            targetCarbs: carbs,
+            targetFat: fats,
+            targetWater: water
         };
     }
 
-    addMeal(meal: Omit<Meal, 'id' | 'date'>, customDate?: string) {
-        const newMeal = {
+    async addMeal(meal: Omit<Meal, 'id' | 'date'>, customDate?: string) {
+        await this.mealsStore.insert({
             ...meal,
-            id: crypto.randomUUID(),
-            date: customDate ? new Date(customDate).toISOString() : new Date().toISOString()
-        };
-        this.mealsStore.value = [...this.mealsStore.value, newMeal];
+            date: customDate ? new Date(customDate).toISOString() : new Date().toISOString(),
+            isFrequent: false
+        });
     }
 
-    toggleFrequent(mealId: string) {
-        this.mealsStore.value = this.mealsStore.value.map(m =>
-            m.id === mealId ? { ...m, isFrequent: !m.isFrequent } : m
-        );
+    async toggleFrequent(mealId: string) {
+        const meal = this.mealsStore.value.find(m => m.id === mealId);
+        if (meal) {
+            await this.mealsStore.update(mealId, { isFrequent: !meal.isFrequent });
+        }
     }
 
-    removeMeal(id: string) {
-        this.mealsStore.value = this.mealsStore.value.filter(m => m.id !== id);
+    async removeMeal(id: string) {
+        await this.mealsStore.delete(id);
     }
 
-    addWater(amount: number) {
-        this.waterStore.value += amount;
+    async addWater(amount: number) {
+        const current = this.water;
+        await this.settingsStore.upsertSingle({ waterIntake: current + amount });
     }
 
-    resetWater() {
-        this.waterStore.value = 0;
+    async resetWater() {
+        await this.settingsStore.upsertSingle({ waterIntake: 0 });
     }
 }
 

@@ -1,10 +1,13 @@
+import { supabase } from '$lib/supabaseClient';
+import { auth } from './auth.svelte';
+
 export class FocusStore {
     timeLeft = $state(25 * 60);
     isRunning = $state(false);
     mode = $state('focus'); // 'focus' | 'shortBreak' | 'longBreak'
     zenMode = $state(false);
 
-    intervalId: number | null = null; // Browser returns number, Node returns object. In browser context number is fine.
+    intervalId: any = null; // Browser returns number, Node returns object. In browser context number is fine.
 
     // Derived values
     get minutes() {
@@ -87,9 +90,25 @@ export class FocusStore {
         // If mode is custom, we might want to track that, but for now just updating time is enough
     }
 
-    logSession(subject: string) {
-        // Here we would typically save to a database or local storage
-        console.log(`Session completed: ${subject} (${this.formattedTime})`);
+    async logSession(subject: string) {
+        if (!auth.isAuthenticated) return;
+
+        const duration = Math.floor((this.mode === 'focus' ? 25 * 60 - this.timeLeft : 0) / 60); // Simplified calculation
+
+        const { error } = await supabase.from('focus_sessions').insert({
+            user_id: auth.user?.id,
+            subject,
+            duration,
+            mode: this.mode,
+            date: new Date().toISOString()
+        });
+
+        if (error) {
+            console.error("Error logging focus session:", error);
+        } else {
+            console.log(`Session logged to Supabase: ${subject}`);
+        }
+
         this.sessionComplete = false;
         this.reset();
     }

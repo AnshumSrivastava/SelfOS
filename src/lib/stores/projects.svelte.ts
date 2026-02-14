@@ -1,41 +1,37 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
+import { auth } from './auth.svelte';
 
 export type ScratchpadEntry = {
     id: string;
+    projectId: string;
     content: string;
     type: 'note' | 'task';
-    isCompleted?: boolean; // For soft tasks
-    createdAt: number;
+    isCompleted?: boolean;
+    createdAt?: string;
 };
 
 export type ProjectResource = {
     id: string;
+    projectId: string;
     type: 'link' | 'file' | 'reference';
     title: string;
-    content: string; // URL or file path/blob url
-    createdAt: number;
+    content: string;
+    createdAt?: string;
 };
 
 export type Project = {
     id: string;
     name: string;
-    intent?: string; // One-sentence goal
+    intent?: string;
     type: 'project' | 'area' | 'resource' | 'archive';
     icon?: string;
     color: string;
     bg: string;
     status: 'Active' | 'Paused' | 'Completed' | 'Archived';
-
-    // Low Friction Core
-    scratchpad: ScratchpadEntry[];
-    resources: ProjectResource[];
-
-    createdAt: number;
-    updatedAt: number; // For dormancy detection
-    deadline?: number;
-
-    // Legacy support (optional, can be removed if strictly following new phil)
     progress: number;
+    deadline?: string;
+    updatedAt: string;
+    createdAt: string;
 };
 
 const DEFAULT_SECTIONS = [
@@ -77,143 +73,165 @@ const DEFAULT_SECTIONS = [
     },
 ];
 
-const DEFAULT_PROJECTS: Project[] = [
-    {
-        id: '1',
-        name: "SelfOS Remake",
-        intent: "Rebuild the OS to be faster and better looking.",
-        type: 'project',
-        progress: 75,
-        color: "text-emerald-500",
-        bg: "bg-emerald-500/10",
-        status: 'Active',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        scratchpad: [
-            { id: 'sp1', content: "Initial thought: we need better stores.", type: 'note', createdAt: Date.now() - 100000 },
-            { id: 'sp2', content: "setup project module structure", type: 'task', isCompleted: true, createdAt: Date.now() - 50000 }
-        ],
-        resources: []
-    }
-];
-
 class ProjectsStore {
-    sections = $state(DEFAULT_SECTIONS);
-    projectsData = new LocalStore<Project[]>('selfos_projects_v3', DEFAULT_PROJECTS); // v3 to reset/migrate
+    sections = DEFAULT_SECTIONS;
+    private projectsStore = new SupabaseStore<Project>('projects', { migrationKey: 'selfos_projects_v3' });
+    private scratchpadStore = new SupabaseStore<ScratchpadEntry>('project_scratchpad');
+    private resourcesStore = new SupabaseStore<ProjectResource>('project_resources');
 
-    get projects() {
-        return this.projectsData.value;
+    constructor() {
+        this.initMigration();
     }
+
+    private async initMigration() {
+        if (typeof window === 'undefined') return;
+
+        $effect.root(() => {
+            $effect(() => {
+                if (!auth.loading && auth.isAuthenticated) {
+                    this.migrateNestedData();
+                }
+            });
+        });
+    }
+
+    private async migrateNestedData() {
+        const stored = localStorage.getItem('selfos_projects_v3');
+        if (!stored) return;
+
+        try {
+            const projects = JSON.parse(stored);
+            if (Array.isArray(projects) && projects.length > 0) {
+                if (this.scratchpadStore.value.length === 0 && this.projectsStore.value.length > 0) {
+                    console.log("Migrating project nested data from localStorage...");
+                    for (const project of projects) {
+                        const sbProject = this.projectsStore.value.find(p => p.name === project.name);
+                        if (sbProject) {
+                            if (Array.isArray(project.scratchpad)) {
+                                for (const entry of project.scratchpad) {
+                                    await this.scratchpadStore.insert({
+                                        projectId: sbProject.id,
+                                        content: entry.content || '',
+                                        type: entry.type || 'note',
+                                        isCompleted: entry.isCompleted || false
+                                    } as any);
+                                }
+                            }
+                            if (Array.isArray(project.resources)) {
+                                for (const res of project.resources) {
+                                    await this.resourcesStore.insert({
+                                        projectId: sbProject.id,
+                                        title: res.title || 'Untitled',
+                                        type: res.type || 'link',
+                                        content: res.content || ''
+                                    } as any);
+                                }
+                            }
+                        }
+                    }
+                    console.log("Project nested data migration complete.");
+                }
+            }
+        } catch (e) {
+            console.error("Migration error for project nested data:", e);
+        }
+    }
+
+    get projects() { return this.projectsStore.value; }
+    get loading() { return this.projectsStore.loading || this.scratchpadStore.loading || this.resourcesStore.loading; }
 
     get activeProjects() {
-        return this.projectsData.value.filter(p => p.status === 'Active' && p.type === 'project');
+        return this.projectsStore.value.filter(p => p.status === 'Active' && p.type === 'project');
     }
 
     get areas() {
-        return this.projectsData.value.filter(p => p.type === 'area');
+        return this.projectsStore.value.filter(p => p.type === 'area');
     }
 
     get resources() {
-        return this.projectsData.value.filter(p => p.type === 'resource');
+        return this.projectsStore.value.filter(p => p.type === 'resource');
     }
 
     get archives() {
-        return this.projectsData.value.filter(p => p.status === 'Archived' || p.type === 'archive');
+        return this.projectsStore.value.filter(p => p.status === 'Archived' || p.type === 'archive');
     }
 
     getSectionStats(type: string) {
         if (type === 'archive') {
-            return this.projectsData.value.filter(p => p.status === 'Archived').length;
+            return this.projectsStore.value.filter(p => p.status === 'Archived').length;
         }
-        return this.projectsData.value.filter(p => p.type === type && p.status !== 'Archived').length;
+        return this.projectsStore.value.filter(p => p.type === type && p.status !== 'Archived').length;
     }
 
     getProject(id: string) {
-        return this.projectsData.value.find(p => p.id === id);
+        return this.projectsStore.value.find(p => p.id === id);
     }
 
-    addProject(project: Partial<Project>) {
-        const newProject: Project = {
-            id: crypto.randomUUID(),
+    getScratchpad(projectId: string) {
+        return this.scratchpadStore.value.filter(e => e.projectId === projectId);
+    }
+
+    getResources(projectId: string) {
+        return this.resourcesStore.value.filter(r => r.projectId === projectId);
+    }
+
+    async addProject(project: Partial<Project>) {
+        return await this.projectsStore.insert({
             name: 'New Project',
             type: 'project',
             progress: 0,
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
             status: 'Active',
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            scratchpad: [],
-            resources: [],
+            updatedAt: new Date().toISOString(),
             ...project
-        };
-
-        this.projectsData.value = [newProject, ...this.projectsData.value];
-        return newProject;
+        } as any);
     }
 
-    updateProject(id: string, updates: Partial<Project>) {
-        this.projectsData.value = this.projectsData.value.map(p =>
-            p.id === id ? { ...p, ...updates, updatedAt: Date.now() } : p
-        );
+    async updateProject(id: string, updates: Partial<Project>) {
+        await this.projectsStore.update(id, {
+            ...updates,
+            updatedAt: new Date().toISOString()
+        });
     }
 
-    deleteProject(id: string) {
-        this.projectsData.value = this.projectsData.value.filter(p => p.id !== id);
+    async deleteProject(id: string) {
+        await this.projectsStore.delete(id);
     }
 
-    archiveProject(id: string) {
-        this.updateProject(id, { status: 'Archived' });
+    async archiveProject(id: string) {
+        await this.updateProject(id, { status: 'Archived' });
     }
 
-    // --- Low Friction Features ---
-
-    addScratchpadEntry(projectId: string, content: string, type: 'note' | 'task' = 'note') {
-        const project = this.getProject(projectId);
-        if (!project) return;
-
-        const entry: ScratchpadEntry = {
-            id: crypto.randomUUID(),
+    async addScratchpadEntry(projectId: string, content: string, type: 'note' | 'task' = 'note') {
+        await this.scratchpadStore.insert({
+            projectId,
             content,
             type,
-            createdAt: Date.now(),
             isCompleted: false
-        };
-
-        this.updateProject(projectId, {
-            scratchpad: [...project.scratchpad, entry]
-        });
+        } as any);
+        await this.updateProject(projectId, {});
     }
 
-    toggleScratchpadTask(projectId: string, entryId: string) {
-        const project = this.getProject(projectId);
-        if (!project) return;
-
-        const updatedScratchpad = project.scratchpad.map(entry =>
-            entry.id === entryId ? { ...entry, isCompleted: !entry.isCompleted } : entry
-        );
-
-        this.updateProject(projectId, { scratchpad: updatedScratchpad });
+    async toggleScratchpadTask(projectId: string, entryId: string) {
+        const entry = this.scratchpadStore.value.find(e => e.id === entryId);
+        if (entry) {
+            await this.scratchpadStore.update(entryId, { isCompleted: !entry.isCompleted });
+            await this.updateProject(projectId, {});
+        }
     }
 
-    addResource(projectId: string, resource: Omit<ProjectResource, 'id' | 'createdAt'>) {
-        const project = this.getProject(projectId);
-        if (!project) return;
-
-        const newResource: ProjectResource = {
-            id: crypto.randomUUID(),
-            createdAt: Date.now(),
+    async addResource(projectId: string, resource: Omit<ProjectResource, 'id' | 'projectId' | 'createdAt'>) {
+        await this.resourcesStore.insert({
+            projectId,
             ...resource
-        };
-
-        this.updateProject(projectId, {
-            resources: [...project.resources, newResource]
-        });
+        } as any);
+        await this.updateProject(projectId, {});
     }
 
     isDormant(project: Project) {
         const TWENTY_ONE_DAYS = 21 * 24 * 60 * 60 * 1000;
-        return (Date.now() - project.updatedAt) > TWENTY_ONE_DAYS;
+        return (Date.now() - new Date(project.updatedAt).getTime()) > TWENTY_ONE_DAYS;
     }
 }
 

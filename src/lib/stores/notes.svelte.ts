@@ -1,24 +1,25 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
 
 export type Note = {
     id: string;
     title: string;
-    tags: string[];
-    date: string;
     content: string;
+    folder: string;
+    tags: string[];
+    isFavorite: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
-const DEFAULT_NOTES: Note[] = [
-    { id: '1', title: "Project Ideas 2026", tags: ["Work", "planning", "ideas"], date: "2h ago", content: "Implement search, redesign dashboard..." },
-    { id: '2', title: "Book Summary: Atomic Habits", tags: ["Learning", "books", "self-improvement"], date: "Yesterday", content: "1% better every day..." },
-    { id: '3', title: "Grocery List", tags: ["Personal"], date: "Today", content: "Milk, Eggs, Bread..." },
-];
-
 class NotesStore {
-    #store = new LocalStore<Note[]>('selfos_notes', DEFAULT_NOTES);
+    private store = new SupabaseStore<Note>('notes', { migrationKey: 'selfos_notes' });
 
     get notes() {
-        return this.#store.value;
+        return this.store.value;
+    }
+
+    get loading() {
+        return this.store.loading;
     }
 
     get allTags() {
@@ -26,29 +27,22 @@ class NotesStore {
         return ['All', ...Array.from(tags)];
     }
 
-    addNote(note: Omit<Note, 'id' | 'date'>) {
-        const newNote: Note = {
+    async addNote(note: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) {
+        return await this.store.insert({
             ...note,
+            folder: note.folder || 'General',
             tags: note.tags || [],
-            id: crypto.randomUUID(),
-            date: 'Just now'
-        };
-        this.#store.value = [newNote, ...this.#store.value];
-        return newNote;
+            isFavorite: note.isFavorite || false
+        });
     }
 
-    updateNote(id: string, updates: Partial<Note>) {
-        this.#store.value = this.#store.value.map(n =>
-            n.id === id ? { ...n, ...updates } : n
-        );
+    async updateNote(id: string, updates: Partial<Note>) {
+        await this.store.update(id, updates);
     }
 
-    deleteNote(id: string) {
-        this.#store.value = this.#store.value.filter(n => n.id !== id);
+    async deleteNote(id: string) {
+        await this.store.delete(id);
     }
 }
 
 export const notesStore = new NotesStore();
-
-
-

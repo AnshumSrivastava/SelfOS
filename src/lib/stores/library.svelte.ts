@@ -1,10 +1,12 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
 import { notesStore } from './notes.svelte';
+import { auth } from './auth.svelte';
 
 export type ScratchpadEntry = {
     id: string;
+    itemId: string;
     content: string;
-    timestamp: string;
+    createdAt: string;
     promotedToNoteId?: string;
 };
 
@@ -12,41 +14,76 @@ export type Book = {
     id: string;
     title: string;
     author: string;
-    why: string; // The "Reason for adding"
+    why: string;
     status: 'Want to Read' | 'Reading' | 'Paused' | 'Done';
-    cover?: string;
-    subjects: string[]; // Custom labels
-    scratchpad: ScratchpadEntry[];
-    rating?: number;
-    addedDate: string;
+    coverUrl?: string;
+    subjects: string[];
+    rating: number;
     lastActivityDate: string;
+    createdAt?: string;
 };
 
-const DEFAULT_BOOKS: Book[] = [
-    {
-        id: '1',
-        title: "Atomic Habits",
-        author: "James Clear",
-        why: "To build better systems.",
-        status: "Reading",
-        cover: "bg-blue-500",
-        subjects: ["Self-Improvement"],
-        scratchpad: [
-            { id: '1', content: "1% better every day is the core idea.", timestamp: new Date().toISOString() }
-        ],
-        addedDate: new Date().toISOString(),
-        lastActivityDate: new Date().toISOString(),
-        rating: 0
-    }
-];
-
 class LibraryStore {
-    store = new LocalStore<Book[]>('selfos_library_v2', DEFAULT_BOOKS);
+    private itemsStore = new SupabaseStore<Book>('library_items', { migrationKey: 'selfos_library_v2' });
+    private scratchpadStore = new SupabaseStore<ScratchpadEntry>('library_scratchpad');
+
+    constructor() {
+        this.initMigration();
+    }
+
+    private async initMigration() {
+        if (typeof window === 'undefined') return;
+
+        $effect.root(() => {
+            $effect(() => {
+                if (!auth.loading && auth.isAuthenticated) {
+                    this.migrateNestedScratchpad();
+                }
+            });
+        });
+    }
+
+    private async migrateNestedScratchpad() {
+        const stored = localStorage.getItem('selfos_library_v2');
+        if (!stored) return;
+
+        try {
+            const books = JSON.parse(stored);
+            if (Array.isArray(books) && books.length > 0) {
+                // Check if migration is needed for scratchpad specifically
+                if (this.scratchpadStore.value.length === 0 && this.itemsStore.value.length > 0) {
+                    console.log("Migrating library scratchpad entries from localStorage...");
+                    for (const book of books) {
+                        if (Array.isArray(book.scratchpad)) {
+                            // Find the corresponding book in Supabase by title/author
+                            const sbBook = this.itemsStore.value.find(b => b.title === book.title && b.author === book.author);
+                            if (sbBook) {
+                                for (const entry of book.scratchpad) {
+                                    await this.scratchpadStore.insert({
+                                        itemId: sbBook.id,
+                                        content: entry.content,
+                                        promotedToNoteId: entry.promotedToNoteId
+                                    } as any);
+                                }
+                            }
+                        }
+                    }
+                    console.log("Library scratchpad migration complete.");
+                }
+            }
+        } catch (e) {
+            console.error("Migration error for library scratchpad:", e);
+        }
+    }
 
     get books() {
-        return this.store.value.sort((a, b) =>
+        return this.itemsStore.value.sort((a, b) =>
             new Date(b.lastActivityDate).getTime() - new Date(a.lastActivityDate).getTime()
         );
+    }
+
+    get loading() {
+        return this.itemsStore.loading || this.scratchpadStore.loading;
     }
 
     get reading() {
@@ -58,74 +95,61 @@ class LibraryStore {
         return [...new Set(allSubjects)].sort();
     }
 
-    addBook(book: Pick<Book, 'title' | 'author' | 'why' | 'cover'>) {
-        const newBook: Book = {
+    getScratchpad(bookId: string) {
+        return this.scratchpadStore.value.filter(e => e.itemId === bookId);
+    }
+
+    async addBook(book: Pick<Book, 'title' | 'author' | 'why' | 'coverUrl'>) {
+        await this.itemsStore.insert({
             ...book,
-            id: crypto.randomUUID(),
             status: 'Want to Read',
             subjects: [],
-            scratchpad: [],
             rating: 0,
-            addedDate: new Date().toISOString(),
             lastActivityDate: new Date().toISOString()
-        };
-        this.store.value = [newBook, ...this.store.value];
+        } as any);
     }
 
-    updateBook(id: string, updates: Partial<Book>) {
-        this.store.value = this.store.value.map(book =>
-            book.id === id ? { ...book, ...updates, lastActivityDate: new Date().toISOString() } : book
-        );
-    }
-
-    deleteBook(id: string) {
-        this.store.value = this.store.value.filter(book => book.id !== id);
-    }
-
-    addToScratchpad(bookId: string, content: string) {
-        const book = this.books.find(b => b.id === bookId);
-        if (!book) return;
-
-        const entry: ScratchpadEntry = {
-            id: crypto.randomUUID(),
-            content,
-            timestamp: new Date().toISOString()
-        };
-
-        this.updateBook(bookId, {
-            scratchpad: [entry, ...book.scratchpad]
+    async updateBook(id: string, updates: Partial<Book>) {
+        await this.itemsStore.update(id, {
+            ...updates,
+            lastActivityDate: new Date().toISOString()
         });
     }
 
-    promoteToNote(bookId: string, entryId: string) {
+    async deleteBook(id: string) {
+        await this.itemsStore.delete(id);
+    }
+
+    async addToScratchpad(bookId: string, content: string) {
+        await this.scratchpadStore.insert({
+            itemId: bookId,
+            content
+        } as any);
+        await this.updateBook(bookId, {}); // Update lastActivityDate
+    }
+
+    async promoteToNote(bookId: string, entryId: string) {
         const book = this.books.find(b => b.id === bookId);
-        if (!book) return;
+        const entry = this.scratchpadStore.value.find(e => e.id === entryId);
+        if (!book || !entry || entry.promotedToNoteId) return;
 
-        const entry = book.scratchpad.find(e => e.id === entryId);
-        if (!entry || entry.promotedToNoteId) return;
-
-        // Create the note
-        const newNote = notesStore.addNote({
+        const newNote = await notesStore.addNote({
             title: `Thought from: ${book.title}`,
             content: `${entry.content}\n\n---\nRef: ${book.title}`,
-            tags: ["Book Thought", ...book.subjects]
+            folder: 'Library',
+            tags: ["Book Thought", ...book.subjects],
+            isFavorite: false
         });
 
-        // Update entry to mark as promoted
-        const updatedScratchpad = book.scratchpad.map(e =>
-            e.id === entryId ? { ...e, promotedToNoteId: newNote.id } : e
-        );
-
-        this.updateBook(bookId, { scratchpad: updatedScratchpad });
+        if (newNote) {
+            await this.scratchpadStore.update(entryId, { promotedToNoteId: newNote.id });
+            await this.updateBook(bookId, {});
+        }
     }
 
-    deleteFromScratchpad(bookId: string, entryId: string) {
-        const book = this.books.find(b => b.id === bookId);
-        if (!book) return;
-
-        this.updateBook(bookId, {
-            scratchpad: book.scratchpad.filter(e => e.id !== entryId)
-        });
+    async deleteFromScratchpad(bookId: string, entryId: string) {
+        await this.scratchpadStore.delete(entryId);
+        await this.updateBook(bookId, {});
     }
 }
 

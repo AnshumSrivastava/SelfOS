@@ -1,4 +1,4 @@
-import { LocalStore } from './localStore.svelte';
+import { SupabaseStore } from './supabaseStore.svelte';
 
 export type TransactionType = 'income' | 'expense';
 
@@ -10,6 +10,7 @@ export interface Transaction {
     date: string;
     category: string;
     tags: string[];
+    createdAt?: string;
 }
 
 export interface Budget {
@@ -17,11 +18,11 @@ export interface Budget {
     category: string;
     amount: number;
     spent: number;
-    period: 'monthly'; // We can expand this later
+    period: 'monthly';
     color: string;
 }
 
-export interface Goal {
+export interface FinancialGoal {
     id: string;
     name: string;
     targetAmount: number;
@@ -51,71 +52,25 @@ export interface Reminder {
     type: 'income' | 'expense';
 }
 
-const DEFAULT_TRANSACTIONS: Transaction[] = [
-    {
-        id: '1',
-        title: "Freelance Project",
-        amount: 1200,
-        type: "income",
-        date: new Date().toISOString(),
-        category: "Work",
-        tags: ["freelance", "web-dev"]
-    },
-    {
-        id: '2',
-        title: "Grocery Shopping",
-        amount: 85.5,
-        type: "expense",
-        date: new Date(Date.now() - 86400000).toISOString(),
-        category: "Food",
-        tags: ["groceries", "home"]
-    },
-];
-
-const DEFAULT_BUDGETS: Budget[] = [
-    {
-        id: '1',
-        category: 'Food',
-        amount: 500,
-        spent: 350,
-        period: 'monthly',
-        color: '#ff9800' // Orange
-    },
-    {
-        id: '2',
-        category: 'Transport',
-        amount: 200,
-        spent: 120,
-        period: 'monthly',
-        color: '#2196f3' // Blue
-    }
-];
-
-const DEFAULT_GOALS: Goal[] = [
-    {
-        id: '1',
-        name: 'New Laptop',
-        targetAmount: 2500,
-        currentAmount: 1500,
-        deadline: new Date(Date.now() + 7776000000).toISOString(), // ~3 months
-        color: '#4caf50' // Green
-    }
-];
-
 class FinanceStore {
-    // Separate stores for better organization, though could be one big object.
-    // Keeping them separate for now but exposed via this class.
-    transactionsStore = new LocalStore<Transaction[]>('selfos_finance_transactions', DEFAULT_TRANSACTIONS);
-    budgetsStore = new LocalStore<Budget[]>('selfos_finance_budgets', DEFAULT_BUDGETS);
-    goalsStore = new LocalStore<Goal[]>('selfos_finance_goals', DEFAULT_GOALS);
-    investmentsStore = new LocalStore<Investment[]>('selfos_finance_investments', []);
-    remindersStore = new LocalStore<Reminder[]>('selfos_finance_reminders', []);
+    private transactionsStore = new SupabaseStore<Transaction>('finance_transactions', { migrationKey: 'selfos_finance_transactions' });
+    private budgetsStore = new SupabaseStore<Budget>('finance_budgets', { migrationKey: 'selfos_finance_budgets' });
+    private goalsStore = new SupabaseStore<FinancialGoal>('finance_savings_goals', { migrationKey: 'selfos_finance_goals' });
+    private investmentsStore = new SupabaseStore<Investment>('finance_investments', { migrationKey: 'selfos_finance_investments' });
+    private remindersStore = new SupabaseStore<Reminder>('finance_reminders', { migrationKey: 'selfos_finance_reminders' });
 
-    get transactions() { return this.transactionsStore.value || []; }
-    get budgets() { return this.budgetsStore.value || []; }
-    get goals() { return this.goalsStore.value || []; }
-    get investments() { return this.investmentsStore.value || []; }
-    get reminders() { return this.remindersStore.value || []; }
+    get transactions() { return this.transactionsStore.value; }
+    get budgets() { return this.budgetsStore.value; }
+    get goals() { return this.goalsStore.value; }
+    get investments() { return this.investmentsStore.value; }
+    get reminders() { return this.remindersStore.value; }
+    get loading() {
+        return this.transactionsStore.loading ||
+            this.budgetsStore.loading ||
+            this.goalsStore.loading ||
+            this.investmentsStore.loading ||
+            this.remindersStore.loading;
+    }
 
     get incomeReminders() {
         return this.reminders.filter(r => r.type === 'income' && !r.isPaid);
@@ -126,137 +81,104 @@ class FinanceStore {
     }
 
     // --- Transactions ---
-    /**
-     * Adds a new transaction and updates budget progress if it's an expense.
-     * @param transaction - Transaction details excluding ID
-     */
-    addTransaction(transaction: Omit<Transaction, 'id'>) {
-        const newTransaction = { ...transaction, id: crypto.randomUUID() };
-        this.transactionsStore.value = [newTransaction, ...this.transactionsStore.value];
-        this.updateBudgetProgress(newTransaction);
+    async addTransaction(transaction: Omit<Transaction, 'id'>) {
+        const added = await this.transactionsStore.insert(transaction);
+        if (added && transaction.type === 'expense') {
+            await this.updateBudgetProgress(added);
+        }
     }
 
-    removeTransaction(id: string) {
+    async removeTransaction(id: string) {
         const transaction = this.transactionsStore.value.find(t => t.id === id);
         if (transaction) {
-            this.transactionsStore.value = this.transactionsStore.value.filter(t => t.id !== id);
-            // Re-calculate budget progress would be complex here without storing history,
-            // strictly speaking we should recalculate everything or just subtract.
-            // For now, simpler implementation:
+            await this.transactionsStore.delete(id);
             if (transaction.type === 'expense') {
                 const budget = this.budgetsStore.value.find(b => b.category === transaction.category);
                 if (budget) {
-                    budget.spent -= transaction.amount;
-                    // Trigger update
-                    this.budgetsStore.value = [...this.budgetsStore.value];
+                    await this.budgetsStore.update(budget.id, { spent: budget.spent - transaction.amount });
                 }
             }
         }
     }
 
-    add(title: string, amount: number, type: 'income' | 'expense') {
-        // Backwards compatibility wrapper if needed, but better to upgrade calls
-        this.addTransaction({
-            title,
-            amount,
-            type,
-            category: 'General',
-            tags: [],
-            date: new Date().toISOString()
-        });
-    }
-
     get balance() {
-        return (this.transactionsStore.value || []).reduce((acc, t) => {
+        return this.transactions.reduce((acc, t) => {
             return t.type === 'income' ? acc + t.amount : acc - t.amount;
         }, 0);
     }
 
     get income() {
-        return (this.transactionsStore.value || [])
+        return this.transactions
             .filter(t => t.type === 'income')
             .reduce((acc, t) => acc + t.amount, 0);
     }
 
     get expense() {
-        return (this.transactionsStore.value || [])
+        return this.transactions
             .filter(t => t.type === 'expense')
             .reduce((acc, t) => acc + t.amount, 0);
     }
 
     // --- Budgets ---
-    /**
-     * Adds a new budget category.
-     * @param budget - Budget details excluding ID and initial spent amount
-     */
-    addBudget(budget: Omit<Budget, 'id' | 'spent'>) {
-        this.budgetsStore.value = [...this.budgetsStore.value, { ...budget, id: crypto.randomUUID(), spent: 0 }];
+    async addBudget(budget: Omit<Budget, 'id' | 'spent'>) {
+        await this.budgetsStore.insert({ ...budget, spent: 0 } as any);
     }
 
-    removeBudget(id: string) {
-        this.budgetsStore.value = this.budgetsStore.value.filter(b => b.id !== id);
+    async removeBudget(id: string) {
+        await this.budgetsStore.delete(id);
     }
 
-    updateBudgetProgress(transaction: Transaction) {
+    async updateBudgetProgress(transaction: Transaction) {
         if (transaction.type === 'expense') {
             const budget = this.budgetsStore.value.find(b => b.category === transaction.category);
             if (budget) {
-                budget.spent += transaction.amount;
-                // Re-assign to trigger reactivity if needed
-                this.budgetsStore.value = [...this.budgetsStore.value];
+                await this.budgetsStore.update(budget.id, { spent: budget.spent + transaction.amount });
             }
         }
     }
 
-
     // --- Goals ---
-    /**
-     * Adds a new financial goal.
-     * @param goal - Goal details excluding ID and initial current amount
-     */
-    addGoal(goal: Omit<Goal, 'id' | 'currentAmount'>) {
-        this.goalsStore.value = [...this.goalsStore.value, { ...goal, id: crypto.randomUUID(), currentAmount: 0 }];
+    async addGoal(goal: Omit<FinancialGoal, 'id' | 'currentAmount'>) {
+        await this.goalsStore.insert({ ...goal, currentAmount: 0 } as any);
     }
 
-    removeGoal(id: string) {
-        this.goalsStore.value = this.goalsStore.value.filter(g => g.id !== id);
+    async removeGoal(id: string) {
+        await this.goalsStore.delete(id);
     }
 
-    addToGoal(id: string, amount: number) {
+    async addToGoal(id: string, amount: number) {
         const goal = this.goalsStore.value.find(g => g.id === id);
         if (goal) {
-            goal.currentAmount += amount;
-            this.goalsStore.value = [...this.goalsStore.value];
+            await this.goalsStore.update(id, { currentAmount: goal.currentAmount + amount });
         }
     }
 
     // --- Investments ---
-    addInvestment(investment: Omit<Investment, 'id'>) {
-        this.investmentsStore.value = [...this.investmentsStore.value, { ...investment, id: crypto.randomUUID() }];
+    async addInvestment(investment: Omit<Investment, 'id'>) {
+        await this.investmentsStore.insert(investment);
     }
 
-    removeInvestment(id: string) {
-        this.investmentsStore.value = this.investmentsStore.value.filter(i => i.id !== id);
+    async removeInvestment(id: string) {
+        await this.investmentsStore.delete(id);
     }
 
     get totalInvestmentValue() {
-        return (this.investmentsStore.value || []).reduce((acc, i) => acc + i.currentValue, 0);
+        return this.investments.reduce((acc, i) => acc + i.currentValue, 0);
     }
 
     // --- Reminders ---
-    addReminder(reminder: Omit<Reminder, 'id'>) {
-        this.remindersStore.value = [...this.remindersStore.value, { ...reminder, id: crypto.randomUUID() }];
+    async addReminder(reminder: Omit<Reminder, 'id'>) {
+        await this.remindersStore.insert(reminder);
     }
 
-    removeReminder(id: string) {
-        this.remindersStore.value = this.remindersStore.value.filter(r => r.id !== id);
+    async removeReminder(id: string) {
+        await this.remindersStore.delete(id);
     }
 
-    toggleReminderPaid(id: string) {
+    async toggleReminderPaid(id: string) {
         const reminder = this.remindersStore.value.find(r => r.id === id);
         if (reminder) {
-            reminder.isPaid = !reminder.isPaid;
-            this.remindersStore.value = [...this.remindersStore.value];
+            await this.remindersStore.update(id, { isPaid: !reminder.isPaid });
         }
     }
 }

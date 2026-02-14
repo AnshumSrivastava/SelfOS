@@ -51,7 +51,8 @@ SelfOS aims to be a single source of truth for your digital life, prioritizing:
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Icons**: [Lucide Svelte](https://lucide.dev/guide/svelte)
 - **State Management**: Svelte 5 `$state` and `$derived` via custom stores
-- **Storage**: Browser LocalStorage (Local-First logic)
+- **Storage**: Browser LocalStorage (Local-First logic) with **Supabase Cloud Sync**
+- **Authentication**: Supabase Auth with secure session management
 
 ---
 

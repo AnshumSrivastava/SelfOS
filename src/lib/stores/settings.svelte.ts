@@ -1,11 +1,11 @@
 import { browser } from '$app/environment';
+import { SupabaseStore } from './supabaseStore.svelte';
+import { auth } from './auth.svelte';
 
-// Theme type definition
 export type ThemeType = 'dark' | 'light' | 'amoled' | 'minimal';
 export type LayoutStyle = 'card' | 'list' | 'compact';
 export type FontSize = 'compact' | 'normal' | 'large';
 
-// Dashboard widget configuration
 export interface DashboardWidget {
     id: string;
     type: string;
@@ -13,7 +13,6 @@ export interface DashboardWidget {
     order: number;
 }
 
-// Per-page preferences
 export interface PagePreferences {
     [key: string]: {
         layoutStyle?: LayoutStyle;
@@ -22,217 +21,257 @@ export interface PagePreferences {
     };
 }
 
+export interface UserSettings {
+    theme: ThemeType;
+    accentColor: string;
+    features: Record<string, boolean>;
+    mobileNavItems: string[];
+    layoutStyle: LayoutStyle;
+    fontSize: FontSize;
+    animations: boolean;
+    borderRadius: number;
+    modulePadding: number;
+    dashboardWidgets: DashboardWidget[];
+    pagePreferences: PagePreferences;
+}
+
+const DEFAULT_WIDGETS: DashboardWidget[] = [
+    { id: 'stats', type: 'stats', enabled: true, order: 0 },
+    { id: 'habits', type: 'habits', enabled: true, order: 1 },
+    { id: 'tasks', type: 'tasks', enabled: true, order: 2 },
+    { id: 'activity', type: 'activity', enabled: true, order: 3 },
+    { id: 'progress', type: 'progress', enabled: true, order: 4 },
+    { id: 'events', type: 'events', enabled: true, order: 5 },
+    { id: 'goals', type: 'goals', enabled: true, order: 6 },
+];
+
+const DEFAULT_FEATURES = {
+    dashboard: true,
+    habits: true,
+    finance: true,
+    fitness: true,
+    nutrition: true,
+    tasks: true,
+    notes: true,
+    library: true,
+    goals: true,
+    projects: true,
+    journal: true,
+    focus: true,
+    calendar: true,
+    settings: true
+};
+
 class SettingsStore {
-    // Default values
-    features = $state({
-        dashboard: true,
-        habits: true,
-        finance: true,
-        fitness: true,
-        nutrition: true,
-        tasks: true,
-        notes: true,
-        library: true,
-        goals: true,
-        projects: true,
-        journal: true,
-        focus: true,
-        calendar: true,
-        settings: true
-    });
-
-    theme = $state<ThemeType>('dark');
-    accentColor = $state('#00ff9d'); // Default green
-    mobileNavItems = $state(['dashboard', 'projects', 'tasks']);
-
-    // New personalization options
-    layoutStyle = $state<LayoutStyle>('card');
-    fontSize = $state<FontSize>('normal');
-    animations = $state(true);
-    borderRadius = $state(16);
-    modulePadding = $state(24);
-
-    dashboardWidgets = $state<DashboardWidget[]>([
-        { id: 'stats', type: 'stats', enabled: true, order: 0 },
-        { id: 'habits', type: 'habits', enabled: true, order: 1 },
-        { id: 'tasks', type: 'tasks', enabled: true, order: 2 },
-        { id: 'activity', type: 'activity', enabled: true, order: 3 },
-        { id: 'progress', type: 'progress', enabled: true, order: 4 },
-        { id: 'events', type: 'events', enabled: true, order: 5 },
-        { id: 'goals', type: 'goals', enabled: true, order: 6 },
-    ]);
-
-    pagePreferences = $state<PagePreferences>({});
+    private store = new SupabaseStore<UserSettings & { id: string }>('user_settings');
 
     constructor() {
         if (browser) {
-            const savedSettings = localStorage.getItem('selfos-settings');
-            if (savedSettings) {
-                const parsed = JSON.parse(savedSettings);
-                this.features = { ...this.features, ...parsed.features };
-                this.theme = parsed.theme || 'dark';
-                this.accentColor = parsed.accentColor || '#00ff9d';
-                this.mobileNavItems = parsed.mobileNavItems || ['dashboard', 'projects', 'tasks'];
-                this.layoutStyle = parsed.layoutStyle || 'card';
-                this.fontSize = parsed.fontSize || 'normal';
-                this.animations = parsed.animations !== undefined ? parsed.animations : true;
-                this.borderRadius = parsed.borderRadius || 16;
-                this.modulePadding = parsed.modulePadding || 24;
-                this.dashboardWidgets = parsed.dashboardWidgets || this.dashboardWidgets;
-                this.pagePreferences = parsed.pagePreferences || {};
-            }
-            // Apply theme and design system immediately on load
-            this.applyTheme();
-            this.applyFontSize();
-            this.applyDesignSystem();
+            this.init();
+        }
+    }
 
-            // Auto-save effect
-            $effect.root(() => {
-                $effect(() => {
-                    localStorage.setItem('selfos-settings', JSON.stringify({
-                        features: this.features,
-                        theme: this.theme,
-                        accentColor: this.accentColor,
-                        mobileNavItems: this.mobileNavItems,
-                        layoutStyle: this.layoutStyle,
-                        fontSize: this.fontSize,
-                        animations: this.animations,
-                        borderRadius: this.borderRadius,
-                        modulePadding: this.modulePadding,
-                        dashboardWidgets: this.dashboardWidgets,
-                        pagePreferences: this.pagePreferences,
-                    }));
-                });
+    private async init() {
+        // Wait for auth to be ready
+        $effect.root(() => {
+            $effect(() => {
+                if (!auth.loading && auth.isAuthenticated) {
+                    this.migrateAndSync();
+                }
             });
+
+            // Effect to apply visual settings when data changes
+            $effect(() => {
+                if (this.current) {
+                    this.applyAll();
+                }
+            });
+        });
+    }
+
+    private async migrateAndSync() {
+        if (this.store.value.length === 0) {
+            const saved = localStorage.getItem('selfos-settings');
+            if (saved) {
+                console.log("Migrating settings from localStorage...");
+                const parsed = JSON.parse(saved);
+                await this.store.upsertSingle({
+                    theme: parsed.theme || 'dark',
+                    accentColor: parsed.accentColor || '#00ff9d',
+                    features: { ...DEFAULT_FEATURES, ...parsed.features },
+                    mobileNavItems: parsed.mobileNavItems || ['dashboard', 'projects', 'tasks'],
+                    layoutStyle: parsed.layoutStyle || 'card',
+                    fontSize: parsed.fontSize || 'normal',
+                    animations: parsed.animations !== undefined ? parsed.animations : true,
+                    borderRadius: parsed.borderRadius || 16,
+                    modulePadding: parsed.modulePadding || 24,
+                    dashboardWidgets: parsed.dashboardWidgets || DEFAULT_WIDGETS,
+                    pagePreferences: parsed.pagePreferences || {},
+                });
+            } else {
+                // Initialize with defaults if no local storage
+                await this.store.upsertSingle({
+                    theme: 'dark',
+                    accentColor: '#00ff9d',
+                    features: DEFAULT_FEATURES,
+                    mobileNavItems: ['dashboard', 'projects', 'tasks'],
+                    layoutStyle: 'card',
+                    fontSize: 'normal',
+                    animations: true,
+                    borderRadius: 16,
+                    modulePadding: 24,
+                    dashboardWidgets: DEFAULT_WIDGETS,
+                    pagePreferences: {},
+                });
+            }
         }
     }
 
-    toggleFeature(feature: keyof typeof this.features) {
-        if (this.features[feature] !== undefined) {
-            this.features[feature] = !this.features[feature];
-        }
+    get current(): UserSettings {
+        const s = this.store.value[0];
+        return {
+            theme: s?.theme || 'dark',
+            accentColor: s?.accentColor || '#00ff9d',
+            features: s?.features || DEFAULT_FEATURES,
+            mobileNavItems: s?.mobileNavItems || ['dashboard', 'projects', 'tasks'],
+            layoutStyle: s?.layoutStyle || 'card',
+            fontSize: s?.fontSize || 'normal',
+            animations: s?.animations ?? true,
+            borderRadius: s?.borderRadius || 16,
+            modulePadding: s?.modulePadding || 24,
+            dashboardWidgets: s?.dashboardWidgets || DEFAULT_WIDGETS,
+            pagePreferences: s?.pagePreferences || {}
+        };
     }
 
-    setTheme(newTheme: ThemeType) {
-        this.theme = newTheme;
-        this.applyTheme();
+    // Facade properties for reactivity in components
+    get theme() { return this.current.theme; }
+    get accentColor() { return this.current.accentColor; }
+    get features() { return this.current.features; }
+    get layoutStyle() { return this.current.layoutStyle; }
+    get fontSize() { return this.current.fontSize; }
+    get animations() { return this.current.animations; }
+    get borderRadius() { return this.current.borderRadius; }
+    get modulePadding() { return this.current.modulePadding; }
+    get dashboardWidgets() { return this.current.dashboardWidgets; }
+    get pagePreferences() { return this.current.pagePreferences; }
+    get mobileNavItems() { return this.current.mobileNavItems; }
+
+    async update(updates: Partial<UserSettings>) {
+        await this.store.upsertSingle(updates);
     }
 
-    setAccentColor(color: string) {
-        this.accentColor = color;
-        this.applyTheme();
+    async toggleFeature(feature: string) {
+        const features = { ...this.features };
+        features[feature] = !features[feature];
+        await this.update({ features });
     }
 
-    setLayoutStyle(style: LayoutStyle) {
-        this.layoutStyle = style;
+    async setTheme(theme: ThemeType) {
+        await this.update({ theme });
     }
 
-    setFontSize(size: FontSize) {
-        this.fontSize = size;
-        this.applyFontSize();
+    async setAccentColor(accentColor: string) {
+        await this.update({ accentColor });
     }
 
-    toggleAnimations() {
-        this.animations = !this.animations;
-        if (browser) {
-            document.documentElement.classList.toggle('no-animations', !this.animations);
-        }
+    async setLayoutStyle(layoutStyle: LayoutStyle) {
+        await this.update({ layoutStyle });
     }
 
-    updateDashboardWidget(widgetId: string, updates: Partial<DashboardWidget>) {
-        const index = this.dashboardWidgets.findIndex(w => w.id === widgetId);
+    async setFontSize(fontSize: FontSize) {
+        await this.update({ fontSize });
+    }
+
+    async toggleAnimations() {
+        await this.update({ animations: !this.animations });
+    }
+
+    async updateDashboardWidget(widgetId: string, updates: Partial<DashboardWidget>) {
+        const widgets = [...this.dashboardWidgets];
+        const index = widgets.findIndex(w => w.id === widgetId);
         if (index !== -1) {
-            this.dashboardWidgets[index] = { ...this.dashboardWidgets[index], ...updates };
+            widgets[index] = { ...widgets[index], ...updates };
+            await this.update({ dashboardWidgets: widgets });
         }
     }
 
-    setDesignVariable(variable: 'borderRadius' | 'modulePadding', value: number) {
-        (this as any)[variable] = value;
-        this.applyDesignSystem();
+    async setDesignVariable(variable: 'borderRadius' | 'modulePadding', value: number) {
+        await this.update({ [variable]: value });
     }
 
-    reorderDashboardWidgets(newOrder: DashboardWidget[]) {
-        this.dashboardWidgets = newOrder;
+    async setPagePreference(page: string, preferences: any) {
+        const currentPrefs = { ...this.pagePreferences };
+        currentPrefs[page] = { ...currentPrefs[page], ...preferences };
+        await this.update({ pagePreferences: currentPrefs });
     }
 
-    setPagePreference(page: string, preferences: PagePreferences[string]) {
-        this.pagePreferences[page] = { ...this.pagePreferences[page], ...preferences };
-    }
-
-    applyFontSize() {
+    private applyAll() {
         if (!browser) return;
+        this.applyTheme();
+        this.applyFontSize();
+        this.applyDesignSystem();
+        document.documentElement.classList.toggle('no-animations', !this.animations);
+    }
+
+    private applyFontSize() {
         const root = document.documentElement;
-
-        // Remove existing font size classes
         root.classList.remove('font-compact', 'font-normal', 'font-large');
-
-        // Add new font size class
         root.classList.add(`font-${this.fontSize}`);
     }
 
-    applyDesignSystem() {
-        if (!browser) return;
+    private applyDesignSystem() {
         const root = document.documentElement;
         root.style.setProperty('--card-radius', `${this.borderRadius}px`);
         root.style.setProperty('--module-padding', `${this.modulePadding}px`);
     }
 
-    applyTheme() {
-        if (!browser) return;
-
+    private applyTheme() {
         const root = document.documentElement;
+        const { theme, accentColor } = this.current;
 
-        // Handle dark class for Tailwind
-        if (this.theme === 'dark' || this.theme === 'amoled' || this.theme === 'minimal') {
+        if (theme === 'dark' || theme === 'amoled' || theme === 'minimal') {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
 
-        // Apply Theme Colors
-        if (this.theme === 'light') {
+        if (theme === 'light') {
             root.style.setProperty('--theme-background', '#ffffff');
             root.style.setProperty('--theme-surface', '#f4f4f5');
             root.style.setProperty('--theme-text', '#18181b');
+            root.style.setProperty('--color-text', '#18181b');
             root.style.setProperty('--theme-muted', '#71717a');
             root.style.setProperty('--theme-line', '#e4e4e7');
-            // Force override to ensure propagation
-            root.style.setProperty('--color-text', '#18181b');
-        } else if (this.theme === 'amoled') {
+        } else if (theme === 'amoled') {
             root.style.setProperty('--theme-background', '#000000');
             root.style.setProperty('--theme-surface', '#050505');
             root.style.setProperty('--theme-text', '#ededed');
+            root.style.setProperty('--color-text', '#ededed');
             root.style.setProperty('--theme-muted', '#a1a1aa');
             root.style.setProperty('--theme-line', '#27272a');
-            // Force override to ensure propagation
-            root.style.setProperty('--color-text', '#ededed');
-        } else if (this.theme === 'minimal') {
-            // Minimal Mode: Pure black/white/grey
+        } else if (theme === 'minimal') {
             root.style.setProperty('--theme-background', '#000000');
             root.style.setProperty('--theme-surface', '#1a1a1a');
             root.style.setProperty('--theme-text', '#FFFFFF');
+            root.style.setProperty('--color-text', '#FFFFFF');
             root.style.setProperty('--theme-muted', '#999999');
             root.style.setProperty('--theme-line', '#333333');
-            // Force override to ensure propagation
-            root.style.setProperty('--color-text', '#FFFFFF');
         } else {
-            // Default Dark
             root.style.setProperty('--theme-background', '#0a0a0c');
             root.style.setProperty('--theme-surface', '#121214');
             root.style.setProperty('--theme-text', '#ededed');
+            root.style.setProperty('--color-text', '#ededed');
             root.style.setProperty('--theme-muted', '#a1a1aa');
             root.style.setProperty('--theme-line', '#27272a');
-            // Force override to ensure propagation
-            root.style.setProperty('--color-text', '#ededed');
         }
 
-        // Apply Accent Color (use white for minimal mode)
-        if (this.theme === 'minimal') {
+        if (theme === 'minimal') {
             root.style.setProperty('--theme-primary', '#FFFFFF');
             root.style.setProperty('--color-primary', '#FFFFFF');
         } else {
-            root.style.setProperty('--theme-primary', this.accentColor);
-            root.style.setProperty('--color-primary', this.accentColor);
+            root.style.setProperty('--theme-primary', accentColor);
+            root.style.setProperty('--color-primary', accentColor);
         }
     }
 }
