@@ -37,7 +37,7 @@ class HabitsStore {
         const habit = this.store.value.find(h => h.id === id);
 
         if (habit) {
-            let completedDates = [...habit.completed_dates];
+            let completedDates = [...(habit.completed_dates || [])];
             if (completedDates.includes(today)) {
                 completedDates = completedDates.filter(d => d !== today);
             } else {
@@ -87,12 +87,12 @@ class HabitsStore {
     isCompleted(id: string) {
         const today = new Date().toISOString().split('T')[0];
         const habit = this.store.value.find(h => h.id === id);
-        return habit?.completed_dates.includes(today) ?? false;
+        return habit?.completed_dates?.includes(today) ?? false;
     }
 
     get completedCount() {
         const today = new Date().toISOString().split('T')[0];
-        return this.store.value.filter(h => h.completed_dates.includes(today)).length;
+        return this.store.value.filter(h => h.completed_dates?.includes(today)).length;
     }
 
     get totalCount() {

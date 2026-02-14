@@ -77,13 +77,23 @@ class FitnessStore {
 
     async updateSteps(count: number) {
         const today = new Date().toISOString().split('T')[0];
-        await this.dailyStore.upsertSingle({ steps: count } as any);
+        const existing = this.dailyStore.value.find(d => (d as any).date === today);
+        await this.dailyStore.upsertSingle({
+            id: existing?.id,
+            date: today,
+            steps: count
+        } as any);
     }
 
     async addWater(amount: number) {
         const today = new Date().toISOString().split('T')[0];
-        const currentWater = this.stats.todayWater;
-        await this.dailyStore.upsertSingle({ water: currentWater + amount } as any);
+        const existing = this.dailyStore.value.find(d => (d as any).date === today);
+        const currentWater = existing?.water || 0;
+        await this.dailyStore.upsertSingle({
+            id: existing?.id,
+            date: today,
+            water: currentWater + amount
+        } as any);
     }
 
     async logWeight(value: number) {

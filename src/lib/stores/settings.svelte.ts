@@ -72,14 +72,8 @@ class SettingsStore {
     }
 
     private async init() {
-        // Wait for auth to be ready
+        // Init is handled by SupabaseStore
         $effect.root(() => {
-            $effect(() => {
-                if (!auth.loading && auth.isAuthenticated) {
-                    this.migrateAndSync();
-                }
-            });
-
             // Effect to apply visual settings when data changes
             $effect(() => {
                 if (this.current) {
@@ -87,44 +81,6 @@ class SettingsStore {
                 }
             });
         });
-    }
-
-    private async migrateAndSync() {
-        if (this.store.value.length === 0) {
-            const saved = localStorage.getItem('selfos-settings');
-            if (saved) {
-                console.log("Migrating settings from localStorage...");
-                const parsed = JSON.parse(saved);
-                await this.store.upsertSingle({
-                    theme: parsed.theme || 'dark',
-                    accentColor: parsed.accentColor || '#00ff9d',
-                    features: { ...DEFAULT_FEATURES, ...parsed.features },
-                    mobileNavItems: parsed.mobileNavItems || ['dashboard', 'projects', 'tasks'],
-                    layoutStyle: parsed.layoutStyle || 'card',
-                    fontSize: parsed.fontSize || 'normal',
-                    animations: parsed.animations !== undefined ? parsed.animations : true,
-                    borderRadius: parsed.borderRadius || 16,
-                    modulePadding: parsed.modulePadding || 24,
-                    dashboardWidgets: parsed.dashboardWidgets || DEFAULT_WIDGETS,
-                    pagePreferences: parsed.pagePreferences || {},
-                });
-            } else {
-                // Initialize with defaults if no local storage
-                await this.store.upsertSingle({
-                    theme: 'dark',
-                    accentColor: '#00ff9d',
-                    features: DEFAULT_FEATURES,
-                    mobileNavItems: ['dashboard', 'projects', 'tasks'],
-                    layoutStyle: 'card',
-                    fontSize: 'normal',
-                    animations: true,
-                    borderRadius: 16,
-                    modulePadding: 24,
-                    dashboardWidgets: DEFAULT_WIDGETS,
-                    pagePreferences: {},
-                });
-            }
-        }
     }
 
     get current(): UserSettings {
