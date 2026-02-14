@@ -47,37 +47,59 @@ class GoalsStore {
     }
 
     async addGoal(goal: Omit<Goal, 'id' | 'completed' | 'createdAt' | 'status'>) {
-        return await this.goalsStore.insert({
-            ...goal,
-            status: 'active',
-            completed: false,
-        } as any);
+        try {
+            console.log('[GoalsStore] Adding new goal:', goal.title);
+            return await this.goalsStore.insert({
+                ...goal,
+                status: 'active',
+                completed: false,
+            } as any);
+        } catch (error) {
+            console.error('[GoalsStore] Failed to add goal:', error);
+            throw error;
+        }
     }
 
     async updateGoal(id: string, updates: Partial<Goal>) {
-        await this.goalsStore.update(id, updates);
+        try {
+            await this.goalsStore.update(id, updates);
+        } catch (error) {
+            console.error(`[GoalsStore] Failed to update goal ${id}:`, error);
+            throw error;
+        }
     }
 
     async deleteGoal(id: string) {
-        const children = this.getGoalChildren(id);
-        for (const child of children) {
-            await this.deleteGoal(child.id);
-        }
+        try {
+            console.log(`[GoalsStore] Deleting goal ${id} and its children...`);
+            const children = this.getGoalChildren(id);
+            for (const child of children) {
+                await this.deleteGoal(child.id);
+            }
 
-        tasksStore.tasks.forEach(async t => {
-            if (t.goalId === id) {
+            // Cleanup task associations
+            const associatedTasks = tasksStore.tasks.filter(t => t.goalId === id);
+            for (const t of associatedTasks) {
                 await tasksStore.update(t.id, { goalId: null });
             }
-        });
 
-        await this.goalsStore.delete(id);
+            await this.goalsStore.delete(id);
+        } catch (error) {
+            console.error(`[GoalsStore] Failed to delete goal ${id}:`, error);
+            throw error;
+        }
     }
 
     async addLog(log: Omit<GoalLog, 'id' | 'date'>) {
-        return await this.logsStore.insert({
-            ...log,
-            date: new Date().toISOString()
-        });
+        try {
+            return await this.logsStore.insert({
+                ...log,
+                date: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error(`[GoalsStore] Failed to add goal log for ${log.goalId}:`, error);
+            throw error;
+        }
     }
 
     getGoalLogs(goalId: string) {
@@ -109,7 +131,7 @@ class GoalsStore {
             completedWeight += this.getGoalProgress(child.id) / 100;
         });
 
-        return Math.round((completedWeight / totalWeight) * 100);
+        return totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
     }
 
     getGoalHealth(goalId: string): 'on-track' | 'at-risk' | 'stalled' {
@@ -132,17 +154,17 @@ class GoalsStore {
         const totalProgress = areaGoals.reduce((acc, goal) => acc + this.getGoalProgress(goal.id), 0);
         return Math.round(totalProgress / areaGoals.length);
     }
+
     async parseBatchTasks(input: string): Promise<{ tasks: { title: string; link?: string }[]; playlistTitle?: string }> {
-        // Basic implementation for parsing text/links
-        // In a real app, this would call a backend API for YouTube playlist parsing
-        const lines = input.split('\n').filter(l => l.trim().length > 0);
+        const lines = input.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         const tasks = lines.map(line => {
-            const title = line.replace(/https?:\/\/[^\s]+/g, '').trim();
-            const linkMatch = line.match(/https?:\/\/[^\s]+/);
-            return {
-                title: title || 'Untitled Module',
-                link: linkMatch ? linkMatch[0] : undefined
-            };
+            const urlMatch = line.match(/(https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+                const url = urlMatch[1];
+                const title = line.replace(url, '').trim();
+                return { title: title || url, link: url };
+            }
+            return { title: line };
         });
 
         return {

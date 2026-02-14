@@ -11,6 +11,8 @@ const dummyClient = {
         getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
         signInWithOAuth: async () => ({ error: new Error("Supabase URL or Anon Key is missing. Check your environment variables.") }),
+        signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error("Supabase is not configured. Local login is disabled.") }),
+        signUp: async () => ({ data: { user: null, session: null }, error: new Error("Supabase is not configured. Local signup is disabled.") }),
         signOut: async () => ({ error: null }),
     },
     from: () => ({

@@ -7,6 +7,7 @@
         ExternalLink,
     } from "lucide-svelte";
     import { scale } from "svelte/transition";
+    import { projectsStore } from "$lib/stores/projects.svelte";
     import type { Task } from "$lib/stores/tasks.svelte";
 
     let {
@@ -18,6 +19,13 @@
         onToggle: () => void;
         onDelete: () => void;
     } = $props();
+
+    // Resolve project name
+    let projectName = $derived.by(() => {
+        if (!task.projectId) return "Inbox";
+        const project = projectsStore.getProject(task.projectId);
+        return project ? project.name : "Unknown";
+    });
 
     // Calculate urgency
     let urgencyInfo = $derived.by(() => {
@@ -99,7 +107,7 @@
                     <span
                         class="text-xs px-2 py-0.5 bg-background border border-line rounded text-muted"
                     >
-                        {task.project}
+                        {projectName}
                     </span>
                     <span
                         class="text-xs px-2 py-0.5 rounded {task.priority ===

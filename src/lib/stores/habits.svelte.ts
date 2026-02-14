@@ -1,30 +1,58 @@
 import { SupabaseStore } from './supabaseStore.svelte';
+import { supabase } from '$lib/supabaseClient';
+import { auth } from './auth.svelte';
 
 export type Habit = {
     id: string;
     name: string;
     description?: string;
     streak: number;
-    completed_dates: string[]; // ISO date strings YYYY-MM-DD
+    last_completed?: string;
     created_at?: string;
+};
+
+export type HabitCheckin = {
+    id: string;
+    habit_id: string;
+    date: string;
+    status: 'completed' | 'skipped';
 };
 
 class HabitsStore {
     private store = new SupabaseStore<Habit>('habits');
+    private checkins = $state<HabitCheckin[]>([]);
+    private checkinsLoading = $state(true);
+
+    constructor() {
+        this.fetchCheckins();
+    }
 
     get habits() {
         return this.store.value;
     }
 
     get loading() {
-        return this.store.loading;
+        return this.store.loading || this.checkinsLoading;
+    }
+
+    async fetchCheckins() {
+        if (!auth.isAuthenticated) return;
+        this.checkinsLoading = true;
+        const { data, error } = await supabase
+            .from('habit_checkins')
+            .select('*')
+            .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+
+        if (!error && data) {
+            this.checkins = data;
+        }
+        this.checkinsLoading = false;
     }
 
     async add(name: string) {
         await this.store.insert({
             name,
-            streak: 0,
-            completed_dates: []
+            streak: 0
         });
     }
 
@@ -34,48 +62,64 @@ class HabitsStore {
 
     async toggle(id: string) {
         const today = new Date().toISOString().split('T')[0];
-        const habit = this.store.value.find(h => h.id === id);
+        const existingCheckin = this.checkins.find(c => c.habit_id === id && c.date === today);
 
-        if (habit) {
-            let completedDates = [...(habit.completed_dates || [])];
-            if (completedDates.includes(today)) {
-                completedDates = completedDates.filter(d => d !== today);
-            } else {
-                completedDates.push(today);
+        if (existingCheckin) {
+            const { error } = await supabase
+                .from('habit_checkins')
+                .delete()
+                .eq('id', existingCheckin.id);
+
+            if (!error) {
+                this.checkins = this.checkins.filter(c => c.id !== existingCheckin.id);
             }
-            const streak = this.calculateStreak(completedDates);
-            await this.store.update(id, {
-                completed_dates: completedDates,
-                streak
-            });
+        } else {
+            const { data, error } = await supabase
+                .from('habit_checkins')
+                .insert([{
+                    user_id: auth.user?.id,
+                    habit_id: id,
+                    date: today,
+                    status: 'completed'
+                }])
+                .select()
+                .single();
+
+            if (!error && data) {
+                this.checkins.push(data);
+            }
         }
+
+        // Update streak (simplified for now, moving to MomentumService later)
+        await this.updateStreak(id);
+    }
+
+    private async updateStreak(id: string) {
+        const habitCheckins = this.checkins
+            .filter(c => c.habit_id === id)
+            .map(c => c.date)
+            .sort((a, b) => b.localeCompare(a));
+
+        const streak = this.calculateStreak(habitCheckins);
+        await this.store.update(id, { streak });
     }
 
     calculateStreak(completedDates: string[]): number {
         if (completedDates.length === 0) return 0;
 
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+        let currentStreak = 0;
+        let checkDate = new Date();
 
-        // Start checking from today
-        let checkDate = new Date(today);
-
-        // If today is NOT completed, start checking from yesterday.
-        if (!completedDates.includes(todayStr)) {
+        // If not completed today, start from yesterday
+        if (!completedDates.includes(today)) {
             checkDate.setDate(checkDate.getDate() - 1);
         }
 
-        let checkDateStr = checkDate.toISOString().split('T')[0];
-        if (!completedDates.includes(checkDateStr)) {
-            return 0;
-        }
-
-        let currentStreak = 0;
         while (true) {
             const dateStr = checkDate.toISOString().split('T')[0];
             if (completedDates.includes(dateStr)) {
                 currentStreak++;
-                // Move to previous day
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
                 break;
@@ -86,13 +130,12 @@ class HabitsStore {
 
     isCompleted(id: string) {
         const today = new Date().toISOString().split('T')[0];
-        const habit = this.store.value.find(h => h.id === id);
-        return habit?.completed_dates?.includes(today) ?? false;
+        return this.checkins.some(c => c.habit_id === id && c.date === today);
     }
 
     get completedCount() {
         const today = new Date().toISOString().split('T')[0];
-        return this.store.value.filter(h => h.completed_dates?.includes(today)).length;
+        return this.checkins.filter(c => c.date === today).length;
     }
 
     get totalCount() {

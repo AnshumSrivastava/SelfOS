@@ -64,6 +64,15 @@ class UserStore {
     updatePreferences(preferences: any) {
         settings.update(preferences);
     }
+
+    /**
+     * Get a unique storage key for a given key, scoped to the current user.
+     * This is useful for storing user-specific data in localStorage.
+     */
+    getUserStorageKey(key: string): string {
+        const userId = this.currentUser?.id || "local";
+        return `selfos:${userId}:${key}`;
+    }
 }
 
 export const userStore = new UserStore();

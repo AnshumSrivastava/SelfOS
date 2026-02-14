@@ -10,11 +10,11 @@ export type UserProfile = {
 };
 
 export type NutritionGoals = {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fats: number;
-    water: number;
+    targetCalories: number;
+    targetProtein: number;
+    targetCarbs: number;
+    targetFat: number;
+    targetWater: number;
 };
 
 export type Meal = {
@@ -57,11 +57,11 @@ class NutritionStore {
     get goals(): NutritionGoals {
         const s = this.settingsStore.value[0];
         return {
-            calories: s?.calories || 2500,
-            protein: s?.protein || 150,
-            carbs: s?.carbs || 300,
-            fats: s?.fats || 70,
-            water: s?.water || 3.0
+            targetCalories: s?.targetCalories || 2500,
+            targetProtein: s?.targetProtein || 150,
+            targetCarbs: s?.targetCarbs || 300,
+            targetFat: s?.targetFat || 70,
+            targetWater: s?.targetWater || 3.0
         };
     }
 
@@ -115,11 +115,11 @@ class NutritionStore {
         const water = Math.round((p.weight * 0.035) * 10) / 10;
 
         return {
-            calories: tdee,
-            protein: protein,
-            carbs: carbs,
-            fats: fats,
-            water: water
+            targetCalories: tdee,
+            targetProtein: protein,
+            targetCarbs: carbs,
+            targetFat: fats,
+            targetWater: water
         };
     }
 

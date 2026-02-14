@@ -34,11 +34,16 @@ class AuthStore {
     get loading() { return this.#loading; }
     get isAuthenticated() { return !!this.#user; }
 
+    private getEmail(username: string): string {
+        if (username.includes("@")) return username;
+        return `${username}@selfos.v2`;
+    }
+
     async signUp(username: string, password: string, displayName: string) {
         if (!supabase || !supabase.auth) throw new Error("Supabase not initialized");
 
         // Use a dummy email based on username for simplicity in this system, but allow full emails
-        const email = username.includes('@') ? username : `${username}@example.com`;
+        const email = this.getEmail(username);
 
         const { data, error } = await supabase.auth.signUp({
             email,

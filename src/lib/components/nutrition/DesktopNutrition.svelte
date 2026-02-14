@@ -27,16 +27,20 @@
 
     // Calculate percentages for rings/bars
     let calPercent = $derived(
-        Math.min((stats.calories / goals.calories) * 100, 100),
+        Math.min((stats.calories / goals.targetCalories) * 100, 100),
     );
     let proteinPercent = $derived(
-        Math.min((stats.protein / goals.protein) * 100, 100),
+        Math.min((stats.protein / goals.targetProtein) * 100, 100),
     );
     let carbsPercent = $derived(
-        Math.min((stats.carbs / goals.carbs) * 100, 100),
+        Math.min((stats.carbs / goals.targetCarbs) * 100, 100),
     );
-    let fatsPercent = $derived(Math.min((stats.fats / goals.fats) * 100, 100));
-    let waterPercent = $derived(Math.min((water / goals.water) * 100, 100));
+    let fatsPercent = $derived(
+        Math.min((stats.fats / goals.targetFat) * 100, 100),
+    );
+    let waterPercent = $derived(
+        Math.min((water / goals.targetWater) * 100, 100),
+    );
 
     function addWater(amount: number) {
         nutritionStore.addWater(amount);
@@ -162,7 +166,7 @@
                             Hydration Tracker
                         </h3>
                         <p class="text-xs text-muted uppercase tracking-widest">
-                            Goal: {goals.water} Liters
+                            Goal: {goals.targetWater} Liters
                         </p>
                     </div>
                     <div class="text-right">
@@ -247,7 +251,8 @@
                     <div class="absolute text-center">
                         <h4 class="text-4xl font-bold text-white block">
                             {(
-                                (goals.calories || 2500) - (stats.calories || 0)
+                                (goals.targetCalories || 2500) -
+                                (stats.calories || 0)
                             ).toLocaleString()}
                         </h4>
                         <span
@@ -265,7 +270,7 @@
                     </p>
                     <p class="text-xs text-muted">
                         Daily Target: {(
-                            goals.calories || 2500
+                            goals.targetCalories || 2500
                         ).toLocaleString()} kcal
                     </p>
                 </div>
@@ -289,7 +294,7 @@
                         <span class="text-sm font-bold text-white"
                             >{stats.protein}g
                             <span class="text-[10px] text-muted font-normal"
-                                >/ {goals.protein}g</span
+                                >/ {goals.targetProtein}g</span
                             ></span
                         >
                     </div>
@@ -313,7 +318,7 @@
                         <span class="text-sm font-bold text-white"
                             >{stats.carbs}g
                             <span class="text-[10px] text-muted font-normal"
-                                >/ {goals.carbs}g</span
+                                >/ {goals.targetCarbs}g</span
                             ></span
                         >
                     </div>
@@ -337,7 +342,7 @@
                         <span class="text-sm font-bold text-white"
                             >{stats.fats}g
                             <span class="text-[10px] text-muted font-normal"
-                                >/ {goals.fats}g</span
+                                >/ {goals.targetFat}g</span
                             ></span
                         >
                     </div>

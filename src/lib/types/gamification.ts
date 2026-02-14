@@ -17,7 +17,7 @@ export interface PlayerProfile extends BaseEntity {
     // Progression
     level: number;
     xp: number;
-    totalXP: number;
+    totalXp: number;
 
     // Currency
     gold: number;

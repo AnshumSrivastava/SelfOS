@@ -472,7 +472,7 @@
                             {nutritionStore.todayStats.calories}
                             <span
                                 class="text-[10px] font-medium text-[var(--color-muted)]"
-                                >/ {nutritionStore.goals.calories} kcal</span
+                                >/ {nutritionStore.goals.targetCalories} kcal</span
                             >
                         </p>
                         <div
@@ -483,7 +483,7 @@
                                 style="width: {Math.min(
                                     100,
                                     (nutritionStore.todayStats.calories /
-                                        nutritionStore.goals.calories) *
+                                        nutritionStore.goals.targetCalories) *
                                         100,
                                 )}%"
                             >

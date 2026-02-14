@@ -5,10 +5,11 @@
         height = "h-4",
         circle = false,
         shimmer = true,
+        class: className = "",
     } = $props();
 </script>
 
-<div class="skeleton-container">
+<div class="skeleton-container {className}">
     {#if circle}
         <div class="skeleton-circle {width} {height}"></div>
     {:else}

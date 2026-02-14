@@ -16,6 +16,7 @@
         Loader2,
     } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
     import { fade, slide } from "svelte/transition";
     import TaskCard from "./QuestCard.svelte";
 
@@ -26,20 +27,11 @@
     // New Task Form State
     let newTask = $state({
         title: "",
-        project: "General",
+        projectId: null as string | null,
         priority: "medium" as "low" | "medium" | "high",
         deadline: "",
         scheduled: "",
     });
-
-    const projects = [
-        "General",
-        "Work",
-        "Personal",
-        "Finance",
-        "Health",
-        "Learning",
-    ];
 
     // Enhanced filtered tasks with urgency calculation
     let filteredTasks = $derived.by(() => {
@@ -170,23 +162,27 @@
         if (!newTask.title.trim()) return;
 
         isProcessing = true;
+        console.log(
+            "[DesktopTasks] Adding task(s) with project:",
+            newTask.projectId,
+        );
         try {
             await tasksStore.addBatch(
                 newTask.title,
-                newTask.project,
+                newTask.projectId,
                 newTask.priority,
             );
 
             newTask = {
                 title: "",
-                project: "General",
+                projectId: null,
                 priority: "medium",
                 deadline: "",
                 scheduled: "",
             };
             isAdding = false;
         } catch (error) {
-            console.error("Failed to add tasks:", error);
+            console.error("[DesktopTasks] Failed to add tasks:", error);
         } finally {
             isProcessing = false;
         }
@@ -305,11 +301,12 @@
             <div class="flex flex-wrap items-center gap-4">
                 <div class="relative group">
                     <select
-                        bind:value={newTask.project}
+                        bind:value={newTask.projectId}
                         class="appearance-none input px-3 py-1.5 pr-8 cursor-pointer"
                     >
-                        {#each projects as p}
-                            <option value={p}>{p}</option>
+                        <option value={null}>Inbox (No Project)</option>
+                        {#each projectsStore.projects as p}
+                            <option value={p.id}>{p.name}</option>
                         {/each}
                     </select>
                     <Tag

@@ -79,10 +79,6 @@ class ProjectsStore {
     private scratchpadStore = new SupabaseStore<ScratchpadEntry>('project_scratchpad');
     private resourcesStore = new SupabaseStore<ProjectResource>('project_resources');
 
-    constructor() {
-        // Init is handled by SupabaseStore
-    }
-
     get projects() { return this.projectsStore.value; }
     get loading() { return this.projectsStore.loading || this.scratchpadStore.loading || this.resourcesStore.loading; }
 
@@ -122,27 +118,43 @@ class ProjectsStore {
     }
 
     async addProject(project: Partial<Project>) {
-        return await this.projectsStore.insert({
-            name: 'New Project',
-            type: 'project',
-            progress: 0,
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
-            status: 'Active',
-            updatedAt: new Date().toISOString(),
-            ...project
-        } as any);
+        try {
+            console.log('[ProjectsStore] Adding new project:', project.name);
+            return await this.projectsStore.insert({
+                name: 'New Project',
+                type: 'project',
+                progress: 0,
+                color: "text-emerald-500",
+                bg: "bg-emerald-500/10",
+                status: 'Active',
+                updatedAt: new Date().toISOString(),
+                ...project
+            } as any);
+        } catch (error) {
+            console.error('[ProjectsStore] Failed to add project:', error);
+            throw error;
+        }
     }
 
     async updateProject(id: string, updates: Partial<Project>) {
-        await this.projectsStore.update(id, {
-            ...updates,
-            updatedAt: new Date().toISOString()
-        });
+        try {
+            await this.projectsStore.update(id, {
+                ...updates,
+                updatedAt: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to update project ${id}:`, error);
+            throw error;
+        }
     }
 
     async deleteProject(id: string) {
-        await this.projectsStore.delete(id);
+        try {
+            await this.projectsStore.delete(id);
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to delete project ${id}:`, error);
+            throw error;
+        }
     }
 
     async archiveProject(id: string) {
@@ -150,42 +162,68 @@ class ProjectsStore {
     }
 
     async addScratchpadEntry(projectId: string, content: string, type: 'note' | 'task' = 'note') {
-        await this.scratchpadStore.insert({
-            projectId,
-            content,
-            type,
-            isCompleted: false
-        } as any);
-        await this.updateProject(projectId, {});
+        try {
+            await this.scratchpadStore.insert({
+                projectId,
+                content,
+                type,
+                isCompleted: false
+            } as any);
+            await this.updateProject(projectId, {});
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to add scratchpad entry for project ${projectId}:`, error);
+            throw error;
+        }
     }
 
     async toggleScratchpadTask(projectId: string, entryId: string) {
         const entry = this.scratchpadStore.value.find(e => e.id === entryId);
         if (entry) {
-            await this.scratchpadStore.update(entryId, { isCompleted: !entry.isCompleted });
-            await this.updateProject(projectId, {});
+            try {
+                await this.scratchpadStore.update(entryId, { isCompleted: !entry.isCompleted });
+                await this.updateProject(projectId, {});
+            } catch (error) {
+                console.error(`[ProjectsStore] Failed to toggle scratchpad task ${entryId}:`, error);
+                throw error;
+            }
         }
     }
 
     async deleteScratchpadEntry(projectId: string, entryId: string) {
-        await this.scratchpadStore.delete(entryId);
-        await this.updateProject(projectId, {});
+        try {
+            await this.scratchpadStore.delete(entryId);
+            await this.updateProject(projectId, {});
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to delete scratchpad entry ${entryId}:`, error);
+            throw error;
+        }
     }
 
     async deleteResource(projectId: string, resourceId: string) {
-        await this.resourcesStore.delete(resourceId);
-        await this.updateProject(projectId, {});
+        try {
+            await this.resourcesStore.delete(resourceId);
+            await this.updateProject(projectId, {});
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to delete resource ${resourceId}:`, error);
+            throw error;
+        }
     }
 
     async addResource(projectId: string, resource: Omit<ProjectResource, 'id' | 'projectId' | 'createdAt'>) {
-        await this.resourcesStore.insert({
-            projectId,
-            ...resource
-        } as any);
-        await this.updateProject(projectId, {});
+        try {
+            await this.resourcesStore.insert({
+                projectId,
+                ...resource
+            } as any);
+            await this.updateProject(projectId, {});
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to add resource for project ${projectId}:`, error);
+            throw error;
+        }
     }
 
     isDormant(project: Project) {
+        if (!project.updatedAt) return false;
         const TWENTY_ONE_DAYS = 21 * 24 * 60 * 60 * 1000;
         return (Date.now() - new Date(project.updatedAt).getTime()) > TWENTY_ONE_DAYS;
     }

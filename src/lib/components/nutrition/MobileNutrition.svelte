@@ -35,9 +35,11 @@
     let water = $derived(nutritionStore.water);
 
     let calPercent = $derived(
-        Math.min((stats.calories / goals.calories) * 100, 100),
+        Math.min((stats.calories / goals.targetCalories) * 100, 100),
     );
-    let waterPercent = $derived(Math.min((water / goals.water) * 100, 100));
+    let waterPercent = $derived(
+        Math.min((water / goals.targetWater) * 100, 100),
+    );
 
     function addWater(amount: number) {
         nutritionStore.addWater(amount);
@@ -49,7 +51,7 @@
         <div>
             <h1 class="text-3xl font-light text-white">Nutrition</h1>
             <p class="text-xs text-muted mt-1 uppercase tracking-widest">
-                {goals.calories - stats.calories} kcal remaining
+                {goals.targetCalories - stats.calories} kcal remaining
             </p>
         </div>
         <button
@@ -148,7 +150,8 @@
                         >
                         <span
                             class="text-[10px] text-muted uppercase font-bold tracking-tighter"
-                            >/ {(goals.calories || 2500).toLocaleString()} kcal</span
+                            >/ {(goals.targetCalories || 2500).toLocaleString()}
+                            kcal</span
                         >
                         <div
                             class="mt-2 h-1 w-full bg-background rounded-full overflow-hidden"
@@ -166,12 +169,19 @@
                 >
                     <div class="absolute inset-0 bg-blue-500/5 -z-10"></div>
                     <div class="flex justify-between items-start">
+                        <Droplets class="text-blue-500" size={24} />
+                        <span
+                            class="text-[10px] text-muted font-black uppercase tracking-widest"
+                            >Water</span
+                        >
+                    </div>
+                    <div>
                         <span class="text-2xl font-bold text-white block"
                             >{water.toFixed(1)}L</span
                         >
                         <span
                             class="text-[10px] text-muted uppercase font-bold tracking-tighter"
-                            >Goal: {goals.water}L</span
+                            >Goal: {goals.targetWater}L</span
                         >
                         <div
                             class="mt-2 h-1 w-full bg-background rounded-full overflow-hidden"

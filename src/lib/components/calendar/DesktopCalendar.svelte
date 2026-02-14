@@ -194,6 +194,7 @@
                                     (e.key === "Enter" || e.key === " ") &&
                                     day.date
                                 ) {
+                                    e.preventDefault();
                                     selectDate(day.date);
                                 }
                             }}

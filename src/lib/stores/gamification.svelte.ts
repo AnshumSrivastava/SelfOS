@@ -13,7 +13,7 @@ export type PlayerProfile = {
     username: string;
     level: number;
     xp: number;
-    total_xp: number;
+    totalXp: number;
     gold: number;
     gems: number;
     avatar: AvatarData;
@@ -56,10 +56,10 @@ function calculateXPForLevel(level: number): number {
     return Math.floor(100 * Math.pow(level, 1.5));
 }
 
-function calculateLevelFromXP(total_xp: number): number {
+function calculateLevelFromXP(totalXp: number): number {
     let level = 1;
     let xpRequired = 0;
-    while (xpRequired <= total_xp) {
+    while (xpRequired <= totalXp) {
         level++;
         xpRequired += calculateXPForLevel(level);
     }
@@ -102,7 +102,7 @@ class GamificationStore {
                 username: 'Hero',
                 level: 1,
                 xp: 0,
-                total_xp: 0,
+                totalXp: 0,
                 gold: 0,
                 gems: 0,
                 avatar: DEFAULT_AVATAR,
@@ -149,7 +149,7 @@ class GamificationStore {
         if (!this.profile) return;
 
         const oldLevel = this.profile.level;
-        const newTotalXP = this.profile.total_xp + amount;
+        const newTotalXP = this.profile.totalXp + amount;
         const newLevel = calculateLevelFromXP(newTotalXP);
 
         let xpInLevel = amount;
@@ -162,7 +162,7 @@ class GamificationStore {
 
         await this.profileStore.upsertSingle({
             xp: xpInLevel,
-            total_xp: newTotalXP,
+            totalXp: newTotalXP,
             level: newLevel
         });
 
