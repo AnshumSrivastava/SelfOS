@@ -42,15 +42,15 @@
                     <div
                         class="w-20 aspect-[2/3] rounded-lg flex items-center justify-center text-white/50 relative overflow-hidden shrink-0 bg-surface"
                     >
-                        {#if book.cover && book.cover.startsWith("http")}
+                        {#if book.coverUrl && book.coverUrl.startsWith("http")}
                             <img
-                                src={book.cover}
+                                src={book.coverUrl}
                                 alt={book.title}
                                 class="absolute inset-0 w-full h-full object-cover opacity-80"
                             />
                         {:else}
                             <div
-                                class="absolute inset-0 {book.cover} opacity-20"
+                                class="absolute inset-0 {book.coverUrl} opacity-20"
                             ></div>
                             <Book size={24} />
                         {/if}
@@ -97,15 +97,15 @@
                     <div
                         class="aspect-[2/3] rounded-lg mb-3 flex items-center justify-center text-white/50 relative overflow-hidden bg-surface"
                     >
-                        {#if book.cover && book.cover.startsWith("http")}
+                        {#if book.coverUrl && book.coverUrl.startsWith("http")}
                             <img
-                                src={book.cover}
+                                src={book.coverUrl}
                                 alt={book.title}
                                 class="absolute inset-0 w-full h-full object-cover opacity-80"
                             />
                         {:else}
                             <div
-                                class="absolute inset-0 {book.cover} opacity-20"
+                                class="absolute inset-0 {book.coverUrl} opacity-20"
                             ></div>
                             <Book size={20} />
                         {/if}

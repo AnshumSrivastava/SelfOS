@@ -80,65 +80,38 @@ const DEFAULT_AVATAR: AvatarData = {
 };
 
 class GamificationStore {
-    private profileStore = new SupabaseStore<PlayerProfile & { id: string }>('gamification_profiles');
-    private achievementsStore = new SupabaseStore<Achievement>('gamification_achievements', { migrationKey: 'selfos_achievements' });
-    private notificationsStore = new SupabaseStore<GameNotification>('gamification_notifications', { migrationKey: 'selfos_notifications' });
+    private profileStore = new SupabaseStore<PlayerProfile & { id: string }>('gamification_profiles', { orderBy: 'updated_at' });
+    private achievementsStore = new SupabaseStore<Achievement>('gamification_achievements');
+    private notificationsStore = new SupabaseStore<GameNotification>('gamification_notifications', { orderBy: 'timestamp' });
 
     constructor() {
-        this.init();
-    }
-
-    private async init() {
-        if (typeof window === 'undefined') return;
-
-        $effect.root(() => {
-            $effect(() => {
-                if (!auth.loading && auth.isAuthenticated) {
-                    this.migrateAndSync();
-                }
-            });
-        });
-    }
-
-    private async migrateAndSync() {
-        if (this.profileStore.value.length === 0) {
-            const saved = localStorage.getItem('selfos_user_profile');
-            if (saved) {
-                console.log("Migrating gamification profile from localStorage...");
-                const parsed = JSON.parse(saved);
-                // DataController usually saves as an array or object in local storage
-                const data = Array.isArray(parsed) ? parsed[0] : parsed;
-                if (data) {
-                    await this.profileStore.upsertSingle({
-                        username: data.username || 'Hero',
-                        level: data.level || 1,
-                        xp: data.xp || 0,
-                        totalXP: data.totalXP || 0,
-                        gold: data.gold || 0,
-                        gems: data.gems || 0,
-                        avatar: data.avatar || DEFAULT_AVATAR,
-                        achievements: data.achievements || [],
-                        badges: data.badges || [],
-                        completedQuests: data.completedQuests || []
-                    });
-                }
-            } else {
-                await this.profileStore.upsertSingle({
-                    username: 'Hero',
-                    level: 1,
-                    xp: 0,
-                    totalXP: 0,
-                    gold: 0,
-                    gems: 0,
-                    avatar: DEFAULT_AVATAR,
-                    achievements: [],
-                    badges: [],
-                    completedQuests: []
+        if (typeof window !== 'undefined') {
+            $effect.root(() => {
+                $effect(() => {
+                    if (!auth.loading && auth.isAuthenticated) {
+                        this.ensureProfileAndAchievements();
+                    }
                 });
-            }
+            });
+        }
+    }
+
+    private async ensureProfileAndAchievements() {
+        if (this.profileStore.value.length === 0) {
+            await this.profileStore.upsertSingle({
+                username: 'Hero',
+                level: 1,
+                xp: 0,
+                totalXP: 0,
+                gold: 0,
+                gems: 0,
+                avatar: DEFAULT_AVATAR,
+                achievements: [],
+                badges: [],
+                completedQuests: []
+            });
         }
 
-        // Initialize default achievements if empty after migration check
         if (this.achievementsStore.value.length === 0) {
             await this.initializeDefaultAchievements();
         }

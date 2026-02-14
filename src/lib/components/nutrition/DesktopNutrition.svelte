@@ -245,11 +245,11 @@
                         />
                     </svg>
                     <div class="absolute text-center">
-                        <span class="text-4xl font-bold text-white block"
-                            >{(
-                                goals.calories - stats.calories
-                            ).toLocaleString()}</span
-                        >
+                        <h4 class="text-4xl font-bold text-white block">
+                            {(
+                                (goals.calories || 2500) - (stats.calories || 0)
+                            ).toLocaleString()}
+                        </h4>
                         <span
                             class="text-[10px] text-muted uppercase tracking-[0.2em] font-black"
                             >Kcal Left</span
@@ -258,13 +258,15 @@
                 </div>
                 <div class="text-center">
                     <p class="text-lg font-bold text-white">
-                        {stats.calories.toLocaleString()}
+                        {(stats.calories || 0).toLocaleString()}
                         <span class="text-xs text-muted font-normal italic"
                             >Eaten</span
                         >
                     </p>
                     <p class="text-xs text-muted">
-                        Daily Target: {goals.calories.toLocaleString()} kcal
+                        Daily Target: {(
+                            goals.calories || 2500
+                        ).toLocaleString()} kcal
                     </p>
                 </div>
             </div>

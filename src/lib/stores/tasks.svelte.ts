@@ -16,7 +16,7 @@ export type Task = {
 };
 
 class TasksStore {
-    private store = new SupabaseStore<Task>("tasks", { migrationKey: "selfos_tasks_v2" });
+    private store = new SupabaseStore<Task>("tasks");
 
     get tasks() {
         return this.store.value;

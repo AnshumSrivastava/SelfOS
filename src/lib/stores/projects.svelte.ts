@@ -75,66 +75,12 @@ const DEFAULT_SECTIONS = [
 
 class ProjectsStore {
     sections = DEFAULT_SECTIONS;
-    private projectsStore = new SupabaseStore<Project>('projects', { migrationKey: 'selfos_projects_v3' });
+    private projectsStore = new SupabaseStore<Project>('projects');
     private scratchpadStore = new SupabaseStore<ScratchpadEntry>('project_scratchpad');
     private resourcesStore = new SupabaseStore<ProjectResource>('project_resources');
 
     constructor() {
-        this.initMigration();
-    }
-
-    private async initMigration() {
-        if (typeof window === 'undefined') return;
-
-        $effect.root(() => {
-            $effect(() => {
-                if (!auth.loading && auth.isAuthenticated) {
-                    this.migrateNestedData();
-                }
-            });
-        });
-    }
-
-    private async migrateNestedData() {
-        const stored = localStorage.getItem('selfos_projects_v3');
-        if (!stored) return;
-
-        try {
-            const projects = JSON.parse(stored);
-            if (Array.isArray(projects) && projects.length > 0) {
-                if (this.scratchpadStore.value.length === 0 && this.projectsStore.value.length > 0) {
-                    console.log("Migrating project nested data from localStorage...");
-                    for (const project of projects) {
-                        const sbProject = this.projectsStore.value.find(p => p.name === project.name);
-                        if (sbProject) {
-                            if (Array.isArray(project.scratchpad)) {
-                                for (const entry of project.scratchpad) {
-                                    await this.scratchpadStore.insert({
-                                        projectId: sbProject.id,
-                                        content: entry.content || '',
-                                        type: entry.type || 'note',
-                                        isCompleted: entry.isCompleted || false
-                                    } as any);
-                                }
-                            }
-                            if (Array.isArray(project.resources)) {
-                                for (const res of project.resources) {
-                                    await this.resourcesStore.insert({
-                                        projectId: sbProject.id,
-                                        title: res.title || 'Untitled',
-                                        type: res.type || 'link',
-                                        content: res.content || ''
-                                    } as any);
-                                }
-                            }
-                        }
-                    }
-                    console.log("Project nested data migration complete.");
-                }
-            }
-        } catch (e) {
-            console.error("Migration error for project nested data:", e);
-        }
+        // Init is handled by SupabaseStore
     }
 
     get projects() { return this.projectsStore.value; }

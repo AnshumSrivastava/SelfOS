@@ -63,7 +63,7 @@ const DEFAULT_FEATURES = {
 };
 
 class SettingsStore {
-    private store = new SupabaseStore<UserSettings & { id: string }>('user_settings');
+    private store = new SupabaseStore<UserSettings & { id: string }>('user_settings', { orderBy: 'updated_at' });
 
     constructor() {
         if (browser) {

@@ -2,7 +2,7 @@ import { SupabaseStore } from './supabaseStore.svelte';
 
 export type Habit = {
     id: string;
-    title: string;
+    name: string;
     description?: string;
     streak: number;
     completed_dates: string[]; // ISO date strings YYYY-MM-DD
@@ -10,7 +10,7 @@ export type Habit = {
 };
 
 class HabitsStore {
-    private store = new SupabaseStore<Habit>('habits', { migrationKey: 'selfos_habits' });
+    private store = new SupabaseStore<Habit>('habits');
 
     get habits() {
         return this.store.value;
@@ -20,9 +20,9 @@ class HabitsStore {
         return this.store.loading;
     }
 
-    async add(title: string) {
+    async add(name: string) {
         await this.store.insert({
-            title,
+            name,
             streak: 0,
             completed_dates: []
         });

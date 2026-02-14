@@ -10,11 +10,11 @@ export type UserProfile = {
 };
 
 export type NutritionGoals = {
-    targetCalories: number;
-    targetProtein: number;
-    targetCarbs: number;
-    targetFat: number;
-    targetWater: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+    water: number;
 };
 
 export type Meal = {
@@ -35,50 +35,13 @@ export type NutritionSettings = UserProfile & NutritionGoals & {
 };
 
 class NutritionStore {
-    private mealsStore = new SupabaseStore<Meal>('nutrition_meals', { migrationKey: 'selfos_nutrition_meals' });
-    private settingsStore = new SupabaseStore<NutritionSettings & { id: string }>('nutrition_settings');
+    private mealsStore = new SupabaseStore<Meal>('nutrition_meals');
+    private settingsStore = new SupabaseStore<NutritionSettings & { id: string }>('nutrition_settings', { orderBy: 'last_reset' });
 
     constructor() {
-        this.initMigration();
+        // Init is handled by SupabaseStore
     }
 
-    private async initMigration() {
-        if (typeof window === 'undefined') return;
-
-        $effect.root(() => {
-            $effect(() => {
-                if (!auth.loading && auth.isAuthenticated) {
-                    this.migrateNutritionData();
-                }
-            });
-        });
-    }
-
-    private async migrateNutritionData() {
-        // Migration logic for profile and goals into settingsStore
-        if (this.settingsStore.value.length === 0) {
-            const profileStored = localStorage.getItem('selfos_nutrition_profile');
-            const goalsStored = localStorage.getItem('selfos_nutrition_goals');
-            const waterStored = localStorage.getItem('selfos_nutrition_water');
-
-            if (profileStored || goalsStored || waterStored) {
-                console.log("Migrating nutrition settings from localStorage...");
-                const profile = profileStored ? JSON.parse(profileStored) : {};
-                const goals = goalsStored ? JSON.parse(goalsStored) : {};
-                const water = waterStored ? JSON.parse(waterStored) : 0;
-
-                await this.settingsStore.upsertSingle({
-                    ...profile,
-                    targetCalories: goals.calories || 2500,
-                    targetProtein: goals.protein || 150,
-                    targetCarbs: goals.carbs || 300,
-                    targetFat: goals.fats || 70,
-                    targetWater: goals.water || 3.0,
-                    waterIntake: water
-                });
-            }
-        }
-    }
 
     get profile(): UserProfile {
         const s = this.settingsStore.value[0];
@@ -94,11 +57,11 @@ class NutritionStore {
     get goals(): NutritionGoals {
         const s = this.settingsStore.value[0];
         return {
-            targetCalories: s?.targetCalories || 2500,
-            targetProtein: s?.targetProtein || 150,
-            targetCarbs: s?.targetCarbs || 300,
-            targetFat: s?.targetFat || 70,
-            targetWater: s?.targetWater || 3.0
+            calories: s?.calories || 2500,
+            protein: s?.protein || 150,
+            carbs: s?.carbs || 300,
+            fats: s?.fats || 70,
+            water: s?.water || 3.0
         };
     }
 
@@ -152,11 +115,11 @@ class NutritionStore {
         const water = Math.round((p.weight * 0.035) * 10) / 10;
 
         return {
-            targetCalories: tdee,
-            targetProtein: protein,
-            targetCarbs: carbs,
-            targetFat: fats,
-            targetWater: water
+            calories: tdee,
+            protein: protein,
+            carbs: carbs,
+            fats: fats,
+            water: water
         };
     }
 

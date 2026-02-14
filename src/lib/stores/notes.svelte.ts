@@ -12,7 +12,7 @@ export type Note = {
 };
 
 class NotesStore {
-    private store = new SupabaseStore<Note>('notes', { migrationKey: 'selfos_notes' });
+    private store = new SupabaseStore<Note>('notes');
 
     get notes() {
         return this.store.value;

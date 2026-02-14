@@ -18,6 +18,7 @@
     let book = $derived(
         bookId ? libraryStore.books.find((b) => b.id === bookId) : null,
     );
+    let scratchpad = $derived(bookId ? libraryStore.getScratchpad(bookId) : []);
 
     // Scratchpad
     let scratchpadInput = $state("");
@@ -130,9 +131,17 @@
                 >
                     <div class="flex gap-4 items-start">
                         <div
-                            class="w-12 md:w-16 aspect-[2/3] rounded shadow-lg {book.cover} opacity-80 flex items-center justify-center shrink-0"
+                            class="w-12 md:w-16 aspect-[2/3] rounded shadow-lg {book.coverUrl} opacity-80 flex items-center justify-center shrink-0"
                         >
-                            <BookOpen size={20} class="text-white/50" />
+                            {#if book.coverUrl && book.coverUrl.startsWith("http")}
+                                <img
+                                    src={book.coverUrl}
+                                    alt={book.title}
+                                    class="absolute inset-0 w-full h-full object-cover rounded"
+                                />
+                            {:else}
+                                <BookOpen size={20} class="text-white/50" />
+                            {/if}
                         </div>
                         <div class="flex-1 min-w-0 pt-1">
                             <div
@@ -230,7 +239,7 @@
                     <div
                         class="flex-1 overflow-y-auto px-4 md:px-8 py-4 space-y-6 md:space-y-8"
                     >
-                        {#each book.scratchpad as entry (entry.id)}
+                        {#each scratchpad as entry (entry.id)}
                             <div
                                 class="group relative pl-4 md:pl-6 border-l-2 border-line hover:border-primary/50 transition-colors py-1"
                             >
@@ -240,7 +249,7 @@
                                     <span
                                         class="text-[10px] md:text-xs text-muted"
                                         >{new Date(
-                                            entry.timestamp,
+                                            entry.createdAt,
                                         ).toLocaleString(undefined, {
                                             dateStyle: "medium",
                                             timeStyle: "short",
@@ -284,7 +293,7 @@
                             </div>
                         {/each}
 
-                        {#if book.scratchpad.length === 0}
+                        {#if scratchpad.length === 0}
                             <div
                                 class="text-center py-12 md:py-20 text-muted italic text-base md:text-lg px-4"
                             >

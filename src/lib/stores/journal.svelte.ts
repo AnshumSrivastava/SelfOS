@@ -11,7 +11,7 @@ export type JournalEntry = {
 };
 
 class JournalStore {
-    private store = new SupabaseStore<JournalEntry>('journal_entries', { migrationKey: 'selfos_journal_v2' });
+    private store = new SupabaseStore<JournalEntry>('journal_entries');
 
     get entries() {
         return this.store.value;

@@ -16,15 +16,15 @@
     <div
         class="aspect-[2/3] rounded-lg shadow-lg relative overflow-hidden mb-4 bg-surface border border-line group-hover:shadow-primary/20 transition-all duration-300 group-hover:-translate-y-2"
     >
-        {#if book.cover && book.cover.startsWith("http")}
+        {#if book.coverUrl && book.coverUrl.startsWith("http")}
             <img
-                src={book.cover}
+                src={book.coverUrl}
                 alt={book.title}
                 class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
             />
         {:else}
             <div
-                class="absolute inset-0 {book.cover} opacity-20 group-hover:opacity-30 transition-opacity"
+                class="absolute inset-0 {book.coverUrl} opacity-20 group-hover:opacity-30 transition-opacity"
             ></div>
         {/if}
         <div

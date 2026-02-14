@@ -18,13 +18,14 @@ CREATE TABLE tasks (
     completed_at TIMESTAMPTZ
 );
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage their own tasks" ON tasks FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own tasks" ON tasks 
+    FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 2. Habits
 CREATE TABLE habits (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) NOT NULL,
-    title TEXT NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     color TEXT DEFAULT '#00ff9d',
     icon TEXT,
@@ -35,7 +36,8 @@ CREATE TABLE habits (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE habits ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage their own habits" ON habits FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own habits" ON habits 
+    FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 3. Fitness
 CREATE TABLE fitness_workouts (
@@ -46,19 +48,22 @@ CREATE TABLE fitness_workouts (
     duration INTEGER, -- in minutes
     calories INTEGER,
     type TEXT,
+    difficulty TEXT,
     exercises JSONB DEFAULT '[]',
     notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE fitness_workouts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage their own workouts" ON fitness_workouts FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own workouts" ON fitness_workouts 
+    FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 CREATE TABLE fitness_stats (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) NOT NULL,
     weight_goal FLOAT DEFAULT 70,
     step_goal INTEGER DEFAULT 10000,
     water_goal FLOAT DEFAULT 2.5,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE fitness_stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own fitness stats" ON fitness_stats FOR ALL USING (auth.uid() = user_id);
@@ -84,11 +89,13 @@ ALTER TABLE fitness_sleep_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own sleep logs" ON fitness_sleep_logs FOR ALL USING (auth.uid() = user_id);
 
 CREATE TABLE fitness_daily_metrics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) NOT NULL,
     date DATE DEFAULT CURRENT_DATE,
     steps INTEGER DEFAULT 0,
     water FLOAT DEFAULT 0,
-    PRIMARY KEY (user_id, date)
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, date)
 );
 ALTER TABLE fitness_daily_metrics ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own daily metrics" ON fitness_daily_metrics FOR ALL USING (auth.uid() = user_id);
@@ -101,7 +108,7 @@ CREATE TABLE nutrition_meals (
     calories INTEGER DEFAULT 0,
     protein INTEGER DEFAULT 0,
     carbs INTEGER DEFAULT 0,
-    fat INTEGER DEFAULT 0,
+    fats INTEGER DEFAULT 0,
     type TEXT CHECK (type IN ('breakfast', 'lunch', 'dinner', 'snack')) DEFAULT 'snack',
     date TIMESTAMPTZ DEFAULT NOW(),
     time TEXT,
@@ -109,7 +116,8 @@ CREATE TABLE nutrition_meals (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE nutrition_meals ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage their own meals" ON nutrition_meals FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own meals" ON nutrition_meals 
+    FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 CREATE TABLE nutrition_settings (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) NOT NULL,
@@ -124,7 +132,8 @@ CREATE TABLE nutrition_settings (
     height FLOAT,
     weight FLOAT,
     activity_level TEXT,
-    last_reset TIMESTAMPTZ DEFAULT NOW()
+    last_reset TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE nutrition_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own nutrition settings" ON nutrition_settings FOR ALL USING (auth.uid() = user_id);
@@ -191,6 +200,7 @@ CREATE TABLE notes (
     folder TEXT DEFAULT 'General',
     tags TEXT[] DEFAULT '{}',
     is_favorite BOOLEAN DEFAULT false,
+    date TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -281,6 +291,7 @@ CREATE TABLE library_items (
     cover_url TEXT,
     subjects TEXT[] DEFAULT '{}',
     last_activity_date TIMESTAMPTZ DEFAULT NOW(),
+    added_date TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE library_items ENABLE ROW LEVEL SECURITY;
@@ -372,7 +383,8 @@ CREATE TABLE gamification_profiles (
     achievements TEXT[] DEFAULT '{}',
     badges TEXT[] DEFAULT '{}',
     completed_quests TEXT[] DEFAULT '{}',
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE gamification_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own gamification profile" ON gamification_profiles FOR ALL USING (auth.uid() = user_id);
@@ -395,6 +407,7 @@ CREATE TABLE gamification_achievements (
     completed_at TIMESTAMPTZ,
     is_hidden BOOLEAN DEFAULT false,
     "order" INTEGER,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE gamification_achievements ENABLE ROW LEVEL SECURITY;
@@ -439,7 +452,8 @@ CREATE TABLE user_settings (
     module_padding INTEGER DEFAULT 24,
     dashboard_widgets JSONB,
     page_preferences JSONB DEFAULT '{}',
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own settings" ON user_settings FOR ALL USING (auth.uid() = user_id);
@@ -473,3 +487,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Grant explicitly to authenticated role
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO authenticated;

@@ -15,7 +15,7 @@ export type CalendarEvent = {
 };
 
 class CalendarStore {
-    private store = new SupabaseStore<CalendarEvent>('calendar_events', { migrationKey: 'selfos_calendar_v2' });
+    private store = new SupabaseStore<CalendarEvent>('calendar_events');
 
     get events() {
         return this.store.value;

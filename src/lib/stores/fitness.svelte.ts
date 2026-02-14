@@ -5,7 +5,7 @@ import { auth } from './auth.svelte';
 export type Workout = {
     id: string;
     title: string;
-    duration: string;
+    duration: number; // in minutes
     calories: number;
     date: string;
     type: string;
@@ -37,73 +37,14 @@ export type FitnessStats = {
 };
 
 class FitnessStore {
-    private workoutsStore = new SupabaseStore<Workout>('fitness_workouts', { migrationKey: 'selfos_fitness_workouts' });
+    private workoutsStore = new SupabaseStore<Workout>('fitness_workouts');
     private weightStore = new SupabaseStore<WeightLog>('fitness_weight_logs');
     private sleepStore = new SupabaseStore<SleepLog>('fitness_sleep_logs');
-    private goalsStore = new SupabaseStore<FitnessStats & { id: string }>('fitness_stats');
-    private dailyStore = new SupabaseStore<DailyMetrics & { id: string }>('fitness_daily_metrics');
+    private goalsStore = new SupabaseStore<FitnessStats & { id: string }>('fitness_stats', { orderBy: 'updated_at' });
+    private dailyStore = new SupabaseStore<DailyMetrics & { id: string }>('fitness_daily_metrics', { orderBy: 'date' });
 
     constructor() {
-        this.initMigration();
-    }
-
-    private async initMigration() {
-        if (typeof window === 'undefined') return;
-
-        // Custom migration for the complex stats object
-        $effect.root(() => {
-            $effect(() => {
-                if (!auth.loading && auth.isAuthenticated) {
-                    this.migrateStats();
-                }
-            });
-        });
-    }
-
-    private async migrateStats() {
-        const stored = localStorage.getItem('selfos_fitness_stats');
-        if (!stored) return;
-
-        try {
-            const stats = JSON.parse(stored);
-            // Verify if migration already happened by checking if goals were ever fetched
-            if (this.goalsStore.value.length === 0) {
-                console.log("Migrating fitness stats from localStorage...");
-
-                // 1. Migrate Goals
-                await this.goalsStore.upsertSingle({
-                    weightGoal: stats.weightGoal || 70,
-                    stepGoal: stats.stepGoal || 10000,
-                    waterGoal: stats.waterGoal || 2.5
-                });
-
-                // 2. Migrate Weight History
-                if (Array.isArray(stats.weight)) {
-                    for (const w of stats.weight) {
-                        await this.weightStore.insert({ date: w.date, value: w.value });
-                    }
-                }
-
-                // 3. Migrate Sleep History
-                if (Array.isArray(stats.sleep)) {
-                    for (const s of stats.sleep) {
-                        await this.sleepStore.insert({ date: s.date, hours: s.hours });
-                    }
-                }
-
-                // 4. Migrate Daily Metrics (today)
-                const today = new Date().toISOString().split('T')[0];
-                await this.dailyStore.upsertSingle({
-                    id: today, // Using date as ID for daily metrics in this context if needed, or structured differently
-                    steps: stats.todaySteps || 0,
-                    water: stats.todayWater || 0
-                } as any);
-
-                console.log("Fitness stats migration complete.");
-            }
-        } catch (e) {
-            console.error("Migration error for fitness stats:", e);
-        }
+        // Init is handled by SupabaseStore
     }
 
     get workouts() { return this.workoutsStore.value; }

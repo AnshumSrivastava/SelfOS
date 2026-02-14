@@ -53,11 +53,11 @@ export interface Reminder {
 }
 
 class FinanceStore {
-    private transactionsStore = new SupabaseStore<Transaction>('finance_transactions', { migrationKey: 'selfos_finance_transactions' });
-    private budgetsStore = new SupabaseStore<Budget>('finance_budgets', { migrationKey: 'selfos_finance_budgets' });
-    private goalsStore = new SupabaseStore<FinancialGoal>('finance_savings_goals', { migrationKey: 'selfos_finance_goals' });
-    private investmentsStore = new SupabaseStore<Investment>('finance_investments', { migrationKey: 'selfos_finance_investments' });
-    private remindersStore = new SupabaseStore<Reminder>('finance_reminders', { migrationKey: 'selfos_finance_reminders' });
+    private transactionsStore = new SupabaseStore<Transaction>('finance_transactions');
+    private budgetsStore = new SupabaseStore<Budget>('finance_budgets');
+    private goalsStore = new SupabaseStore<FinancialGoal>('finance_savings_goals');
+    private investmentsStore = new SupabaseStore<Investment>('finance_investments');
+    private remindersStore = new SupabaseStore<Reminder>('finance_reminders');
 
     get transactions() { return this.transactionsStore.value; }
     get budgets() { return this.budgetsStore.value; }

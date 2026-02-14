@@ -144,11 +144,11 @@
                     </div>
                     <div>
                         <span class="text-2xl font-bold text-white block"
-                            >{stats.calories.toLocaleString()}</span
+                            >{(stats.calories || 0).toLocaleString()}</span
                         >
                         <span
                             class="text-[10px] text-muted uppercase font-bold tracking-tighter"
-                            >/ {goals.calories.toLocaleString()} kcal</span
+                            >/ {(goals.calories || 2500).toLocaleString()} kcal</span
                         >
                         <div
                             class="mt-2 h-1 w-full bg-background rounded-full overflow-hidden"

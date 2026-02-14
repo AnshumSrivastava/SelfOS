@@ -35,8 +35,8 @@ export interface GoalLog {
 }
 
 class GoalsStore {
-    private goalsStore = new SupabaseStore<Goal>('goals', { migrationKey: 'goals' });
-    private logsStore = new SupabaseStore<GoalLog>('goal_logs', { migrationKey: 'goal-logs' });
+    private goalsStore = new SupabaseStore<Goal>('goals');
+    private logsStore = new SupabaseStore<GoalLog>('goal_logs');
 
     get goals() { return this.goalsStore.value; }
     get logs() { return this.logsStore.value; }

@@ -5,12 +5,15 @@ export class SupabaseStore<T extends { id: string }> {
     #value = $state<T[]>([]);
     #tableName: string;
     #loading = $state(true);
-    #migrationKey?: string;
+    #orderBy?: string;
 
-    constructor(tableName: string, options: { initialValue?: T[], migrationKey?: string } = {}) {
+    #primaryKey: string;
+
+    constructor(tableName: string, options: { initialValue?: T[], primaryKey?: string, orderBy?: string } = {}) {
         this.#tableName = tableName;
         this.#value = options.initialValue || [];
-        this.#migrationKey = options.migrationKey;
+        this.#primaryKey = options.primaryKey || 'id';
+        this.#orderBy = options.orderBy || 'created_at';
         this.init();
     }
 
@@ -26,11 +29,22 @@ export class SupabaseStore<T extends { id: string }> {
         return result as T;
     }
 
-    // Helper to map camelCase from JS to snake_case for DB
+    // List of keys to exclude when writing to DB (e.g., nested UI-only data)
+    private EXCLUDED_KEYS = [
+        'resources', 'scratchpad', 'tasks', 'meals', 'goals', 'notes',
+        'logs', 'checkpoints', 'history', 'projects', 'areas', 'archives'
+    ];
+
+    // Helper to map camelCase from JS to snake_case for DB and filter extra fields
     private toSnake(obj: any): any {
         const result: any = {};
         for (const key in obj) {
-            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            if (this.EXCLUDED_KEYS.includes(key)) continue;
+
+            const snakeKey = key
+                .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+                .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+                .toLowerCase();
             result[snakeKey] = obj[key];
         }
         return result;
@@ -44,54 +58,15 @@ export class SupabaseStore<T extends { id: string }> {
             $effect.root(() => {
                 $effect(() => {
                     if (!auth.loading) {
-                        this.#fetchAndMigrate();
+                        this.fetch();
                     }
                 });
             });
         } else {
-            await this.#fetchAndMigrate();
+            await this.fetch();
         }
     }
 
-    async #fetchAndMigrate() {
-        await this.fetch();
-
-        // If DB is empty and migration key is provided, try to migrate from localStorage
-        if (this.#value.length === 0 && this.#migrationKey && auth.isAuthenticated) {
-            const stored = localStorage.getItem(this.#migrationKey);
-            if (stored) {
-                try {
-                    const localData = JSON.parse(stored);
-                    if (Array.isArray(localData) && localData.length > 0) {
-                        console.log(`Migrating ${this.#tableName} from localStorage...`);
-                        // Push all local items to Supabase
-                        const itemsToInsert = localData.map(item => {
-                            const { id, ...rest } = item;
-                            return this.toSnake({ ...rest, user_id: auth.user?.id });
-                        });
-
-                        const { data, error } = await supabase
-                            .from(this.#tableName)
-                            .insert(itemsToInsert)
-                            .select();
-
-                        if (error) {
-                            console.error(`Error during migration of ${this.#tableName}:`, error);
-                            console.error(`Error details:`, error.message, error.details, error.hint);
-                        } else if (data) {
-                            this.#value = data.map((item: any) => this.toCamel(item));
-                            console.log(`Successfully migrated ${data.length} items to ${this.#tableName}.`);
-                        }
-                    } else if (localData && typeof localData === 'object' && !Array.isArray(localData)) {
-                        // For single object stores
-                        await this.upsertSingle(localData);
-                    }
-                } catch (e) {
-                    console.error(`Migration error for ${this.#tableName}:`, e);
-                }
-            }
-        }
-    }
 
     async fetch() {
         if (!auth.isAuthenticated) {
@@ -100,10 +75,13 @@ export class SupabaseStore<T extends { id: string }> {
         }
 
         this.#loading = true;
-        const { data, error } = await supabase
-            .from(this.#tableName)
-            .select('*')
-            .order('created_at', { ascending: false });
+        let query = supabase.from(this.#tableName).select('*');
+
+        if (this.#orderBy) {
+            query = query.order(this.#orderBy, { ascending: false });
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             console.error(`Error fetching from ${this.#tableName}:`, error);
@@ -158,7 +136,7 @@ export class SupabaseStore<T extends { id: string }> {
         const { error } = await supabase
             .from(this.#tableName)
             .update(this.toSnake(updates))
-            .eq('id', id);
+            .eq(this.#primaryKey, id);
 
         if (error) {
             console.error(`Error updating ${this.#tableName}:`, error);
@@ -181,7 +159,7 @@ export class SupabaseStore<T extends { id: string }> {
         const { error } = await supabase
             .from(this.#tableName)
             .delete()
-            .eq('id', id);
+            .eq(this.#primaryKey, id);
 
         if (error) {
             console.error(`Error deleting from ${this.#tableName}:`, error);
