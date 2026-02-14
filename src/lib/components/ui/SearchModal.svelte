@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         Search,
         X,
@@ -22,7 +22,7 @@
     import { page } from "$app/stores";
     import { base } from "$app/paths";
 
-    function getIcon(type) {
+    function getIcon(type: string) {
         switch (type) {
             case "Task":
                 return CheckSquare;
@@ -55,7 +55,7 @@
         }
     }
 
-    function getColor(type) {
+    function getColor(type: string) {
         switch (type) {
             case "Task":
                 return "text-blue-400 bg-blue-400/10";
@@ -94,7 +94,7 @@
         if (searchStore.query) selectedIndex = 0;
     });
 
-    function handleKeydown(e) {
+    function handleKeydown(e: KeyboardEvent) {
         if (!searchStore.results.length) return;
 
         if (e.key === "ArrowDown") {
@@ -123,7 +123,7 @@
         selectedEl?.scrollIntoView({ block: "nearest" });
     }
 
-    function focus(node) {
+    function focus(node: HTMLElement) {
         node.focus();
     }
 </script>
@@ -142,6 +142,9 @@
         class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
         transition:fade={{ duration: 150 }}
         onclick={() => searchStore.close()}
+        onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") searchStore.close();
+        }}
         role="button"
         tabindex="0"
         aria-label="Close search"
@@ -192,6 +195,7 @@
             {:else}
                 <div class="space-y-1">
                     {#each searchStore.results as result, i}
+                        {@const Icon = getIcon(result.type)}
                         <a
                             id="result-{i}"
                             href={result.href}
@@ -206,10 +210,7 @@
                                     result.type,
                                 )} flex items-center justify-center shrink-0"
                             >
-                                <svelte:component
-                                    this={getIcon(result.type)}
-                                    size={18}
-                                />
+                                <Icon size={18} />
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between">

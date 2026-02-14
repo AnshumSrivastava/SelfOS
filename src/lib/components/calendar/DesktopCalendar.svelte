@@ -26,7 +26,7 @@
     let view = $state("month"); // 'month' or 'day'
     let selectedDate = $state(getToday());
     let currentMonthDate = $state(
-        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+        new Date(getToday().getFullYear(), getToday().getMonth(), 1),
     );
 
     // Event Modal State
@@ -34,7 +34,7 @@
     let newEvent = $state<Omit<CalendarEvent, "id">>({
         title: "",
         description: "",
-        date: formatDateISO(selectedDate),
+        date: formatDateISO(getToday()),
         startTime: "09:00",
         endTime: "10:00",
         type: "event",
@@ -522,6 +522,7 @@
                                     ? 'border-white'
                                     : 'border-transparent'}"
                                 style="background-color: {color}"
+                                aria-label="Select color {color}"
                             ></button>
                         {/each}
                     </div>

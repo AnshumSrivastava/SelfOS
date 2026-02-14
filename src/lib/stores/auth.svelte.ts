@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { supabase } from '$lib/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 
@@ -11,12 +12,16 @@ class AuthStore {
     }
 
     async init() {
+        if (!browser || !supabase || !supabase.auth) {
+            this.#loading = false;
+            return;
+        }
         const { data: { session } } = await supabase.auth.getSession();
         this.#session = session;
         this.#user = session?.user ?? null;
         this.#loading = false;
 
-        supabase.auth.onAuthStateChange((_event, session) => {
+        supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
             this.#session = session;
             this.#user = session?.user ?? null;
             this.#loading = false;
