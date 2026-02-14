@@ -18,6 +18,21 @@ export type Task = {
 class TasksStore {
     private store = new SupabaseStore<Task>("tasks");
 
+    #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
+        const timestamp = new Date().toISOString();
+        const status = level.toUpperCase();
+        const category = 'TASKS';
+        const prefix = `[${timestamp}] [${category}] [${status}]`;
+
+        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+
+        if (data) {
+            logMethod(`${prefix} ${message} |`, data);
+        } else {
+            logMethod(`${prefix} ${message}`);
+        }
+    }
+
     get tasks() {
         return this.store.value;
     }
@@ -41,7 +56,7 @@ class TasksStore {
                 completedAt: null,
             } as any);
         } catch (error) {
-            console.error('[TasksStore] Failed to add task:', error);
+            this.#log('Failed to add task', error, 'error');
             throw error;
         }
     }
@@ -59,13 +74,13 @@ class TasksStore {
                 body: JSON.stringify({ url })
             });
             if (!response.ok) {
-                console.warn('[TasksStore] YouTube API returned error:', response.status);
+                this.#log('YouTube API returned error', response.status, 'warn');
                 return [];
             }
             const data = await response.json();
             return data.videos || [];
         } catch (error) {
-            console.error('[TasksStore] Failed to parse YouTube playlist:', error);
+            this.#log('Failed to parse YouTube playlist', error, 'error');
             return [];
         }
     }
@@ -85,7 +100,7 @@ class TasksStore {
         let addedCount = 0;
         let errorCount = 0;
 
-        console.log(`[TasksStore] Starting batch add for ${projectId || 'Inbox'}${goalId ? ` (Goal: ${goalId})` : ''}`);
+        this.#log(`Starting batch add for ${projectId || 'Inbox'}${goalId ? ` (Goal: ${goalId})` : ''}`);
 
         if (this.isYouTubePlaylistUrl(trimmed)) {
             const videos = await this.parseYouTubePlaylist(trimmed);
@@ -103,7 +118,7 @@ class TasksStore {
                     addedCount++;
                 } catch (e) {
                     errorCount++;
-                    console.error(`[TasksStore] Failed to add video: ${video.title}`, e);
+                    this.#log(`Failed to add video: ${video.title}`, e, 'error');
                 }
             }
         } else {
@@ -123,12 +138,12 @@ class TasksStore {
                     addedCount++;
                 } catch (e) {
                     errorCount++;
-                    console.error(`[TasksStore] Failed to add line: ${line}`, e);
+                    this.#log(`Failed to add line: ${line}`, e, 'error');
                 }
             }
         }
 
-        console.log(`[TasksStore] Batch complete: ${addedCount} added, ${errorCount} errors`);
+        this.#log(`Batch complete: ${addedCount} added, ${errorCount} errors`);
         return { addedCount, errorCount };
     }
 
@@ -136,7 +151,7 @@ class TasksStore {
         try {
             await this.store.update(id, updates);
         } catch (error) {
-            console.error(`[TasksStore] Failed to update task ${id}:`, error);
+            this.#log(`Failed to update task ${id}`, error, 'error');
             throw error;
         }
     }
@@ -151,7 +166,7 @@ class TasksStore {
                     completedAt: isCompleted ? null : new Date().toISOString()
                 });
             } catch (error) {
-                console.error(`[TasksStore] Failed to toggle task ${id}:`, error);
+                this.#log(`Failed to toggle task ${id}`, error, 'error');
                 throw error;
             }
         }
@@ -161,7 +176,7 @@ class TasksStore {
         try {
             await this.store.delete(id);
         } catch (error) {
-            console.error(`[TasksStore] Failed to remove task ${id}:`, error);
+            this.#log(`Failed to remove task ${id}`, error, 'error');
             throw error;
         }
     }

@@ -182,7 +182,7 @@ class SettingsStore {
         root.style.setProperty('--module-padding', `${this.modulePadding}px`);
     }
 
-    private applyTheme() {
+    applyTheme() {
         const root = document.documentElement;
         const { theme, accentColor } = this.current;
 

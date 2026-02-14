@@ -1,10 +1,18 @@
 import { browser } from "$app/environment";
+import { supabase } from "$lib/supabaseClient";
+import { auth } from "./auth.svelte";
 import { userStore } from "./user.svelte";
 
 // Widget types
 export type WidgetType =
     | "welcome"
-    | "next-actions"
+    | "today-decisions"
+    | "now-next-later"
+    | "calendar-snapshot"
+    | "momentum-snapshot"
+    | "financial-pulse"
+    | "goal-pulse"
+    | "quick-capture"
     | "stats"
     | "habits"
     | "tasks"
@@ -26,41 +34,57 @@ export type DashboardConfig = {
 };
 
 const DEFAULT_WIDGETS: Widget[] = [
-    { id: "welcome", type: "welcome", enabled: true, order: 0, size: "full" },
-    {
-        id: "next-actions",
-        type: "next-actions",
-        enabled: true,
-        order: 1,
-        size: "full",
-    },
-    { id: "stats", type: "stats", enabled: true, order: 2, size: "full" },
-    { id: "habits", type: "habits", enabled: true, order: 3, size: "medium" },
-    { id: "tasks", type: "tasks", enabled: true, order: 4, size: "medium" },
-    {
-        id: "calendar",
-        type: "calendar",
-        enabled: true,
-        order: 5,
-        size: "medium",
-    },
-    { id: "goals", type: "goals", enabled: true, order: 6, size: "medium" },
-    {
-        id: "activity",
-        type: "activity",
-        enabled: true,
-        order: 7,
-        size: "large",
-    },
+    { id: "today-decisions", type: "today-decisions", enabled: true, order: 0, size: "full" },
+    { id: "now-next-later", type: "now-next-later", enabled: true, order: 1, size: "full" },
+    { id: "calendar-snapshot", type: "calendar-snapshot", enabled: true, order: 2, size: "medium" },
+    { id: "momentum-snapshot", type: "momentum-snapshot", enabled: true, order: 3, size: "medium" },
+    { id: "financial-pulse", type: "financial-pulse", enabled: true, order: 4, size: "medium" },
+    { id: "goal-pulse", type: "goal-pulse", enabled: true, order: 5, size: "medium" },
 ];
 
 class DashboardStore {
     widgets = $state<Widget[]>([...DEFAULT_WIDGETS]);
     layout = $state<"grid" | "list">("grid");
 
+    // Decision data
+    todayDecisions = $state<any[]>([]);
+    momentumRisks = $state<any[]>([]);
+    financeAlerts = $state<any[]>([]);
+    goalNextSteps = $state<any[]>([]);
+    loading = $state(false);
+
     constructor() {
         if (browser) {
             this.loadConfig();
+            this.fetchData();
+        }
+    }
+
+    async fetchData() {
+        if (!auth.isAuthenticated) return;
+        this.loading = true;
+
+        try {
+            const [decisions, risks, alerts, steps] = await Promise.all([
+                supabase.from('v_today_decisions').select('*').order('score', { ascending: false }),
+                supabase.from('v_momentum_risks').select('*').order('streak', { ascending: false }),
+                supabase.from('v_finance_due_alerts').select('*').order('due_date', { ascending: true }),
+                supabase.from('v_goal_next_steps').select('*')
+            ]);
+
+            if (decisions.error) throw decisions.error;
+            if (risks.error) throw risks.error;
+            if (alerts.error) throw alerts.error;
+            if (steps.error) throw steps.error;
+
+            this.todayDecisions = decisions.data || [];
+            this.momentumRisks = risks.data || [];
+            this.financeAlerts = alerts.data || [];
+            this.goalNextSteps = steps.data || [];
+        } catch (e) {
+            console.error('Failed to fetch dashboard data:', e);
+        } finally {
+            this.loading = false;
         }
     }
 

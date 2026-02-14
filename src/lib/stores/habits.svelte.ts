@@ -23,6 +23,21 @@ class HabitsStore {
     private checkins = $state<HabitCheckin[]>([]);
     private checkinsLoading = $state(true);
 
+    #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
+        const timestamp = new Date().toISOString();
+        const status = level.toUpperCase();
+        const category = 'HABITS';
+        const prefix = `[${timestamp}] [${category}] [${status}]`;
+
+        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+
+        if (data) {
+            logMethod(`${prefix} ${message} |`, data);
+        } else {
+            logMethod(`${prefix} ${message}`);
+        }
+    }
+
     constructor() {
         this.fetchCheckins();
     }
@@ -45,6 +60,8 @@ class HabitsStore {
 
         if (!error && data) {
             this.checkins = data;
+        } else if (error) {
+            this.#log('Failed to fetch checkins', error, 'error');
         }
         this.checkinsLoading = false;
     }
@@ -70,9 +87,11 @@ class HabitsStore {
                 .delete()
                 .eq('id', existingCheckin.id);
 
-            if (!error) {
-                this.checkins = this.checkins.filter(c => c.id !== existingCheckin.id);
+            if (error) {
+                this.#log('Failed to delete checkin', error, 'error');
+                throw error;
             }
+            this.checkins = this.checkins.filter(c => c.id !== existingCheckin.id);
         } else {
             const { data, error } = await supabase
                 .from('habit_checkins')
@@ -85,7 +104,11 @@ class HabitsStore {
                 .select()
                 .single();
 
-            if (!error && data) {
+            if (error) {
+                this.#log('Failed to insert checkin', error, 'error');
+                throw error;
+            }
+            if (data) {
                 this.checkins.push(data);
             }
         }

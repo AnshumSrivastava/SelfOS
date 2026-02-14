@@ -42,15 +42,20 @@
   });
 
   $effect(() => {
-    localStorage.setItem(
-      "selfos-settings",
-      JSON.stringify({
-        features: settings.features,
-        theme: settings.theme,
-        accentColor: settings.accentColor,
-      }),
-    );
-    settings.applyTheme();
+    if (typeof document !== "undefined") {
+      const isMinimal = settings.theme === "minimal";
+      document.documentElement.classList.toggle("theme-minimal", isMinimal);
+
+      localStorage.setItem(
+        "selfos-settings",
+        JSON.stringify({
+          features: settings.features,
+          theme: settings.theme,
+          accentColor: settings.accentColor,
+        }),
+      );
+      settings.applyTheme();
+    }
   });
 
   // Dynamic favicon color syncing

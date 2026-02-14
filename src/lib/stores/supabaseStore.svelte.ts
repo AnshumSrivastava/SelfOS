@@ -17,17 +17,19 @@ export class SupabaseStore<T extends { id: string }> {
         this.init();
     }
 
-    // Centralized logging helper
+    // Centralized logging helper - OCSF inspired (Category, Status, Message, Metadata)
     #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
         const timestamp = new Date().toISOString();
-        const prefix = `[SupabaseStore:${this.#tableName}] [${timestamp}]`;
-        if (level === 'error') {
-            console.error(`${prefix} ❌ ${message}`, data || '');
-        } else if (level === 'warn') {
-            console.warn(`${prefix} ⚠️ ${message}`, data || '');
+        const status = level.toUpperCase();
+        const category = 'DATA_STORE';
+        const prefix = `[${timestamp}] [${category}] [${status}] [${this.#tableName}]`;
+
+        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+
+        if (data) {
+            logMethod(`${prefix} ${message} |`, data);
         } else {
-            // Only log info in development or if explicitly needed
-            console.log(`${prefix} ℹ️ ${message}`, data || '');
+            logMethod(`${prefix} ${message}`);
         }
     }
 

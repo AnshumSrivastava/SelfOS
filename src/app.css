@@ -181,6 +181,25 @@
       padding-bottom: var(--space-8);
     }
   }
+
+  /* Minimal Theme Refinements */
+  :root.theme-minimal {
+    --theme-background: #000000;
+    --theme-surface: #0a0a0a;
+    --theme-primary: #FFFFFF;
+    --theme-text: #FFFFFF;
+    --theme-muted: #666666;
+    --theme-line: #222222;
+  }
+
+  :root.theme-minimal,
+  :root.theme-minimal * {
+    background-image: none !important;
+    mask-image: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
 }
 
 @layer components {

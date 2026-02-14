@@ -42,6 +42,21 @@ class NutritionStore {
         // Init is handled by SupabaseStore
     }
 
+    #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
+        const timestamp = new Date().toISOString();
+        const status = level.toUpperCase();
+        const category = 'NUTRITION';
+        const prefix = `[${timestamp}] [${category}] [${status}]`;
+
+        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+
+        if (data) {
+            logMethod(`${prefix} ${message} |`, data);
+        } else {
+            logMethod(`${prefix} ${message}`);
+        }
+    }
+
 
     get profile(): UserProfile {
         const s = this.settingsStore.value[0];

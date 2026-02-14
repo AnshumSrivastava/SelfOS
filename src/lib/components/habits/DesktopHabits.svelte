@@ -11,10 +11,13 @@
         Target,
         Award,
     } from "lucide-svelte";
-    import { habitsStore } from "$lib/stores/habits.svelte";
-    import { scale, fade } from "svelte/transition";
+    import { habitsStore, type Habit } from "$lib/stores/habits.svelte";
+    import { fade, scale } from "svelte/transition";
     import ConsistencyChart from "./ConsistencyChart.svelte";
     import StreakFire from "$lib/components/ui/StreakFire.svelte";
+    import { settings } from "$lib/stores/settings.svelte";
+
+    const isMinimal = $derived(settings.theme === "minimal");
 
     let todayProgress = $derived(
         (habitsStore.completedCount / (habitsStore.totalCount || 1)) * 100 || 0,
@@ -150,7 +153,7 @@
                                 <h3
                                     class="font-bold text-lg text-white group-hover:text-primary transition-colors mb-2"
                                 >
-                                    {habit.title}
+                                    {habit.name}
                                 </h3>
                                 {#if habit.statusMessage}
                                     <span
@@ -230,21 +233,23 @@
                         </div>
 
                         <!-- Background Effects -->
-                        {#if habit.isCompleted}
-                            <div
-                                class="absolute bottom-0 left-0 w-full h-1 bg-primary"
-                            ></div>
-                            <div
-                                class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
-                            ></div>
-                        {:else if habit.status === "at-risk"}
-                            <div
-                                class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"
-                            ></div>
-                        {:else if habit.status === "champion"}
-                            <div
-                                class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"
-                            ></div>
+                        {#if !isMinimal}
+                            {#if habit.isCompleted}
+                                <div
+                                    class="absolute bottom-0 left-0 w-full h-1 bg-primary"
+                                ></div>
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
+                                ></div>
+                            {:else if habit.status === "at-risk"}
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"
+                                ></div>
+                            {:else if habit.status === "champion"}
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"
+                                ></div>
+                            {/if}
                         {/if}
                     </div>
                 {/each}
@@ -275,7 +280,9 @@
             <!-- Insights Bar (Now a vertical stack) -->
             <div class="space-y-6">
                 <div
-                    class="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20"
+                    class="p-4 rounded-xl border {isMinimal
+                        ? 'bg-surface border-line'
+                        : 'bg-gradient-to-br from-primary/10 to-transparent border-primary/20'}"
                 >
                     <div class="flex items-center gap-2 mb-1">
                         <Flame size={16} class="text-primary" />
@@ -297,7 +304,9 @@
 
                 {#if insights.atRisk > 0}
                     <div
-                        class="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20"
+                        class="p-4 rounded-xl border {isMinimal
+                            ? 'bg-surface border-line'
+                            : 'bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20'}"
                     >
                         <div class="flex items-center gap-2 mb-1">
                             <AlertTriangle size={16} class="text-orange-400" />
@@ -316,7 +325,9 @@
 
                 {#if insights.champions > 0}
                     <div
-                        class="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20"
+                        class="p-4 rounded-xl border {isMinimal
+                            ? 'bg-surface border-line'
+                            : 'bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20'}"
                     >
                         <div class="flex items-center gap-2 mb-1">
                             <Award size={16} class="text-purple-400" />
@@ -332,7 +343,9 @@
                 {/if}
 
                 <div
-                    class="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-transparent border border-green-500/20"
+                    class="p-4 rounded-xl border {isMinimal
+                        ? 'bg-surface border-line'
+                        : 'bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20'}"
                 >
                     <div class="flex items-center gap-2 mb-1">
                         <Target size={16} class="text-green-400" />

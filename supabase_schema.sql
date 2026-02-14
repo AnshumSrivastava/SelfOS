@@ -547,10 +547,20 @@ SELECT
     'task' as type,
     id,
     user_id,
-    title,
+    title as label,
     deadline as focus_time,
     priority,
-    status
+    status,
+    CASE 
+        WHEN priority = 'high' THEN 30
+        WHEN priority = 'medium' THEN 20
+        ELSE 10
+    END + 
+    CASE 
+        WHEN deadline < NOW() THEN 50
+        WHEN deadline::date = CURRENT_DATE THEN 25
+        ELSE 0
+    END as score
 FROM tasks 
 WHERE status != 'completed' AND (deadline::date = CURRENT_DATE OR deadline < NOW())
 UNION ALL
@@ -558,9 +568,49 @@ SELECT
     'event' as type,
     id,
     user_id,
-    title,
+    title as label,
     start_time as focus_time,
-    'medium' as priority,
-    'pending' as status
+    'high' as priority,
+    'pending' as status,
+    40 as score -- Events usually take priority
 FROM calendar_events 
 WHERE date = CURRENT_DATE OR (start_time::date = CURRENT_DATE);
+
+-- Momentum Risks: Habits not done today with an active streak
+CREATE OR REPLACE VIEW v_momentum_risks AS
+SELECT 
+    h.id,
+    h.user_id,
+    h.name,
+    h.streak,
+    h.color
+FROM habits h
+LEFT JOIN habit_checkins hc ON h.id = hc.habit_id AND hc.date = CURRENT_DATE
+WHERE h.streak > 0 AND hc.id IS NULL;
+
+-- Finance Due Alerts: Unpaid reminders due soon
+CREATE OR REPLACE VIEW v_finance_due_alerts AS
+SELECT 
+    id,
+    user_id,
+    title,
+    amount,
+    due_date,
+    type
+FROM finance_reminders
+WHERE is_paid = false AND due_date <= (NOW() + INTERVAL '3 days');
+
+-- Goal Next Steps
+CREATE OR REPLACE VIEW v_goal_next_steps AS
+SELECT 
+    g.id,
+    g.user_id,
+    g.title as goal_title,
+    gl.next_step
+FROM goals g
+JOIN (
+    SELECT DISTINCT ON (goal_id) goal_id, next_step, date
+    FROM goal_logs
+    ORDER BY goal_id, date DESC
+) gl ON g.id = gl.goal_id
+WHERE g.completed = false AND gl.next_step IS NOT NULL;

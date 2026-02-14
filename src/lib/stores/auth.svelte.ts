@@ -12,6 +12,21 @@ class AuthStore {
         this.init();
     }
 
+    #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
+        const timestamp = new Date().toISOString();
+        const status = level.toUpperCase();
+        const category = 'AUTH';
+        const prefix = `[${timestamp}] [${category}] [${status}]`;
+
+        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
+
+        if (data) {
+            logMethod(`${prefix} ${message} |`, data);
+        } else {
+            logMethod(`${prefix} ${message}`);
+        }
+    }
+
     async init() {
         if (!browser || !supabase || !supabase.auth) {
             this.#loading = false;
@@ -91,8 +106,7 @@ class AuthStore {
             }
         });
         if (error) {
-            console.error("Google login error:", error);
-            console.error("Error details:", error.message);
+            this.#log("Google login error", error, "error");
             throw error;
         }
     }

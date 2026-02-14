@@ -8,6 +8,13 @@
     import StatsWidget from "./StatsWidget.svelte";
     import HabitsWidget from "./HabitsWidget.svelte";
     import TasksWidget from "./TasksWidget.svelte";
+    import TodayDecisions from "./TodayDecisions.svelte";
+    import NowNextLater from "./NowNextLater.svelte";
+    import CalendarSnapshot from "./CalendarSnapshot.svelte";
+    import MomentumSnapshot from "./MomentumSnapshot.svelte";
+    import FinancialPulse from "./FinancialPulse.svelte";
+    import GoalPulse from "./GoalPulse.svelte";
+    import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
 
     let showSettings = $state(false);
     let items = $state(dashboardStore.enabledWidgets);
@@ -30,8 +37,20 @@
         switch (type) {
             case "welcome":
                 return WelcomeWidget;
-            case "next-actions":
-                return NextActionsWidget;
+            case "today-decisions":
+                return TodayDecisions;
+            case "now-next-later":
+                return NowNextLater;
+            case "calendar-snapshot":
+                return CalendarSnapshot;
+            case "momentum-snapshot":
+                return MomentumSnapshot;
+            case "financial-pulse":
+                return FinancialPulse;
+            case "goal-pulse":
+                return GoalPulse;
+            case "quick-capture":
+                return QuickCapture;
             case "stats":
                 return StatsWidget;
             case "habits":
@@ -120,7 +139,7 @@
 
     <!-- Widgets Grid with Drag and Drop -->
     <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         use:dndzone={{
             items,
             flipDurationMs: 200,
