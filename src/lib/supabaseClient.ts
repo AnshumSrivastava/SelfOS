@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from '$env/dynamic/public';
 
-const supabaseUrl = env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY;
+// Try multiple sources: dynamic for SSR/local, import.meta.env for Vite-inlined build-time vars
+const supabaseUrl = env.PUBLIC_SUPABASE_URL || import.meta.env.VITE_PUBLIC_SUPABASE_URL || (typeof window !== 'undefined' ? (window as any)._SUPABASE_URL : undefined);
+const supabaseAnonKey = env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY || (typeof window !== 'undefined' ? (window as any)._SUPABASE_ANON_KEY : undefined);
 
 // Create a dummy client to avoid null pointer exceptions in static builds
 const dummyClient = {
