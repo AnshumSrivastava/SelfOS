@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { base } from '$app/paths';
 import { supabase } from '$lib/supabaseClient';
 import type { Session, User } from '@supabase/supabase-js';
 
@@ -34,10 +35,15 @@ class AuthStore {
     get isAuthenticated() { return !!this.#user; }
 
     async signInWithGoogle() {
+        // Ensure we handle subpaths (like GitHub Pages /SelfOS)
+        const redirectUrl = base
+            ? `${window.location.origin}${base}/auth/callback`
+            : `${window.location.origin}/auth/callback`;
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth/callback`
+                redirectTo: redirectUrl
             }
         });
         if (error) {
