@@ -110,6 +110,22 @@ class GoalsStore {
         return this.goals.filter(g => g.parentId === parentId);
     }
 
+    getGoalTasks(goalId: string) {
+        return tasksStore.tasks.filter(t => t.goalId === goalId);
+    }
+
+    async addTasksBatch(goalId: string, input: string) {
+        return await tasksStore.addBatch(input, null, 'medium', goalId);
+    }
+
+    async toggleTask(taskId: string) {
+        return await tasksStore.toggle(taskId);
+    }
+
+    async deleteTask(taskId: string) {
+        return await tasksStore.remove(taskId);
+    }
+
     getGoalParent(goalId: string) {
         const goal = this.goals.find(g => g.id === goalId);
         return goal?.parentId ? this.goals.find(g => g.id === goal.parentId) : null;

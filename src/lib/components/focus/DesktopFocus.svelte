@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         Play,
         Pause,
@@ -7,13 +7,32 @@
         Maximize,
         Pencil,
         Check,
+        Target,
+        ChevronRight,
+        X,
     } from "lucide-svelte";
     import { focusStore } from "$lib/stores/focus.svelte";
+    import { tasksStore, type Task } from "$lib/stores/tasks.svelte";
+    import { fade, slide } from "svelte/transition";
 
-    let { timeLeft, isRunning, formattedTime, mode } = $derived(focusStore);
+    const timeLeft = $derived(focusStore.timeLeft);
+    const isRunning = $derived(focusStore.isRunning);
+    const formattedTime = $derived(focusStore.formattedTime);
+    const mode = $derived(focusStore.mode);
+    const sessionComplete = $derived(focusStore.sessionComplete);
 
     let isEditing = $state(false);
     let editMinutes = $state(25);
+    let selectedTaskId = $state<string | null>(null);
+    let showTaskSelector = $state(true);
+
+    const selectedTask = $derived(
+        tasksStore.tasks.find((t) => t.id === selectedTaskId),
+    );
+
+    const pendingTasks = $derived(
+        tasksStore.tasks.filter((t) => t.status !== "completed"),
+    );
 
     function saveDuration() {
         if (editMinutes > 0) {
@@ -21,145 +40,253 @@
         }
         isEditing = false;
     }
+
+    let sessionSubject = $state("");
+
+    $effect(() => {
+        if (sessionComplete) {
+            // Auto-open log modal or similar?
+            // For now, let's just log if a task was selected
+            if (selectedTask) {
+                focusStore.logSession(selectedTask.title);
+            }
+        }
+    });
+
+    function toggleTask(taskId: string) {
+        if (selectedTaskId === taskId) {
+            selectedTaskId = null;
+        } else {
+            selectedTaskId = taskId;
+        }
+    }
 </script>
 
-<div class="flex flex-col items-center justify-center h-[80vh] relative">
-    <!-- Ambient Background -->
-    <div
-        class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20"
-    >
+<div class="flex h-[80vh] relative overflow-hidden">
+    <!-- Task Selector Sidebar -->
+    {#if showTaskSelector}
         <div
-            class="w-[500px] h-[500px] bg-primary rounded-full blur-[150px] animate-pulse"
-            style="animation-duration: 4s;"
-        ></div>
-    </div>
-
-    <div class="relative z-10 text-center">
-        <div
-            class="mb-12 cursor-pointer group"
-            onclick={() => {
-                if (!isEditing && !focusStore.isRunning) {
-                    editMinutes = Math.floor(focusStore.timeLeft / 60);
-                    isEditing = true;
-                }
-            }}
-            onkeydown={(e) => {
-                if (e.key === "Enter" && !isEditing && !focusStore.isRunning) {
-                    editMinutes = Math.floor(focusStore.timeLeft / 60);
-                    isEditing = true;
-                }
-            }}
-            role="button"
-            tabindex="0"
+            class="w-80 border-r border-line bg-surface/30 backdrop-blur-xl p-6 flex flex-col"
+            transition:slide={{ axis: "x", duration: 300 }}
         >
-            <h2 class="text-muted tracking-widest uppercase font-medium mb-2">
-                {focusStore.mode === "shortBreak"
-                    ? "Short Break"
-                    : focusStore.mode === "longBreak"
-                      ? "Long Break"
-                      : "Deep Work Session"}
-            </h2>
+            <div class="flex items-center justify-between mb-6">
+                <h3
+                    class="text-sm font-bold uppercase tracking-widest text-muted"
+                >
+                    Active Missions
+                </h3>
+                <button
+                    onclick={() => (showTaskSelector = false)}
+                    class="p-1 hover:bg-white/10 rounded transition-colors text-muted"
+                >
+                    <X size={16} />
+                </button>
+            </div>
 
-            {#if isEditing}
-                <div class="flex items-center justify-center gap-4">
-                    <input
-                        type="number"
-                        bind:value={editMinutes}
-                        min="1"
-                        max="180"
-                        class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] bg-transparent border-b-4 border-primary w-[400px] text-center focus:outline-none"
-                        onclick={(e) => e.stopPropagation()}
-                        onkeydown={(e) => e.key === "Enter" && saveDuration()}
-                        aria-label="Edit duration minutes"
-                    />
+            <div class="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                {#each pendingTasks as task}
                     <button
-                        class="p-6 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                        onclick={(e) => {
-                            e.stopPropagation();
-                            saveDuration();
-                        }}
+                        onclick={() => toggleTask(task.id)}
+                        class="w-full text-left p-3 rounded-xl border transition-all {selectedTaskId ===
+                        task.id
+                            ? 'bg-primary/10 border-primary text-primary'
+                            : 'bg-background/40 border-line text-muted hover:border-white/20'}"
                     >
-                        <Check size={48} />
-                    </button>
-                </div>
-            {:else}
-                <div class="relative inline-block">
-                    <span
-                        class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] group-hover:text-primary/90 transition-colors"
-                    >
-                        {focusStore.formattedTime}
-                    </span>
-                    {#if !focusStore.isRunning}
-                        <div
-                            class="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <span
-                                class="flex items-center gap-2 text-muted text-lg bg-surface/80 px-4 py-2 rounded-full border border-line"
-                            >
-                                <Pencil size={18} /> Edit
-                            </span>
+                        <div class="flex items-start gap-3">
+                            <div class="mt-1">
+                                <Target size={14} />
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium truncate">
+                                    {task.title}
+                                </p>
+                                <p
+                                    class="text-[10px] opacity-60 uppercase tracking-wider"
+                                >
+                                    {task.projectId || "Inbox"}
+                                </p>
+                            </div>
                         </div>
-                    {/if}
+                    </button>
+                {/each}
+                {#if pendingTasks.length === 0}
+                    <div class="text-center py-8">
+                        <p class="text-xs text-muted italic">
+                            No active tasks found.
+                        </p>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    {/if}
+
+    <div class="flex-1 flex flex-col items-center justify-center relative">
+        {#if !showTaskSelector}
+            <button
+                onclick={() => (showTaskSelector = true)}
+                class="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-surface border border-line rounded-full text-muted hover:text-white transition-all shadow-lg"
+                transition:fade
+            >
+                <ChevronRight size={20} />
+            </button>
+        {/if}
+
+        <!-- Ambient Background -->
+        <div
+            class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20"
+        >
+            <div
+                class="w-[500px] h-[500px] bg-primary rounded-full blur-[150px] animate-pulse"
+                style="animation-duration: 4s;"
+            ></div>
+        </div>
+
+        <div class="relative z-10 text-center">
+            {#if selectedTask}
+                <div
+                    class="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary animate-slide-up"
+                    in:fade
+                >
+                    <Target size={14} />
+                    <span class="text-xs font-bold uppercase tracking-widest"
+                        >Locked In: {selectedTask.title}</span
+                    >
                 </div>
             {/if}
-        </div>
 
-        <div class="flex items-center justify-center gap-8">
-            <button
-                class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
-                aria-label="Reset"
-                onclick={() => focusStore.reset()}
+            <div
+                class="mb-12 cursor-pointer group"
+                onclick={() => {
+                    if (!isEditing && !focusStore.isRunning) {
+                        editMinutes = Math.floor(focusStore.timeLeft / 60);
+                        isEditing = true;
+                    }
+                }}
+                onkeydown={(e) => {
+                    if (
+                        e.key === "Enter" &&
+                        !isEditing &&
+                        !focusStore.isRunning
+                    ) {
+                        editMinutes = Math.floor(focusStore.timeLeft / 60);
+                        isEditing = true;
+                    }
+                }}
+                role="button"
+                tabindex="0"
             >
-                <RotateCcw size={24} />
-            </button>
+                <h2
+                    class="text-muted tracking-widest uppercase font-medium mb-2"
+                >
+                    {focusStore.mode === "shortBreak"
+                        ? "Short Break"
+                        : focusStore.mode === "longBreak"
+                          ? "Long Break"
+                          : "Deep Work Session"}
+                </h2>
 
-            <button
-                class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-                onclick={() => focusStore.toggle()}
-            >
-                {#if focusStore.isRunning}
-                    <Pause size={40} fill="currentColor" />
+                {#if isEditing}
+                    <div class="flex items-center justify-center gap-4">
+                        <input
+                            type="number"
+                            bind:value={editMinutes}
+                            min="1"
+                            max="180"
+                            class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] bg-transparent border-b-4 border-primary w-[400px] text-center focus:outline-none"
+                            onclick={(e) => e.stopPropagation()}
+                            onkeydown={(e) =>
+                                e.key === "Enter" && saveDuration()}
+                            aria-label="Edit duration minutes"
+                        />
+                        <button
+                            class="p-6 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                            onclick={(e) => {
+                                e.stopPropagation();
+                                saveDuration();
+                            }}
+                        >
+                            <Check size={48} />
+                        </button>
+                    </div>
                 {:else}
-                    <Play size={40} fill="currentColor" class="ml-1" />
+                    <div class="relative inline-block">
+                        <span
+                            class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] group-hover:text-primary/90 transition-colors"
+                        >
+                            {focusStore.formattedTime}
+                        </span>
+                        {#if !focusStore.isRunning}
+                            <div
+                                class="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <span
+                                    class="flex items-center gap-2 text-muted text-lg bg-surface/80 px-4 py-2 rounded-full border border-line"
+                                >
+                                    <Pencil size={18} /> Edit
+                                </span>
+                            </div>
+                        {/if}
+                    </div>
                 {/if}
-            </button>
+            </div>
 
-            <button
-                class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
-                aria-label="Sound"
-            >
-                <Volume2 size={24} />
-            </button>
-        </div>
+            <div class="flex items-center justify-center gap-8">
+                <button
+                    class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
+                    aria-label="Reset"
+                    onclick={() => focusStore.reset()}
+                >
+                    <RotateCcw size={24} />
+                </button>
 
-        <div class="mt-12 flex gap-4 justify-center">
-            <button
-                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                'focus'
-                    ? 'bg-white text-black border-white shadow-lg'
-                    : 'bg-surface border-line text-muted hover:text-white'}"
-                onclick={() => focusStore.setMode("focus")}
-            >
-                Pomodoro
-            </button>
-            <button
-                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                'shortBreak'
-                    ? 'bg-white text-black border-white shadow-lg'
-                    : 'bg-surface border-line text-muted hover:text-white'}"
-                onclick={() => focusStore.setMode("shortBreak")}
-            >
-                Short Break
-            </button>
-            <button
-                class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                'longBreak'
-                    ? 'bg-white text-black border-white shadow-lg'
-                    : 'bg-surface border-line text-muted hover:text-white'}"
-                onclick={() => focusStore.setMode("longBreak")}
-            >
-                Long Break
-            </button>
+                <button
+                    class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                    onclick={() => focusStore.toggle()}
+                >
+                    {#if focusStore.isRunning}
+                        <Pause size={40} fill="currentColor" />
+                    {:else}
+                        <Play size={40} fill="currentColor" class="ml-1" />
+                    {/if}
+                </button>
+
+                <button
+                    class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
+                    aria-label="Sound"
+                >
+                    <Volume2 size={24} />
+                </button>
+            </div>
+
+            <div class="mt-12 flex gap-4 justify-center">
+                <button
+                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                    'focus'
+                        ? 'bg-white text-black border-white shadow-lg'
+                        : 'bg-surface border-line text-muted hover:text-white'}"
+                    onclick={() => focusStore.setMode("focus")}
+                >
+                    Pomodoro
+                </button>
+                <button
+                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                    'shortBreak'
+                        ? 'bg-white text-black border-white shadow-lg'
+                        : 'bg-surface border-line text-muted hover:text-white'}"
+                    onclick={() => focusStore.setMode("shortBreak")}
+                >
+                    Short Break
+                </button>
+                <button
+                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                    'longBreak'
+                        ? 'bg-white text-black border-white shadow-lg'
+                        : 'bg-surface border-line text-muted hover:text-white'}"
+                    onclick={() => focusStore.setMode("longBreak")}
+                >
+                    Long Break
+                </button>
+            </div>
         </div>
     </div>
 </div>

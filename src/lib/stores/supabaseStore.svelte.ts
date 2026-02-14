@@ -165,7 +165,9 @@ export class SupabaseStore<T extends { id: string }> {
         let previousValue: T | null = null;
         if (index !== -1) {
             previousValue = { ...this.#value[index] };
-            this.#value[index] = { ...this.#value[index], ...updates };
+            this.#value = this.#value.map((item, i) =>
+                i === index ? { ...item, ...updates } : item
+            );
         }
 
         try {
@@ -179,7 +181,9 @@ export class SupabaseStore<T extends { id: string }> {
                 this.#handleError('update', error);
                 // Rollback on error
                 if (index !== -1 && previousValue) {
-                    this.#value[index] = previousValue;
+                    this.#value = this.#value.map((item, i) =>
+                        i === index ? (previousValue as T) : item
+                    );
                 }
                 throw error;
             }
@@ -187,8 +191,10 @@ export class SupabaseStore<T extends { id: string }> {
         } catch (e) {
             this.#log(`Unexpected error during update of ${id}`, e, 'error');
             // Ensure rollback if not already handled
-            if (index !== -1 && previousValue && this.#value[index] !== previousValue) {
-                this.#value[index] = previousValue;
+            if (index !== -1 && previousValue) {
+                this.#value = this.#value.map((item, i) =>
+                    i === index ? (previousValue as T) : item
+                );
             }
             throw e;
         }

@@ -9,15 +9,24 @@
         parentId = null,
         horizon = "all",
         depth = 0,
+        focusedGoalId = null,
         onGoalClick,
+        onFocusGoal,
     } = $props<{
         parentId?: string | null;
         horizon?: string | "all";
         depth?: number;
+        focusedGoalId?: string | null;
         onGoalClick?: (goal: Goal) => void;
+        onFocusGoal?: (goalId: string) => void;
     }>();
 
     const goals = $derived.by(() => {
+        // If we have a focusedGoalId and we are at the top level of this component call
+        if (focusedGoalId && depth === 0) {
+            return goalsStore.goals.filter((g) => g.id === focusedGoalId);
+        }
+
         let list = parentId
             ? goalsStore.getGoalChildren(parentId)
             : goalsStore.goals.filter((g) => !g.parentId);
@@ -60,7 +69,11 @@
                 {/if}
 
                 <div class="flex-1">
-                    <GoalCard {goal} />
+                    <GoalCard
+                        {goal}
+                        onFocus={onFocusGoal}
+                        onclick={onGoalClick}
+                    />
                 </div>
             </div>
 
@@ -71,6 +84,7 @@
                         {horizon}
                         depth={depth + 1}
                         {onGoalClick}
+                        {onFocusGoal}
                     />
                 </div>
             {/if}

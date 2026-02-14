@@ -80,12 +80,12 @@ class TasksStore {
         return { title: line, link: null };
     }
 
-    async addBatch(input: string, projectId: string | null = null, priority: "low" | "medium" | "high" = "medium") {
+    async addBatch(input: string, projectId: string | null = null, priority: "low" | "medium" | "high" = "medium", goalId: string | null = null) {
         const trimmed = input.trim();
         let addedCount = 0;
         let errorCount = 0;
 
-        console.log(`[TasksStore] Starting batch add for ${projectId || 'Inbox'}`);
+        console.log(`[TasksStore] Starting batch add for ${projectId || 'Inbox'}${goalId ? ` (Goal: ${goalId})` : ''}`);
 
         if (this.isYouTubePlaylistUrl(trimmed)) {
             const videos = await this.parseYouTubePlaylist(trimmed);
@@ -94,7 +94,7 @@ class TasksStore {
                     await this.add({
                         title: video.title,
                         link: video.url,
-                        goalId: null,
+                        goalId,
                         projectId,
                         priority,
                         deadline: null,
@@ -114,7 +114,7 @@ class TasksStore {
                     await this.add({
                         title,
                         link,
-                        goalId: null,
+                        goalId,
                         projectId,
                         priority,
                         deadline: null,

@@ -7,11 +7,13 @@
         Calendar,
         AlertCircle,
         ChevronRight,
+        Zap,
     } from "lucide-svelte";
 
-    let { goal, onclick } = $props<{
+    let { goal, onclick, onFocus } = $props<{
         goal: Goal;
         onclick?: (goal: Goal) => void;
+        onFocus?: (goalId: string) => void;
     }>();
 
     const progress = $derived(goalsStore.getGoalProgress(goal.id));
@@ -92,9 +94,30 @@
             </div>
         </div>
 
-        <button class="p-2 text-muted/50 hover:text-white transition-colors">
-            <ChevronRight size={20} />
-        </button>
+        <div class="flex flex-col gap-2">
+            <button
+                class="p-2 text-muted/50 hover:text-white transition-colors"
+                onclick={(e) => {
+                    e.stopPropagation();
+                    onclick?.(goal);
+                }}
+            >
+                <ChevronRight size={20} />
+            </button>
+
+            {#if onFocus}
+                <button
+                    class="p-2 text-muted/50 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                    onclick={(e) => {
+                        e.stopPropagation();
+                        onFocus(goal.id);
+                    }}
+                    title="Focus on this mission"
+                >
+                    <Zap size={18} />
+                </button>
+            {/if}
+        </div>
     </div>
 
     <!-- Health Label (Conditional) -->

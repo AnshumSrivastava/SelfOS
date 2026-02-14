@@ -35,11 +35,22 @@
     let showDetailModal = $state(false);
     let editingGoal = $state<Goal | null>(null);
     let selectedGoal = $state<Goal | null>(null);
-    let viewMode = $state<"strategic" | "board" | "roadmap" | "importer">(
-        "strategic",
-    );
+    let viewMode = $state<
+        "strategic" | "board" | "roadmap" | "importer" | "focus"
+    >("strategic");
+    let focusedGoalId = $state<string | null>(null);
     let activeHorizon = $state<GoalHorizon | "all">("all");
     let activeArea = $state<GoalArea | "All">("All");
+
+    function handleOpenFocus(goalId: string) {
+        focusedGoalId = goalId;
+        viewMode = "focus";
+    }
+
+    function clearFocus() {
+        focusedGoalId = null;
+        viewMode = "strategic";
+    }
 
     const horizons: { id: GoalHorizon | "all"; name: string; icon: any }[] = [
         { id: "all", name: "All Horizons", icon: Compass },
@@ -149,6 +160,16 @@
                 </button>
             </div>
 
+            {#if viewMode === "focus"}
+                <button
+                    onclick={clearFocus}
+                    class="flex items-center gap-2 px-4 py-2.5 bg-surface border border-line hover:border-white/20 text-white rounded-xl font-medium transition-all active:scale-95 shadow-lg"
+                >
+                    <ArrowLeft size={18} />
+                    Exit Focus
+                </button>
+            {/if}
+
             <button
                 onclick={() => openGoalModal()}
                 class="flex items-center gap-2 px-6 py-2.5 bg-primary hover:opacity-90 text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-primary/10"
@@ -190,6 +211,35 @@
             <div in:fade class="text-white">
                 <GoalHierarchyTree
                     horizon={activeHorizon}
+                    onFocusGoal={handleOpenFocus}
+                    onGoalClick={(g: Goal) => {
+                        selectedGoal = g;
+                        showDetailModal = true;
+                    }}
+                />
+            </div>
+        {:else if viewMode === "focus" && focusedGoalId}
+            <div in:fade class="text-white">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 rounded-2xl bg-primary/10 text-primary">
+                        <Zap size={24} />
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">
+                            Focusing on: {goalsStore.goals.find(
+                                (g) => g.id === focusedGoalId,
+                            )?.title || "Goal"}
+                        </h2>
+                        <p class="text-muted text-sm">
+                            Concentrating all resources on this initiative and
+                            its sub-objectives.
+                        </p>
+                    </div>
+                </div>
+
+                <GoalHierarchyTree
+                    horizon="all"
+                    {focusedGoalId}
                     onGoalClick={(g: Goal) => {
                         selectedGoal = g;
                         showDetailModal = true;
@@ -200,7 +250,7 @@
             <div in:fade>
                 <GoalBoard
                     {activeArea}
-                    focusedGoalId={null}
+                    {focusedGoalId}
                     onOpenModal={openGoalModal}
                 />
             </div>
