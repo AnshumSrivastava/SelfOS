@@ -291,7 +291,6 @@
                 placeholder="What needs to be done?&#10;Paste multiple lines or a YouTube playlist URL..."
                 class="w-full bg-transparent text-xl text-white placeholder:text-muted/50 focus:outline-none border-b border-line pb-2 resize-none"
                 rows="3"
-                autofocus
                 onkeydown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault();

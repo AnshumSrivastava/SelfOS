@@ -221,6 +221,16 @@ class ProjectsStore {
         }
     }
 
+    async deleteScratchpadEntry(projectId: string, entryId: string) {
+        await this.scratchpadStore.delete(entryId);
+        await this.updateProject(projectId, {});
+    }
+
+    async deleteResource(projectId: string, resourceId: string) {
+        await this.resourcesStore.delete(resourceId);
+        await this.updateProject(projectId, {});
+    }
+
     async addResource(projectId: string, resource: Omit<ProjectResource, 'id' | 'projectId' | 'createdAt'>) {
         await this.resourcesStore.insert({
             projectId,

@@ -24,7 +24,7 @@
     let view = $state("schedule"); // 'schedule' or 'month'
     let selectedDate = $state(getToday());
     let currentMonthDate = $state(
-        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+        new Date(getToday().getFullYear(), getToday().getMonth(), 1),
     );
 
     // Event Modal State
@@ -32,11 +32,16 @@
     let newEvent = $state<Omit<CalendarEvent, "id">>({
         title: "",
         description: "",
-        date: formatDateISO(selectedDate),
+        date: formatDateISO(new Date()), // Placeholder, will be sync'd
         startTime: "09:00",
         endTime: "10:00",
         type: "event",
         color: "#3b82f6",
+    });
+
+    // Synchronize newEvent date with selectedDate
+    $effect(() => {
+        newEvent.date = formatDateISO(selectedDate);
     });
 
     // Reactive grid and events
@@ -223,8 +228,19 @@
                 {/each}
                 {#each calendarDays as day}
                     <div
+                        role="button"
+                        tabindex="0"
                         onclick={() => {
                             if (day.date) {
+                                selectDate(day.date);
+                                view = "schedule";
+                            }
+                        }}
+                        onkeydown={(e) => {
+                            if (
+                                (e.key === "Enter" || e.key === " ") &&
+                                day.date
+                            ) {
                                 selectDate(day.date);
                                 view = "schedule";
                             }
@@ -253,7 +269,14 @@
                 {:else}
                     {#each upcomingEvents as appt}
                         <div
+                            role="button"
+                            tabindex="0"
                             onclick={() => selectDate(new Date(appt.date))}
+                            onkeydown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    selectDate(new Date(appt.date));
+                                }
+                            }}
                             class="card-subtle flex items-center gap-4 transition-transform active:scale-95"
                         >
                             <div
@@ -391,9 +414,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label
-                        class="text-xs font-bold text-muted uppercase tracking-wider"
-                        >Color Accent</label
+                    <span
+                        class="text-xs font-bold text-muted uppercase tracking-wider block"
+                        >Color Accent</span
                     >
                     <div class="flex justify-between px-2">
                         {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}
@@ -404,6 +427,7 @@
                                     ? 'border-white'
                                     : 'border-transparent'}"
                                 style="background-color: {color}"
+                                aria-label="Select color {color}"
                             ></button>
                         {/each}
                     </div>

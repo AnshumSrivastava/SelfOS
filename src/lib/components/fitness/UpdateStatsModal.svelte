@@ -50,12 +50,21 @@
     <div
         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
         transition:fade={{ duration: 200 }}
+        role="button"
+        tabindex="0"
         onclick={() => (isOpen = false)}
+        onkeydown={(e) => {
+            if (e.key === "Escape") isOpen = false;
+        }}
     >
         <div
             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
             transition:scale={{ duration: 200, start: 0.95 }}
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
         >
             <div
                 class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary to-primary"

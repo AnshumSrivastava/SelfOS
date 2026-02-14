@@ -86,14 +86,12 @@
 
     <div class="grid grid-cols-1 gap-8">
         {#each projectsStore.sections as section}
+            {@const Icon = iconMap[section.icon] || Folder}
             {@const items = getSectionItems(section.type)}
             <div class="card-subtle relative overflow-hidden group">
                 <div class="flex items-start gap-4 mb-6">
                     <div class="p-3 rounded-lg {section.bg} {section.color}">
-                        <svelte:component
-                            this={iconMap[section.icon] || Folder}
-                            size={24}
-                        />
+                        <Icon size={24} />
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white">

@@ -39,17 +39,21 @@
 
     // Derived Lists
     let tasks = $derived(
-        liveProject.scratchpad.filter(
-            (e) => e.type === "task" && !e.isCompleted,
-        ),
+        projectsStore
+            .getScratchpad(liveProject.id)
+            .filter((e) => e.type === "task" && !e.isCompleted),
     );
-    let resources = $derived(liveProject.resources);
+    let resources = $derived(projectsStore.getResources(liveProject.id));
     let thoughts = $derived(
-        liveProject.scratchpad.filter((e) => e.type === "note"),
+        projectsStore
+            .getScratchpad(liveProject.id)
+            .filter((e) => e.type === "note"),
     );
     // Show all non-task entries (notes) and completed tasks in "History"
     let history = $derived(
-        [...liveProject.scratchpad].sort((a, b) => b.createdAt - a.createdAt),
+        [...projectsStore.getScratchpad(liveProject.id)].sort(
+            (a, b) => b.createdAt - a.createdAt,
+        ),
     );
     let isDormant = $derived(projectsStore.isDormant(liveProject));
 
@@ -131,13 +135,11 @@
     }
 
     function deleteEntry(id: string) {
-        const updated = liveProject.scratchpad.filter((e) => e.id !== id);
-        projectsStore.updateProject(liveProject.id, { scratchpad: updated });
+        projectsStore.deleteScratchpadEntry(liveProject.id, id);
     }
 
     function deleteResource(id: string) {
-        const updated = liveProject.resources.filter((e) => e.id !== id);
-        projectsStore.updateProject(liveProject.id, { resources: updated });
+        projectsStore.deleteResource(liveProject.id, id);
     }
 
     function handleArchive() {
@@ -263,7 +265,6 @@
                         onkeydown={handleKeydown}
                         placeholder="Capture thoughts, tasks, or links..."
                         class="w-full h-full bg-transparent text-lg md:text-xl text-white placeholder-muted p-6 md:p-8 resize-none outline-none leading-relaxed"
-                        autofocus
                     ></textarea>
 
                     <!-- Save Button (Floating) -->
@@ -349,6 +350,9 @@
                                 <button
                                     class="mt-0.5 text-gray-600 hover:text-emerald-500 transition-colors"
                                     onclick={() => toggleTask(task)}
+                                    aria-label={task.isCompleted
+                                        ? "Mark as incomplete"
+                                        : "Mark as complete"}
                                 >
                                     <div
                                         class="w-4 h-4 border-2 border-current rounded"

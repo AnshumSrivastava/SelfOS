@@ -66,7 +66,7 @@
             title,
             author,
             why,
-            cover: coverUrl || coverColor,
+            coverUrl: coverUrl || coverColor,
         });
 
         // Reset and close
@@ -236,8 +236,8 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-sm text-muted"
-                        >Cover Color (Fallback)</label
+                    <span class="text-sm text-muted"
+                        >Cover Color (Fallback)</span
                     >
                     <div class="flex flex-wrap gap-2">
                         {#each colors as color}

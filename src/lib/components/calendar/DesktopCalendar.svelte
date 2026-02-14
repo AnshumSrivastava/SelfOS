@@ -41,6 +41,10 @@
         color: "#3b82f6",
     });
 
+    $effect(() => {
+        newEvent.date = formatDateISO(selectedDate);
+    });
+
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     // Reactive grid and events
@@ -180,8 +184,18 @@
                 <div class="grid grid-cols-7 gap-4">
                     {#each calendarDays as day}
                         <div
+                            role="button"
+                            tabindex="0"
                             onclick={() => {
                                 if (day.date) selectDate(day.date);
+                            }}
+                            onkeydown={(e) => {
+                                if (
+                                    (e.key === "Enter" || e.key === " ") &&
+                                    day.date
+                                ) {
+                                    selectDate(day.date);
+                                }
                             }}
                             class="aspect-square border border-line/30 rounded-xl p-2 relative hover:bg-surface/50 transition-colors cursor-pointer group {day.date &&
                             isSameDay(day.date, selectedDate)
@@ -495,9 +509,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label
-                        class="text-xs font-bold text-muted uppercase tracking-wider"
-                        >Color Accent</label
+                    <span
+                        class="text-xs font-bold text-muted uppercase tracking-wider block"
+                        >Color Accent</span
                     >
                     <div class="flex gap-3">
                         {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}

@@ -150,7 +150,7 @@
                                 <h3
                                     class="font-bold text-lg text-white group-hover:text-primary transition-colors mb-2"
                                 >
-                                    {habit.name}
+                                    {habit.title}
                                 </h3>
                                 {#if habit.statusMessage}
                                     <span
@@ -368,12 +368,21 @@
     <div
         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         transition:fade={{ duration: 200 }}
+        role="button"
+        tabindex="0"
         onclick={() => (isAdding = false)}
+        onkeydown={(e) => {
+            if (e.key === "Escape") isAdding = false;
+        }}
     >
         <div
             class="card-subtle w-full max-w-md shadow-2xl"
             transition:scale={{ duration: 200, start: 0.95 }}
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
         >
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-white">New Habit</h3>
@@ -391,7 +400,6 @@
                 placeholder="What habit do you want to build?"
                 class="input w-full mb-6"
                 onkeydown={(e) => e.key === "Enter" && addHabit()}
-                autofocus
             />
 
             <div class="flex gap-3 justify-end">

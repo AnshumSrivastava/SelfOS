@@ -307,7 +307,6 @@
                     bind:value={title}
                     placeholder="Untitled Note"
                     class="w-full bg-transparent text-4xl md:text-5xl font-bold text-white placeholder:text-neutral-800 focus:outline-none"
-                    autofocus
                 />
 
                 <!-- Tags Input -->

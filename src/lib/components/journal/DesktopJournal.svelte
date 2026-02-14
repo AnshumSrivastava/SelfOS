@@ -222,7 +222,11 @@
                     {#each [...journalStore.entries].reverse() as entry}
                         <div
                             onclick={() => editEntry(entry)}
+                            onkeydown={(e) =>
+                                e.key === "Enter" && editEntry(entry)}
                             class="card-subtle hover:border-primary/50 transition-all cursor-pointer group relative"
+                            role="button"
+                            tabindex="0"
                         >
                             <div class="flex justify-between items-start mb-2">
                                 <div class="flex items-center gap-2">

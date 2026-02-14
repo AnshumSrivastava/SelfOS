@@ -108,6 +108,7 @@
         class="command-backdrop"
         onclick={close}
         transition:fade={{ duration: 200 }}
+        aria-label="Close command palette"
     ></button>
 
     <!-- Command Palette -->
@@ -115,6 +116,10 @@
         class="command-palette"
         transition:fly={{ y: -20, duration: 300 }}
         onkeydown={handleKeydown}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
+        tabindex="-1"
     >
         <!-- Search Input -->
         <div class="search-container">
@@ -124,7 +129,6 @@
                 bind:value={searchQuery}
                 placeholder="Type a command or search..."
                 class="search-input"
-                autofocus
             />
             <button onclick={close} class="close-btn">
                 <X size={18} />
@@ -194,11 +198,6 @@
         gap: 0.75rem;
         padding: 1rem 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .search-icon {
-        color: var(--color-muted);
-        flex-shrink: 0;
     }
 
     .search-input {

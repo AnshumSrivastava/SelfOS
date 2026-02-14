@@ -134,4 +134,23 @@ class GoalsStore {
     }
 }
 
+export async function parseBatchTasks(input: string): Promise<{ tasks: { title: string; link?: string }[]; playlistTitle?: string }> {
+    // Basic implementation for parsing text/links
+    // In a real app, this would call a backend API for YouTube playlist parsing
+    const lines = input.split('\n').filter(l => l.trim().length > 0);
+    const tasks = lines.map(line => {
+        const title = line.replace(/https?:\/\/[^\s]+/g, '').trim();
+        const linkMatch = line.match(/https?:\/\/[^\s]+/);
+        return {
+            title: title || 'Untitled Module',
+            link: linkMatch ? linkMatch[0] : undefined
+        };
+    });
+
+    return {
+        tasks,
+        playlistTitle: tasks.length > 0 ? "Imported Collection" : undefined
+    };
+}
+
 export const goalsStore = new GoalsStore();

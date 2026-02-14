@@ -40,7 +40,6 @@
                     min="1"
                     max="180"
                     class="text-[90px] font-bold text-white leading-none tracking-tighter bg-transparent border-b-2 border-primary w-[200px] text-center focus:outline-none"
-                    autofocus
                 />
                 <button
                     class="p-4 bg-white/10 rounded-full hover:bg-white/20 transition-colors"

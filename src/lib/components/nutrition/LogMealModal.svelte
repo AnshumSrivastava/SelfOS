@@ -58,12 +58,21 @@
     <div
         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
         transition:fade={{ duration: 200 }}
+        role="button"
+        tabindex="0"
         onclick={() => (isOpen = false)}
+        onkeydown={(e) => {
+            if (e.key === "Escape") isOpen = false;
+        }}
     >
         <div
             class="card-subtle w-full max-w-xl shadow-2xl relative overflow-hidden"
             transition:scale={{ duration: 200, start: 0.95 }}
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
         >
             <div
                 class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-yellow-500"
@@ -207,36 +216,39 @@
                         </p>
                         <div class="grid grid-cols-3 gap-4">
                             <div class="space-y-2 text-center">
-                                <label
+                                <span
                                     class="text-[10px] font-bold text-blue-400 uppercase"
-                                    >Protein (g)</label
+                                    >Protein (g)</span
                                 >
                                 <input
                                     type="number"
                                     bind:value={protein}
                                     class="input text-center w-full bg-background"
+                                    aria-label="Protein grams"
                                 />
                             </div>
                             <div class="space-y-2 text-center">
-                                <label
+                                <span
                                     class="text-[10px] font-bold text-yellow-500 uppercase"
-                                    >Carbs (g)</label
+                                    >Carbs (g)</span
                                 >
                                 <input
                                     type="number"
                                     bind:value={carbs}
                                     class="input text-center w-full bg-background"
+                                    aria-label="Carbs grams"
                                 />
                             </div>
                             <div class="space-y-2 text-center">
-                                <label
+                                <span
                                     class="text-[10px] font-bold text-red-500 uppercase"
-                                    >Fats (g)</label
+                                    >Fats (g)</span
                                 >
                                 <input
                                     type="number"
                                     bind:value={fats}
                                     class="input text-center w-full bg-background"
+                                    aria-label="Fats grams"
                                 />
                             </div>
                         </div>

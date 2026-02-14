@@ -25,7 +25,7 @@
                 carbs: 0,
                 fats: 0,
                 time,
-                // date will be handled by the updated addMeal if I change it to accept one
+                isFrequent: false,
             },
             date,
         );
@@ -46,12 +46,21 @@
     <div
         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
         transition:fade={{ duration: 200 }}
+        role="button"
+        tabindex="0"
         onclick={() => (isOpen = false)}
+        onkeydown={(e) => {
+            if (e.key === "Escape") isOpen = false;
+        }}
     >
         <div
             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
             transition:scale={{ duration: 200, start: 0.95 }}
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.stopPropagation()}
         >
             <div
                 class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary to-primary"
@@ -76,8 +85,9 @@
 
             <div class="space-y-6">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-muted uppercase ml-1"
-                        >Meal / Food Name</label
+                    <label
+                        class="text-xs font-bold text-muted uppercase ml-1"
+                        for="planned-meal-name">Meal / Food Name</label
                     >
                     <div class="relative">
                         <Utensils
@@ -85,6 +95,7 @@
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-primary"
                         />
                         <input
+                            id="planned-meal-name"
                             type="text"
                             bind:value={name}
                             placeholder="e.g. Tomorrow's Lunch"
@@ -97,7 +108,7 @@
                     <div class="space-y-2">
                         <label
                             class="text-xs font-bold text-muted uppercase ml-1"
-                            >Date</label
+                            for="planned-date">Date</label
                         >
                         <div class="relative">
                             <Calendar
@@ -105,6 +116,7 @@
                                 class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
                             />
                             <input
+                                id="planned-date"
                                 type="date"
                                 bind:value={date}
                                 class="input w-full pl-10"
@@ -114,7 +126,7 @@
                     <div class="space-y-2">
                         <label
                             class="text-xs font-bold text-muted uppercase ml-1"
-                            >Time</label
+                            for="planned-time">Time</label
                         >
                         <div class="relative">
                             <Clock
@@ -122,6 +134,7 @@
                                 class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
                             />
                             <input
+                                id="planned-time"
                                 type="text"
                                 bind:value={time}
                                 class="input w-full pl-10"
@@ -131,8 +144,9 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-muted uppercase ml-1"
-                        >Est. Calories</label
+                    <label
+                        class="text-xs font-bold text-muted uppercase ml-1"
+                        for="planned-calories">Est. Calories</label
                     >
                     <div class="relative">
                         <Zap
@@ -140,6 +154,7 @@
                             class="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-500"
                         />
                         <input
+                            id="planned-calories"
                             type="number"
                             bind:value={calories}
                             class="input w-full pl-10"

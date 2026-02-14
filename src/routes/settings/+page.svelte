@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+    import type { ThemeType } from "$lib/stores/settings.svelte";
     import { settings } from "$lib/stores/settings.svelte";
     import {
         Palette,
@@ -11,7 +12,7 @@
     } from "lucide-svelte";
     import { fade } from "svelte/transition";
 
-    const themes = [
+    const themes: { id: ThemeType; label: string; icon: any; bg: string }[] = [
         { id: "dark", label: "Dark", icon: Moon, bg: "bg-[#121214]" },
         { id: "light", label: "Light", icon: Sun, bg: "bg-[#ffffff]" },
         { id: "amoled", label: "Amoled", icon: Monitor, bg: "bg-[#000000]" },
@@ -114,7 +115,7 @@
         <div class="card-subtle space-y-6">
             <!-- Theme Mode -->
             <div class="space-y-3">
-                <label class="text-sm font-medium text-muted">Theme Mode</label>
+                <span class="text-sm font-medium text-muted">Theme Mode</span>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {#each themes as theme}
                         <button
@@ -152,11 +153,11 @@
                     ? 'opacity-50 pointer-events-none'
                     : ''}"
             >
-                <label class="text-sm font-medium text-muted">
+                <span class="text-sm font-medium text-muted">
                     Accent Color {settings.theme === "minimal"
                         ? "(Disabled in Minimal Mode)"
                         : ""}
-                </label>
+                </span>
                 <div class="flex flex-wrap gap-3">
                     {#each accentColors as color}
                         <button
@@ -225,8 +226,8 @@
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <label class="text-sm font-medium text-white block"
-                            >Border Radius</label
+                        <span class="text-sm font-medium text-white block"
+                            >Border Radius</span
                         >
                         <p class="text-xs text-muted">
                             Control the roundness of cards and inputs
@@ -256,8 +257,8 @@
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <label class="text-sm font-medium text-white block"
-                            >Module Spacing</label
+                        <span class="text-sm font-medium text-white block"
+                            >Module Spacing</span
                         >
                         <p class="text-xs text-muted">
                             Interior padding for all modules
@@ -313,6 +314,7 @@
                         onclick={() => settings.toggleFeature(feature.id)}
                         role="switch"
                         aria-checked={settings.features[feature.id]}
+                        aria-label="Toggle {feature.label}"
                     >
                         <span
                             class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {settings

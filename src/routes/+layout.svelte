@@ -170,7 +170,6 @@
           name="subject"
           placeholder="e.g., Project Planning, Deep Work..."
           class="w-full bg-white/10 border border-white/20 rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-lg text-center"
-          autofocus
         />
         <button
           type="submit"

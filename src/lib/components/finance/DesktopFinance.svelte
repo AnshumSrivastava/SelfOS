@@ -39,7 +39,7 @@
 
     let showGoalModal = $state(false);
     let showBudgetModal = $state(false);
-    let showAddModal = $state(false); // Make sure this is defined as it is used in template!
+    let showAddModal = $state(false);
     let newGoal = $state({
         name: "",
         targetAmount: "",
@@ -50,10 +50,6 @@
         amount: "",
     });
 
-    // Minimal transaction state for "Add Transaction" button if needed,
-    // although Desktop usually uses a different flow or modal.
-    // The previous code had `showAddModal` logic in template but maybe missing state in script?
-    // Let's add it to be safe as the template used it.
     let newTransaction = $state({
         title: "",
         amount: "",
@@ -120,8 +116,21 @@
     {#if showBudgetModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            role="button"
+            tabindex="0"
+            onclick={() => (showBudgetModal = false)}
+            onkeydown={(e) => {
+                if (e.key === "Escape") showBudgetModal = false;
+            }}
         >
-            <div class="card-subtle w-full max-w-md shadow-2xl">
+            <div
+                class="card-subtle w-full max-w-md shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                tabindex="-1"
+                onclick={(e) => e.stopPropagation()}
+                onkeydown={(e) => e.stopPropagation()}
+            >
                 <h3 class="text-xl font-bold mb-6 text-white">Add Budget</h3>
                 <div class="space-y-4">
                     <div>
@@ -172,8 +181,21 @@
     {#if showGoalModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            role="button"
+            tabindex="0"
+            onclick={() => (showGoalModal = false)}
+            onkeydown={(e) => {
+                if (e.key === "Escape") showGoalModal = false;
+            }}
         >
-            <div class="card-subtle w-full max-w-md shadow-2xl">
+            <div
+                class="card-subtle w-full max-w-md shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                tabindex="-1"
+                onclick={(e) => e.stopPropagation()}
+                onkeydown={(e) => e.stopPropagation()}
+            >
                 <h3 class="text-xl font-bold mb-6 text-white">
                     Add Savings Goal
                 </h3>
@@ -239,18 +261,31 @@
     {#if showAddModal}
         <div
             class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+            role="button"
+            tabindex="0"
+            onclick={() => (showAddModal = false)}
+            onkeydown={(e) => {
+                if (e.key === "Escape") showAddModal = false;
+            }}
         >
-            <div class="card-subtle w-full max-w-md shadow-2xl">
+            <div
+                class="card-subtle w-full max-w-md shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                tabindex="-1"
+                onclick={(e) => e.stopPropagation()}
+                onkeydown={(e) => e.stopPropagation()}
+            >
                 <h3 class="text-xl font-bold mb-6 text-white">
                     Add Transaction
                 </h3>
                 <div class="space-y-4">
                     <div>
-                        <p
+                        <span
                             class="text-xs text-muted block mb-2 uppercase tracking-wider"
                         >
                             Type
-                        </p>
+                        </span>
                         <div class="flex gap-2 p-1 bg-background/40 rounded-lg">
                             <button
                                 class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
@@ -494,6 +529,7 @@
                                           100,
                                       100,
                                   ),
+                                  0,
                               )
                             : 0}%"
                     ></div>

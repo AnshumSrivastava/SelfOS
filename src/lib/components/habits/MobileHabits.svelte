@@ -144,7 +144,6 @@
                 placeholder="What habit do you want to build?"
                 class="input w-full mb-6"
                 onkeydown={(e) => e.key === "Enter" && addHabit()}
-                autofocus
             />
 
             <div class="flex gap-3 justify-end">

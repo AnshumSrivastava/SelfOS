@@ -1,0 +1,532 @@
+
+> selfos@0.0.1 build
+> vite build
+
+vite v7.3.1 building ssr environment for production...
+transforming...
+1:27:09 PM [vite-plugin-svelte] src/routes/settings/+page.svelte:308:20 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+306:                         </div>
+307:                     </div>
+308:                     <button
+                                ^
+309:                         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background {settings
+310:                             .features[feature.id]
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:27:17 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+25:     let selectedDate = $state(getToday());
+26:     let currentMonthDate = $state(
+27:         new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+                                 ^
+28:     );
+29: 
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:27:45 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+25:     let selectedDate = $state(getToday());
+26:     let currentMonthDate = $state(
+27:         new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+                                                             ^
+28:     );
+29: 
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:35:28 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+33:         title: "",
+34:         description: "",
+35:         date: formatDateISO(selectedDate),
+                                            ^
+36:         startTime: "09:00",
+37:         endTime: "10:00",
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:225:20 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+223:                 {/each}
+224:                 {#each calendarDays as day}
+225:                     <div
+                             ^
+226:                         onclick={() => {
+227:                             if (day.date) {
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:225:20 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+223:                 {/each}
+224:                 {#each calendarDays as day}
+225:                     <div
+                             ^
+226:                         onclick={() => {
+227:                             if (day.date) {
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:255:24 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+253:                 {:else}
+254:                     {#each upcomingEvents as appt}
+255:                         <div
+                                 ^
+256:                             onclick={() => selectDate(new Date(appt.date))}
+257:                             class="card-subtle flex items-center gap-4 transition-transform active:scale-95"
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:255:24 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+253:                 {:else}
+254:                     {#each upcomingEvents as appt}
+255:                         <div
+                                 ^
+256:                             onclick={() => selectDate(new Date(appt.date))}
+257:                             class="card-subtle flex items-center gap-4 transition-transform active:scale-95"
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:394:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+392: 
+393:                 <div class="space-y-2">
+394:                     <label
+                          ^
+395:                         class="text-xs font-bold text-muted uppercase tracking-wider"
+396:                         >Color Accent</label
+1:27:09 PM [vite-plugin-svelte] src/lib/components/calendar/MobileCalendar.svelte:400:28 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+398:                     <div class="flex justify-between px-2">
+399:                         {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}
+400:                             <button
+                                        ^
+401:                                 onclick={() => (newEvent.color = color)}
+402:                                 class="w-10 h-10 rounded-full border-2 transition-transform active:scale-120 {newEvent.color ===
+1:27:09 PM [vite-plugin-svelte] src/lib/components/focus/MobileFocus.svelte:43:20 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+41:                     max="180"
+42:                     class="text-[90px] font-bold text-white leading-none tracking-tighter bg-transparent border-b-2 border-primary w-[200px] text-center focus:outline-none"
+43:                     autofocus
+                                 ^
+44:                 />
+45:                 <button
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/MobileHabits.svelte:147:16 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+145:                 class="input w-full mb-6"
+146:                 onkeydown={(e) => e.key === "Enter" && addHabit()}
+147:                 autofocus
+                              ^
+148:             />
+149: 
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/DesktopHabits.svelte:368:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+366: 
+367: {#if isAdding}
+368:     <div
+             ^
+369:         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+370:         transition:fade={{ duration: 200 }}
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/DesktopHabits.svelte:368:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+366: 
+367: {#if isAdding}
+368:     <div
+             ^
+369:         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+370:         transition:fade={{ duration: 200 }}
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/DesktopHabits.svelte:373:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+371:         onclick={() => (isAdding = false)}
+372:     >
+373:         <div
+                 ^
+374:             class="card-subtle w-full max-w-md shadow-2xl"
+375:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/DesktopHabits.svelte:373:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+371:         onclick={() => (isAdding = false)}
+372:     >
+373:         <div
+                 ^
+374:             class="card-subtle w-full max-w-md shadow-2xl"
+375:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:09 PM [vite-plugin-svelte] src/lib/components/habits/DesktopHabits.svelte:394:16 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+392:                 class="input w-full mb-6"
+393:                 onkeydown={(e) => e.key === "Enter" && addHabit()}
+394:                 autofocus
+                              ^
+395:             />
+396: 
+1:27:09 PM [vite-plugin-svelte] src/lib/components/journal/DesktopJournal.svelte:223:24 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+221:                 {:else}
+222:                     {#each [...journalStore.entries].reverse() as entry}
+223:                         <div
+                                 ^
+224:                             onclick={() => editEntry(entry)}
+225:                             class="card-subtle hover:border-primary/50 transition-all cursor-pointer group relative"
+1:27:09 PM [vite-plugin-svelte] src/lib/components/journal/DesktopJournal.svelte:223:24 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+221:                 {:else}
+222:                     {#each [...journalStore.entries].reverse() as entry}
+223:                         <div
+                                 ^
+224:                             onclick={() => editEntry(entry)}
+225:                             class="card-subtle hover:border-primary/50 transition-all cursor-pointer group relative"
+1:27:09 PM [vite-plugin-svelte] src/lib/components/para/DesktopPara.svelte:93:24 `<svelte:component>` is deprecated in runes mode — components are dynamic by default
+https://svelte.dev/e/svelte_component_deprecated
+91:                 <div class="flex items-start gap-4 mb-6">
+92:                     <div class="p-3 rounded-lg {section.bg} {section.color}">
+93:                         <svelte:component
+                              ^
+94:                             this={iconMap[section.icon] || Folder}
+95:                             size={24}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/ui/NumberTicker.svelte:6:29 This reference only captures the initial value of `initial`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+4:     let { value = 0, initial = 0 } = $props();
+5: 
+6:     const displayed = spring(initial, {
+                                       ^
+7:         stiffness: 0.1,
+8:         damping: 0.8,
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/LogWorkoutModal.svelte:50:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+48: 
+49: {#if isOpen}
+50:     <div
+            ^
+51:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+52:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/LogWorkoutModal.svelte:50:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+48: 
+49: {#if isOpen}
+50:     <div
+            ^
+51:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+52:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/LogWorkoutModal.svelte:55:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+53:         onclick={() => (isOpen = false)}
+54:     >
+55:         <div
+                ^
+56:             class="card-subtle w-full max-w-lg shadow-2xl relative overflow-hidden"
+57:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/LogWorkoutModal.svelte:55:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+53:         onclick={() => (isOpen = false)}
+54:     >
+55:         <div
+                ^
+56:             class="card-subtle w-full max-w-lg shadow-2xl relative overflow-hidden"
+57:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/UpdateStatsModal.svelte:50:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+48: 
+49: {#if isOpen}
+50:     <div
+            ^
+51:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+52:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/UpdateStatsModal.svelte:50:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+48: 
+49: {#if isOpen}
+50:     <div
+            ^
+51:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+52:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/UpdateStatsModal.svelte:55:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+53:         onclick={() => (isOpen = false)}
+54:     >
+55:         <div
+                ^
+56:             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
+57:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/fitness/UpdateStatsModal.svelte:55:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+53:         onclick={() => (isOpen = false)}
+54:     >
+55:         <div
+                ^
+56:             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
+57:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/library/AddBookModal.svelte:239:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+237: 
+238:                 <div class="space-y-2">
+239:                     <label class="text-sm text-muted"
+                          ^
+240:                         >Cover Color (Fallback)</label
+241:                     >
+1:27:10 PM [vite-plugin-svelte] src/lib/components/library/QuickThoughtModal.svelte:59:20 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+57:                     class="w-full bg-background border border-line rounded-lg p-4 text-white focus:outline-none focus:border-primary resize-none text-lg"
+58:                     required
+59:                     autofocus
+                                 ^
+60:                     onkeydown={(e) =>
+61:                         e.key === "Enter" &&
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:68:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+66: 
+67: {#if isOpen}
+68:     <div
+            ^
+69:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+70:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:68:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+66: 
+67: {#if isOpen}
+68:     <div
+            ^
+69:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+70:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:73:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+71:         onclick={() => (isOpen = false)}
+72:     >
+73:         <div
+                ^
+74:             class="card-subtle w-full max-w-lg shadow-2xl relative overflow-hidden"
+75:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:73:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+71:         onclick={() => (isOpen = false)}
+72:     >
+73:         <div
+                ^
+74:             class="card-subtle w-full max-w-lg shadow-2xl relative overflow-hidden"
+75:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:121:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+119:                     </div>
+120:                     <div class="space-y-2">
+121:                         <label
+                              ^
+122:                             class="text-xs font-bold text-muted uppercase ml-1"
+123:                             >Sex</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/NutritionProfileModal.svelte:188:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+186:                 <!-- Activity Level -->
+187:                 <div class="space-y-2">
+188:                     <label class="text-xs font-bold text-muted uppercase ml-1"
+                          ^
+189:                         >Activity Level</label
+190:                     >
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:58:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+56: 
+57: {#if isOpen}
+58:     <div
+            ^
+59:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+60:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:58:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+56: 
+57: {#if isOpen}
+58:     <div
+            ^
+59:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+60:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:63:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+61:         onclick={() => (isOpen = false)}
+62:     >
+63:         <div
+                ^
+64:             class="card-subtle w-full max-w-xl shadow-2xl relative overflow-hidden"
+65:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:63:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+61:         onclick={() => (isOpen = false)}
+62:     >
+63:         <div
+                ^
+64:             class="card-subtle w-full max-w-xl shadow-2xl relative overflow-hidden"
+65:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:210:32 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+208:                         <div class="grid grid-cols-3 gap-4">
+209:                             <div class="space-y-2 text-center">
+210:                                 <label
+                                      ^
+211:                                     class="text-[10px] font-bold text-blue-400 uppercase"
+212:                                     >Protein (g)</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:221:32 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+219:                             </div>
+220:                             <div class="space-y-2 text-center">
+221:                                 <label
+                                      ^
+222:                                     class="text-[10px] font-bold text-yellow-500 uppercase"
+223:                                     >Carbs (g)</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/LogMealModal.svelte:232:32 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+230:                             </div>
+231:                             <div class="space-y-2 text-center">
+232:                                 <label
+                                      ^
+233:                                     class="text-[10px] font-bold text-red-500 uppercase"
+234:                                     >Fats (g)</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:46:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+44: 
+45: {#if isOpen}
+46:     <div
+            ^
+47:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+48:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:46:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+44: 
+45: {#if isOpen}
+46:     <div
+            ^
+47:         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+48:         transition:fade={{ duration: 200 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:51:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+49:         onclick={() => (isOpen = false)}
+50:     >
+51:         <div
+                ^
+52:             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
+53:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:51:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+49:         onclick={() => (isOpen = false)}
+50:     >
+51:         <div
+                ^
+52:             class="card-subtle w-full max-w-md shadow-2xl relative overflow-hidden"
+53:             transition:scale={{ duration: 200, start: 0.95 }}
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:79:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+77:             <div class="space-y-6">
+78:                 <div class="space-y-2">
+79:                     <label class="text-xs font-bold text-muted uppercase ml-1"
+                         ^
+80:                         >Meal / Food Name</label
+81:                     >
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:98:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+ 96:                 <div class="grid grid-cols-2 gap-4">
+ 97:                     <div class="space-y-2">
+ 98:                         <label
+                              ^
+ 99:                             class="text-xs font-bold text-muted uppercase ml-1"
+100:                             >Date</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:115:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+113:                     </div>
+114:                     <div class="space-y-2">
+115:                         <label
+                              ^
+116:                             class="text-xs font-bold text-muted uppercase ml-1"
+117:                             >Time</label
+1:27:10 PM [vite-plugin-svelte] src/lib/components/nutrition/MealPlanModal.svelte:134:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+132: 
+133:                 <div class="space-y-2">
+134:                     <label class="text-xs font-bold text-muted uppercase ml-1"
+                          ^
+135:                         >Est. Calories</label
+136:                     >
+1:27:10 PM [vite-plugin-svelte] src/lib/components/para/ProjectDetailModal.svelte:266:24 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
+264:                         placeholder="Capture thoughts, tasks, or links..."
+265:                         class="w-full h-full bg-transparent text-lg md:text-xl text-white placeholder-muted p-6 md:p-8 resize-none outline-none leading-relaxed"
+266:                         autofocus
+                                      ^
+267:                     ></textarea>
+268: 
+1:27:10 PM [vite-plugin-svelte] src/lib/components/para/ProjectDetailModal.svelte:349:32 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+347:                                 class="group flex items-start gap-3 p-2 rounded hover:bg-neutral-800/50 transition-colors"
+348:                             >
+349:                                 <button
+                                            ^
+350:                                     class="mt-0.5 text-gray-600 hover:text-emerald-500 transition-colors"
+351:                                     onclick={() => toggleTask(task)}
+1:27:16 PM [vite-plugin-svelte] src/lib/components/ui/SearchModal.svelte:141:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+139: {#if searchStore.isOpen}
+140:     <!-- Backdrop -->
+141:     <div
+             ^
+142:         class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
+143:         transition:fade={{ duration: 150 }}
+1:27:16 PM [vite-plugin-svelte] src/lib/components/ui/SearchModal.svelte:209:32 `<svelte:component>` is deprecated in runes mode — components are dynamic by default
+https://svelte.dev/e/svelte_component_deprecated
+207:                                 )} flex items-center justify-center shrink-0"
+208:                             >
+209:                                 <svelte:component
+                                       ^
+210:                                     this={getIcon(result.type)}
+211:                                     size={18}
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:29:17 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+27:     let selectedDate = $state(getToday());
+28:     let currentMonthDate = $state(
+29:         new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+                                 ^
+30:     );
+31: 
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:29:45 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+27:     let selectedDate = $state(getToday());
+28:     let currentMonthDate = $state(
+29:         new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+                                                             ^
+30:     );
+31: 
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:37:28 This reference only captures the initial value of `selectedDate`. Did you mean to reference it inside a derived instead?
+https://svelte.dev/e/state_referenced_locally
+35:         title: "",
+36:         description: "",
+37:         date: formatDateISO(selectedDate),
+                                            ^
+38:         startTime: "09:00",
+39:         endTime: "10:00",
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:182:24 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+180:                 <div class="grid grid-cols-7 gap-4">
+181:                     {#each calendarDays as day}
+182:                         <div
+                                 ^
+183:                             onclick={() => {
+184:                                 if (day.date) selectDate(day.date);
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:182:24 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+180:                 <div class="grid grid-cols-7 gap-4">
+181:                     {#each calendarDays as day}
+182:                         <div
+                                 ^
+183:                             onclick={() => {
+184:                                 if (day.date) selectDate(day.date);
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:498:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+496: 
+497:                 <div class="space-y-2">
+498:                     <label
+                          ^
+499:                         class="text-xs font-bold text-muted uppercase tracking-wider"
+500:                         >Color Accent</label
+1:27:16 PM [vite-plugin-svelte] src/lib/components/calendar/DesktopCalendar.svelte:504:28 Buttons and links should either contain text or have an `aria-label`, `aria-labelledby` or `title` attribute
+https://svelte.dev/e/a11y_consider_explicit_label
+502:                     <div class="flex gap-3">
+503:                         {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}
+504:                             <button
+                                        ^
+505:                                 onclick={() => (newEvent.color = color)}
+506:                                 class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 {newEvent.color ===
+✓ 3641 modules transformed.
+✗ Build failed in 9.71s
+error during build:
+src/lib/components/goals/PlaylistImporter.svelte (10:25): "parseBatchTasks" is not exported by "src/lib/stores/goals.svelte.ts", imported by "src/lib/components/goals/PlaylistImporter.svelte".
+file: /mnt/Storage/Projects/SelfOSv2/src/lib/components/goals/PlaylistImporter.svelte:10:25
+
+ 8:         Check,
+ 9:     } from "lucide-svelte";
+10:     import { goalsStore, parseBatchTasks } from "$lib/stores/goals.svelte";
+                             ^
+11:     import { fade, slide, fly } from "svelte/transition";
+
+    at getRollupError (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at error (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
+    at Module.error (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:17040:16)
+    at Module.traceVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:17452:29)
+    at ModuleScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:15070:39)
+    at FunctionScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionBodyScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at ReturnValueScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionBodyScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)
+    at FunctionScope.findVariable (file:///mnt/Storage/Projects/SelfOSv2/node_modules/rollup/dist/es/shared/node-entry.js:5673:38)

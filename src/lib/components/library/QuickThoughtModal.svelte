@@ -56,7 +56,6 @@
                     rows="4"
                     class="w-full bg-background border border-line rounded-lg p-4 text-white focus:outline-none focus:border-primary resize-none text-lg"
                     required
-                    autofocus
                     onkeydown={(e) =>
                         e.key === "Enter" &&
                         !e.shiftKey &&

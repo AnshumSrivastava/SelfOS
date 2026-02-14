@@ -25,6 +25,7 @@ export type Meal = {
     carbs: number;
     fats: number;
     date: string;
+    time: string;
     isFrequent: boolean;
     type?: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 };
