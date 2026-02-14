@@ -33,76 +33,124 @@
         </div>
     </div>
 
-    <div class="flex-1 space-y-6">
+    <div class="flex-1 space-y-8">
         <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1">
+            <div
+                class="p-4 rounded-2xl bg-surface/50 border border-line/50 space-y-2"
+            >
                 <span
-                    class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                    >Net Worth</span
+                    class="text-[10px] font-bold text-muted uppercase tracking-[0.1em]"
+                    >Available Capital</span
                 >
-                <p class="text-lg font-bold text-white tracking-tight">
-                    ${balance.toLocaleString()}
-                </p>
+                <div class="flex items-baseline gap-1">
+                    <p class="text-xl font-bold text-white tracking-tight">
+                        ${balance.toLocaleString()}
+                    </p>
+                    <TrendingUp size={12} class="text-emerald-400 opacity-50" />
+                </div>
             </div>
-            <div class="space-y-1">
+            <div
+                class="p-4 rounded-2xl bg-surface/50 border border-line/50 space-y-2"
+            >
                 <span
-                    class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                    >MTD Spend</span
+                    class="text-[10px] font-bold text-muted uppercase tracking-[0.1em]"
+                    >Monthly Spend</span
                 >
-                <p class="text-lg font-bold text-rose-400 tracking-tight">
-                    ${monthlySpend.toLocaleString()}
-                </p>
+                <div class="flex items-baseline gap-1">
+                    <p class="text-xl font-bold text-rose-400 tracking-tight">
+                        ${monthlySpend.toLocaleString()}
+                    </p>
+                    <TrendingDown size={12} class="text-rose-400 opacity-50" />
+                </div>
             </div>
         </div>
 
-        {#if alerts.length > 0}
-            <div class="space-y-3">
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
                 <span
-                    class="text-[10px] font-bold text-rose-400 uppercase tracking-widest flex items-center gap-1.5"
+                    class="text-[10px] font-bold text-muted uppercase tracking-[0.2em]"
                 >
-                    <AlertCircle size={12} />
-                    Upcoming Dues
+                    Repayment Schedule
                 </span>
-                <div class="space-y-2">
+                {#if alerts.length > 0}
+                    <span
+                        class="text-[9px] font-bold text-rose-400 animate-pulse uppercase tracking-widest"
+                        >Action Required</span
+                    >
+                {/if}
+            </div>
+
+            {#if alerts.length > 0}
+                <div class="space-y-3">
                     {#each alerts as alert}
                         <div
-                            class="flex items-center justify-between p-3 rounded-xl bg-rose-400/5 border border-rose-400/20"
+                            class="group p-4 rounded-2xl bg-rose-400/5 border border-rose-400/10 hover:border-rose-400/30 transition-all flex flex-col gap-2"
                         >
-                            <div class="flex items-center gap-3 min-w-0">
-                                <CreditCard
-                                    size={14}
-                                    class="text-rose-400 shrink-0"
-                                />
-                                <span
-                                    class="text-xs font-semibold text-white truncate"
-                                    >{alert.title}</span
+                            <div
+                                class="flex items-center justify-between min-w-0"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <CreditCard
+                                        size={14}
+                                        class="text-rose-400/60"
+                                    />
+                                    <span
+                                        class="text-sm font-bold text-white truncate group-hover:text-rose-400 transition-colors"
+                                        >{alert.title}</span
+                                    >
+                                </div>
+                                <span class="text-sm font-bold text-rose-400"
+                                    >${alert.amount}</span
                                 >
                             </div>
-                            <span
-                                class="text-xs font-bold text-rose-400 shrink-0"
-                                >${alert.amount}</span
+                            <div
+                                class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted"
                             >
+                                <span>Due: {alert.due_date || "ASAP"}</span>
+                                <span
+                                    class="bg-rose-400/10 text-rose-400 px-1.5 py-0.5 rounded border border-rose-400/10"
+                                    >Priority</span
+                                >
+                            </div>
                         </div>
                     {/each}
                 </div>
-            </div>
-        {:else}
-            <div
-                class="p-4 rounded-2xl bg-surface border border-dashed border-line text-center"
-            >
-                <p
-                    class="text-[10px] font-bold text-muted uppercase tracking-widest"
+            {:else}
+                <div
+                    class="p-6 rounded-2xl bg-surface/30 border border-dashed border-line text-center"
                 >
-                    No immediate dues
-                </p>
-            </div>
-        {/if}
+                    <p
+                        class="text-[10px] font-bold text-muted uppercase tracking-widest"
+                    >
+                        Timeline Clear
+                    </p>
+                    <p
+                        class="text-[9px] text-muted/50 mt-1 uppercase tracking-tighter"
+                    >
+                        No upcoming dues detected
+                    </p>
+                </div>
+            {/if}
+        </div>
     </div>
 
     <div
-        class="mt-6 pt-4 border-t border-line flex items-center justify-between text-[10px] font-bold text-muted uppercase tracking-widest"
+        class="mt-8 pt-6 border-t border-line/50 flex items-center justify-between"
     >
-        <span>Burn Rate</span>
-        <span class="text-emerald-400">Optimal</span>
+        <div class="flex flex-col gap-1">
+            <span
+                class="text-[9px] font-bold text-muted uppercase tracking-[0.2em]"
+                >Efficiency Rating</span
+            >
+            <span
+                class="text-xs font-bold text-emerald-400 uppercase tracking-widest"
+                >Optimal Range</span
+            >
+        </div>
+        <button
+            class="text-[10px] font-bold text-primary hover:text-white uppercase tracking-widest transition-colors py-1.5 px-3 border border-primary/20 rounded-lg bg-primary/5"
+        >
+            Full Audit
+        </button>
     </div>
 </div>

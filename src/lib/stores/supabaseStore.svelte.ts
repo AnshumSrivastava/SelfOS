@@ -126,8 +126,9 @@ export class SupabaseStore<T extends { id: string }> {
         }
 
         try {
-            this.#log('Inserting new item...', item);
             const dbItem = this.toSnake({ ...item, user_id: auth.user?.id });
+            this.#log('Inserting dbItem:', dbItem);
+
             const { data, error } = await supabase
                 .from(this.#tableName)
                 .insert([dbItem])
@@ -135,6 +136,7 @@ export class SupabaseStore<T extends { id: string }> {
                 .single();
 
             if (error) {
+                this.#log('Insert query error:', error, 'error');
                 this.#handleError('insert', error);
                 throw error;
             }
@@ -142,8 +144,10 @@ export class SupabaseStore<T extends { id: string }> {
             if (data) {
                 const mapped = this.toCamel(data);
                 this.#value = [mapped, ...this.#value];
-                this.#log('Insert successful', mapped.id);
+                this.#log('Insert successful, new ID:', mapped.id);
                 return mapped;
+            } else {
+                this.#log('Insert returned no data (unexpected)', null, 'warn');
             }
         } catch (e) {
             this.#log('Unexpected error during insert', e, 'error');

@@ -28,29 +28,13 @@
     import { auth } from "$lib/stores/auth.svelte";
     import { settings } from "$lib/stores/settings.svelte"; // Retained one settings import
 
-    // Sidebar collapse state
-    let isCollapsed = $state(false);
+    import { uiState } from "$lib/stores/ui.svelte";
 
     function toggleSidebar() {
-        isCollapsed = !isCollapsed;
-        // Save preference
-        if (typeof localStorage !== "undefined") {
-            localStorage.setItem(
-                "selfos-sidebar-collapsed",
-                JSON.stringify(isCollapsed),
-            );
-        }
+        uiState.toggleCollapse();
     }
 
-    // Load saved preference
-    $effect(() => {
-        if (typeof localStorage !== "undefined") {
-            const saved = localStorage.getItem("selfos-sidebar-collapsed");
-            if (saved) {
-                isCollapsed = JSON.parse(saved);
-            }
-        }
-    });
+    // Category state management
 
     // Category state management
     let expandedCategories = $state({
@@ -61,7 +45,7 @@
     });
 
     function toggleCategory(category: keyof typeof expandedCategories) {
-        if (!isCollapsed) {
+        if (!uiState.isCollapsed) {
             expandedCategories[category] = !expandedCategories[category];
         }
     }
@@ -183,17 +167,17 @@
 </script>
 
 <aside
-    class="border-r border-line h-screen fixed left-0 top-0 bg-background flex flex-col pt-6 z-50 transition-all duration-300 {isCollapsed
+    class="border-r border-line h-screen fixed left-0 top-0 bg-background flex flex-col pt-6 z-50 transition-all duration-300 {uiState.isCollapsed
         ? 'w-16'
         : 'w-64'}"
 >
     <!-- Header with Logo and Toggle -->
     <div
-        class="px-4 mb-8 flex items-center {isCollapsed
+        class="px-4 mb-8 flex items-center {uiState.isCollapsed
             ? 'justify-center'
             : 'justify-between'}"
     >
-        {#if !isCollapsed}
+        {#if !uiState.isCollapsed}
             <div class="flex items-center gap-3">
                 <Logo size={32} className="text-primary" />
                 <span
@@ -207,13 +191,15 @@
 
         <button
             onclick={toggleSidebar}
-            class="p-1.5 rounded-lg hover:bg-surface transition-colors {isCollapsed
+            class="p-1.5 rounded-lg hover:bg-surface transition-colors {uiState.isCollapsed
                 ? 'mt-2'
                 : ''}"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={uiState.isCollapsed
+                ? "Expand sidebar"
+                : "Collapse sidebar"}
+            title={uiState.isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-            {#if isCollapsed}
+            {#if uiState.isCollapsed}
                 <PanelLeft
                     size={18}
                     class="text-muted hover:text-white transition-colors"
@@ -235,23 +221,25 @@
             class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative {$page
                 .url.pathname === `${base}/`
                 ? 'bg-surface text-primary border border-line'
-                : 'text-muted hover:text-white hover:bg-surface/50'} {isCollapsed
+                : 'text-muted hover:text-white hover:bg-surface/50'} {uiState.isCollapsed
                 ? 'justify-center'
                 : ''}"
-            title={isCollapsed ? "Dashboard" : ""}
+            title={uiState.isCollapsed ? "Dashboard" : ""}
         >
             <LayoutDashboard
                 size={20}
                 class="transition-colors {$page.url.pathname === `${base}/`
                     ? 'text-primary'
-                    : 'group-hover:text-white'} {isCollapsed ? 'mx-auto' : ''}"
+                    : 'group-hover:text-white'} {uiState.isCollapsed
+                    ? 'mx-auto'
+                    : ''}"
             />
-            {#if !isCollapsed}
+            {#if !uiState.isCollapsed}
                 <span class="font-medium text-sm">Dashboard</span>
             {/if}
 
             <!-- Tooltip for collapsed state -->
-            {#if isCollapsed}
+            {#if uiState.isCollapsed}
                 <div
                     class="absolute left-full ml-2 px-2 py-1 bg-surface border border-line rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
                 >
@@ -267,7 +255,7 @@
         {#each filteredCategories as category}
             <div class="mb-1">
                 <!-- Category Header -->
-                {#if !isCollapsed}
+                {#if !uiState.isCollapsed}
                     <button
                         onclick={() => toggleCategory(category.key)}
                         class="flex items-center justify-between w-full px-3 py-2 rounded-lg text-muted hover:text-white hover:bg-surface/30 transition-all duration-200 group"
@@ -291,7 +279,7 @@
                 {/if}
 
                 <!-- Category Items -->
-                {#if !isCollapsed && expandedCategories[category.key]}
+                {#if !uiState.isCollapsed && expandedCategories[category.key]}
                     <div class="mt-1 space-y-0.5">
                         {#each category.items as item}
                             <!-- svelte-ignore a11y_missing_attribute -->
@@ -325,7 +313,7 @@
                             </a>
                         {/each}
                     </div>
-                {:else if isCollapsed}
+                {:else if uiState.isCollapsed}
                     <!-- Collapsed state: show all items without category headers -->
                     <div class="space-y-0.5">
                         {#each category.items as item}
@@ -372,7 +360,7 @@
 
     <!-- Bottom Section (Progress + User) -->
     <div class="p-2 border-t border-line mt-auto space-y-1">
-        {#if !isCollapsed}
+        {#if !uiState.isCollapsed}
             <div
                 class="px-2 py-3 mb-2 rounded-xl bg-surface/30 border border-line/50"
             >
@@ -408,7 +396,7 @@
                         <User size={16} class="text-primary" />
                     {/if}
                 </div>
-                {#if !isCollapsed}
+                {#if !uiState.isCollapsed}
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-white truncate">
                             {auth.user.user_metadata?.full_name ||
@@ -420,7 +408,7 @@
                     </div>
                 {/if}
 
-                {#if isCollapsed}
+                {#if uiState.isCollapsed}
                     <div
                         class="absolute left-full ml-2 px-2 py-1 bg-surface border border-line rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
                     >
@@ -431,17 +419,17 @@
 
             <button
                 onclick={() => auth.signOut()}
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:text-red-400 hover:bg-red-500/10 transition-all group relative {isCollapsed
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted hover:text-red-400 hover:bg-red-500/10 transition-all group relative {uiState.isCollapsed
                     ? 'justify-center'
                     : ''}"
-                title={isCollapsed ? "Sign Out" : ""}
+                title={uiState.isCollapsed ? "Sign Out" : ""}
             >
                 <LogOut size={18} class="group-hover:text-red-400" />
-                {#if !isCollapsed}
+                {#if !uiState.isCollapsed}
                     <span class="font-medium text-sm">Sign Out</span>
                 {/if}
 
-                {#if isCollapsed}
+                {#if uiState.isCollapsed}
                     <div
                         class="absolute left-full ml-2 px-2 py-1 bg-surface border border-line rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
                     >

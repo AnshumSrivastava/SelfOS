@@ -62,12 +62,12 @@
             {#each decisions as decision, i (decision.id)}
                 <div
                     transition:fade={{ delay: i * 50 }}
-                    class="group relative overflow-hidden p-4 rounded-2xl bg-surface border border-line hover:border-primary/30 transition-all active:scale-[0.98]"
+                    class="group relative overflow-hidden p-5 rounded-2xl bg-surface border border-line hover:border-primary/30 transition-all active:scale-[0.98] shadow-sm hover:shadow-primary/5"
                 >
                     <div class="flex items-start gap-4">
                         <button
                             onclick={() => handleComplete(decision)}
-                            class="mt-1 w-6 h-6 rounded-full border-2 border-line hover:border-primary flex items-center justify-center transition-all shrink-0"
+                            class="mt-1 w-6 h-6 rounded-full border-2 border-line hover:border-primary flex items-center justify-center transition-all shrink-0 bg-background"
                         >
                             <Check
                                 size={14}
@@ -76,33 +76,42 @@
                         </button>
 
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span
-                                    class="text-xs font-bold uppercase tracking-widest {getPriorityColor(
-                                        decision.priority,
-                                    )} px-2 py-0.5 rounded border"
-                                >
-                                    {decision.priority}
-                                </span>
-                                {#if decision.type === "event"}
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
                                     <span
-                                        class="text-[10px] font-bold uppercase tracking-tighter text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded border border-purple-400/20"
+                                        class="text-[10px] font-bold uppercase tracking-widest {getPriorityColor(
+                                            decision.priority,
+                                        )} px-2 py-0.5 rounded border"
                                     >
-                                        Time-Bound
+                                        {decision.priority}
                                     </span>
-                                {/if}
+                                    {#if decision.context_label}
+                                        <span
+                                            class="text-[10px] font-bold uppercase tracking-tighter text-muted bg-surface px-2 py-0.5 rounded border border-line"
+                                        >
+                                            {decision.context_label}
+                                        </span>
+                                    {/if}
+                                </div>
+                                <span
+                                    class="text-[9px] font-mono text-muted opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    S:{decision.score}
+                                </span>
                             </div>
+
                             <h3
-                                class="text-lg font-bold text-white leading-tight truncate"
+                                class="text-base font-bold text-white leading-snug mb-3 group-hover:text-primary transition-colors"
                             >
                                 {decision.label}
                             </h3>
+
                             <div
-                                class="flex items-center gap-3 mt-2 text-[11px] font-medium text-muted"
+                                class="grid grid-cols-2 gap-4 pt-3 border-t border-line/30 text-[10px] font-bold uppercase tracking-widest text-muted"
                             >
-                                <div class="flex items-center gap-1">
-                                    <Clock size={12} />
-                                    <span
+                                <div class="flex items-center gap-2">
+                                    <Clock size={12} class="text-primary/60" />
+                                    <span class="text-white/80"
                                         >{decision.focus_time
                                             ? new Date(
                                                   decision.focus_time,
@@ -113,9 +122,12 @@
                                             : "ASAP"}</span
                                     >
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <ArrowRight size={12} />
-                                    <span class="capitalize"
+                                <div class="flex items-center gap-2">
+                                    <Activity
+                                        size={12}
+                                        class="text-primary/60"
+                                    />
+                                    <span class="text-white/80"
                                         >{decision.type}</span
                                     >
                                 </div>

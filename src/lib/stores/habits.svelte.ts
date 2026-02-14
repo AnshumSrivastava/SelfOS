@@ -67,10 +67,17 @@ class HabitsStore {
     }
 
     async add(name: string) {
-        await this.store.insert({
-            name,
-            streak: 0
-        });
+        this.#log(`Attempting to add habit: ${name}`);
+        try {
+            const result = await this.store.insert({
+                name,
+                streak: 0
+            });
+            this.#log('Habit added successfully', result);
+        } catch (error) {
+            this.#log('Failed to add habit', error, 'error');
+            throw error;
+        }
     }
 
     async remove(id: string) {

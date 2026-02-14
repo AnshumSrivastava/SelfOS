@@ -1,8 +1,15 @@
 <script lang="ts">
-    import { Play, FastForward, Clock, ListTodo } from "lucide-svelte";
+    import { Play, FastForward, Clock, ListTodo, Target } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { focusStore } from "$lib/stores/focus.svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
     import { fade } from "svelte/transition";
+
+    function getProjectName(id: string | null) {
+        if (!id) return "Inbox";
+        const project = projectsStore.getProject(id);
+        return project ? project.name : "Unknown";
+    }
 
     const nowTask = $derived(
         tasksStore.tasks.find((t) => t.status === "in_progress") ||
@@ -13,7 +20,7 @@
     const nextTasks = $derived(
         tasksStore.tasks
             .filter((t) => t.status === "pending" && t.id !== nowTask?.id)
-            .slice(0, 2),
+            .slice(0, 3),
     );
     const laterTasks = $derived(
         tasksStore.tasks
@@ -22,7 +29,6 @@
     );
 
     async function handleStartFocus(task: any) {
-        // Implementation for locking in task to Focus Mode
         focusStore.reset();
         focusStore.toggle();
     }
@@ -60,33 +66,53 @@
 
             {#if nowTask}
                 <div
-                    class="p-4 rounded-2xl bg-emerald-400/5 border border-emerald-400/20 group hover:border-emerald-400/40 transition-all"
+                    class="p-5 rounded-2xl bg-emerald-400/5 border border-emerald-400/20 group hover:border-emerald-400/40 transition-all shadow-sm shadow-emerald-400/5"
                 >
-                    <h3 class="text-sm font-bold text-white mb-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-widest text-emerald-400/60 bg-emerald-400/10 px-2 py-0.5 rounded border border-emerald-400/10"
+                        >
+                            {getProjectName(nowTask.projectId)}
+                        </span>
+                        {#if nowTask.priority === "high"}
+                            <span
+                                class="text-[9px] font-bold uppercase tracking-tighter text-red-400 flex items-center gap-1"
+                            >
+                                <span
+                                    class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"
+                                ></span>
+                                Top Priority
+                            </span>
+                        {/if}
+                    </div>
+                    <h3
+                        class="text-base font-bold text-white mb-4 group-hover:text-emerald-400 transition-colors"
+                    >
                         {nowTask.title}
                     </h3>
                     <div
-                        class="flex items-center gap-4 text-[10px] font-bold text-emerald-400/60"
+                        class="flex items-center gap-4 pt-3 border-t border-emerald-400/10 text-[10px] font-bold text-emerald-400/60 uppercase tracking-widest"
                     >
-                        <span
-                            class="px-2 py-0.5 rounded bg-emerald-400/10 border border-emerald-400/10"
-                        >
-                            {nowTask.projectId || "No Project"}
-                        </span>
-                        <div class="flex items-center gap-1">
-                            <Clock size={10} />
+                        <div class="flex items-center gap-1.5">
+                            <Clock size={12} />
                             <span>Focus Ready</span>
                         </div>
+                        {#if nowTask.deadline}
+                            <div class="flex items-center gap-1.5">
+                                <Target size={12} />
+                                <span>Due Today</span>
+                            </div>
+                        {/if}
                     </div>
                 </div>
             {:else}
                 <div
-                    class="p-4 rounded-2xl bg-surface border border-dashed border-line text-center py-6"
+                    class="p-4 rounded-2xl bg-surface border border-dashed border-line text-center py-8"
                 >
                     <p
                         class="text-[10px] font-bold text-muted uppercase tracking-widest"
                     >
-                        No active focus
+                        No active focal point
                     </p>
                 </div>
             {/if}
@@ -98,22 +124,36 @@
                 class="text-[10px] font-bold uppercase tracking-widest text-muted flex items-center gap-1.5"
             >
                 <FastForward size={12} class="text-primary" />
-                Next
+                Next Execution
             </span>
             <div class="grid grid-cols-1 gap-2">
                 {#each nextTasks as task}
                     <div
-                        class="p-3 rounded-xl bg-surface border border-line hover:border-primary/20 transition-all"
+                        class="p-4 rounded-xl bg-surface border border-line hover:border-primary/20 transition-all group"
                     >
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span
+                                class="text-[9px] font-bold uppercase tracking-tighter text-muted group-hover:text-primary/60 transition-colors"
+                            >
+                                {getProjectName(task.projectId)}
+                            </span>
+                            {#if task.priority === "high"}
+                                <div
+                                    class="w-1 h-1 rounded-full bg-red-400"
+                                ></div>
+                            {/if}
+                        </div>
                         <span
-                            class="text-xs font-semibold text-white line-clamp-1"
+                            class="text-sm font-bold text-white line-clamp-1 group-hover:text-primary transition-colors"
                             >{task.title}</span
                         >
                     </div>
                 {/each}
                 {#if nextTasks.length === 0}
-                    <p class="text-[10px] font-bold text-muted opacity-50 px-3">
-                        No immediate follow-ups
+                    <p
+                        class="text-[10px] font-bold text-muted opacity-40 px-3 py-4 border border-dashed border-line rounded-xl text-center"
+                    >
+                        No follow-up tasks scheduled
                     </p>
                 {/if}
             </div>
@@ -125,22 +165,29 @@
                 class="text-[10px] font-bold uppercase tracking-widest text-muted flex items-center gap-1.5 opacity-60"
             >
                 <Clock size={12} />
-                Later
+                Strategic Buffer
             </span>
             <div class="grid grid-cols-1 gap-2">
                 {#each laterTasks as task}
                     <div
-                        class="p-2 px-3 rounded-lg bg-surface/50 border border-line/50 opacity-60"
+                        class="p-3 rounded-lg bg-surface/30 border border-line/30 opacity-60 hover:opacity-100 transition-all group"
                     >
-                        <span
-                            class="text-[11px] font-medium text-muted line-clamp-1"
-                            >{task.title}</span
-                        >
+                        <div class="flex items-center justify-between gap-3">
+                            <span
+                                class="text-xs font-semibold text-muted group-hover:text-white line-clamp-1 transition-colors"
+                                >{task.title}</span
+                            >
+                            <span
+                                class="text-[9px] font-bold uppercase tracking-tighter text-muted whitespace-nowrap"
+                            >
+                                {getProjectName(task.projectId)}
+                            </span>
+                        </div>
                     </div>
                 {/each}
                 {#if laterTasks.length === 0}
                     <p class="text-[10px] font-bold text-muted opacity-30 px-3">
-                        Lane clear
+                        Lane clear. No low-priority items.
                     </p>
                 {/if}
             </div>

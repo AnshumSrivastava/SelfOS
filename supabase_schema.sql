@@ -545,24 +545,26 @@ CREATE TRIGGER set_updated_at_user_settings BEFORE UPDATE ON user_settings FOR E
 CREATE OR REPLACE VIEW v_today_decisions AS
 SELECT 
     'task' as type,
-    id,
-    user_id,
-    title as label,
-    deadline as focus_time,
-    priority,
-    status,
+    t.id,
+    t.user_id,
+    t.title as label,
+    t.deadline as focus_time,
+    t.priority,
+    t.status,
+    p.name as context_label,
     CASE 
-        WHEN priority = 'high' THEN 30
-        WHEN priority = 'medium' THEN 20
+        WHEN t.priority = 'high' THEN 30
+        WHEN t.priority = 'medium' THEN 20
         ELSE 10
     END + 
     CASE 
-        WHEN deadline < NOW() THEN 50
-        WHEN deadline::date = CURRENT_DATE THEN 25
+        WHEN t.deadline < NOW() THEN 50
+        WHEN t.deadline::date = CURRENT_DATE THEN 25
         ELSE 0
     END as score
-FROM tasks 
-WHERE status != 'completed' AND (deadline::date = CURRENT_DATE OR deadline < NOW())
+FROM tasks t
+LEFT JOIN projects p ON t.project_id = p.id
+WHERE t.status != 'completed' AND (t.deadline::date = CURRENT_DATE OR t.deadline < NOW())
 UNION ALL
 SELECT 
     'event' as type,
@@ -572,6 +574,7 @@ SELECT
     start_time as focus_time,
     'high' as priority,
     'pending' as status,
+    'Calendar' as context_label,
     40 as score -- Events usually take priority
 FROM calendar_events 
 WHERE date = CURRENT_DATE OR (start_time::date = CURRENT_DATE);

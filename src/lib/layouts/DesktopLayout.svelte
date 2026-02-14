@@ -14,7 +14,9 @@
 
     <div
         class="flex-1 flex flex-col relative transition-all duration-300 {uiState.showChrome
-            ? 'ml-64'
+            ? uiState.isCollapsed
+                ? 'ml-16'
+                : 'ml-64'
             : 'ml-0'}"
     >
         {#if uiState.showChrome}
