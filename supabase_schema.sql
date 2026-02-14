@@ -443,3 +443,33 @@ CREATE TABLE user_settings (
 );
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own settings" ON user_settings FOR ALL USING (auth.uid() = user_id);
+
+-- 14. Automatic Profile Creation
+-- Create a function to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  -- Insert into user_settings
+  INSERT INTO public.user_settings (user_id)
+  VALUES (new.id);
+
+  -- Insert into gamification_profiles
+  INSERT INTO public.gamification_profiles (user_id, username, avatar)
+  VALUES (new.id, split_part(new.email, '@', 1), '{"class": "Warrior", "name": "Hero", "customization": {"skinTone": "#fdbcb4", "hairStyle": "short", "hairColor": "#4a3728", "eyeColor": "#6b4423", "outfit": "starter"}, "equipment": {}}'::jsonb);
+
+  -- Insert into fitness_stats
+  INSERT INTO public.fitness_stats (user_id)
+  VALUES (new.id);
+
+  -- Insert into nutrition_settings
+  INSERT INTO public.nutrition_settings (user_id)
+  VALUES (new.id);
+
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create the trigger
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

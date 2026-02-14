@@ -77,8 +77,9 @@ export class SupabaseStore<T extends { id: string }> {
 
                         if (error) {
                             console.error(`Error during migration of ${this.#tableName}:`, error);
+                            console.error(`Error details:`, error.message, error.details, error.hint);
                         } else if (data) {
-                            this.#value = data.map(item => this.toCamel(item));
+                            this.#value = data.map((item: any) => this.toCamel(item));
                             console.log(`Successfully migrated ${data.length} items to ${this.#tableName}.`);
                         }
                     } else if (localData && typeof localData === 'object' && !Array.isArray(localData)) {
@@ -106,8 +107,12 @@ export class SupabaseStore<T extends { id: string }> {
 
         if (error) {
             console.error(`Error fetching from ${this.#tableName}:`, error);
+            console.error(`Error details:`, error.message, error.details, error.hint);
+            if (error.code === '42P01') {
+                console.error(`HINT: Table "${this.#tableName}" does not exist. Did you run supabase_schema.sql?`);
+            }
         } else {
-            this.#value = (data || []).map(item => this.toCamel(item));
+            this.#value = (data || []).map((item: any) => this.toCamel(item));
         }
         this.#loading = false;
     }
@@ -128,6 +133,7 @@ export class SupabaseStore<T extends { id: string }> {
 
         if (error) {
             console.error(`Error inserting into ${this.#tableName}:`, error);
+            console.error(`Error details:`, error.message, error.details, error.hint);
             throw error;
         }
 
@@ -156,6 +162,7 @@ export class SupabaseStore<T extends { id: string }> {
 
         if (error) {
             console.error(`Error updating ${this.#tableName}:`, error);
+            console.error(`Error details:`, error.message, error.details, error.hint);
             // Rollback on error
             if (index !== -1 && previousValue) {
                 this.#value[index] = previousValue;
@@ -195,6 +202,7 @@ export class SupabaseStore<T extends { id: string }> {
 
         if (error) {
             console.error(`Error upserting into ${this.#tableName}:`, error);
+            console.error(`Error details:`, error.message, error.details, error.hint);
             throw error;
         }
 

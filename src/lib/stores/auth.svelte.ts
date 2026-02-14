@@ -40,7 +40,11 @@ class AuthStore {
                 redirectTo: `${window.location.origin}/auth/callback`
             }
         });
-        if (error) throw error;
+        if (error) {
+            console.error("Google login error:", error);
+            console.error("Error details:", error.message);
+            throw error;
+        }
     }
 
     async signOut() {

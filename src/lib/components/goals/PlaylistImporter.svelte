@@ -7,7 +7,7 @@
         Sparkles,
         Check,
     } from "lucide-svelte";
-    import { goalsStore, parseBatchTasks } from "$lib/stores/goals.svelte";
+    import { goalsStore } from "$lib/stores/goals.svelte";
     import { fade, slide, fly } from "svelte/transition";
 
     let { onComplete } = $props<{ onComplete: (goalId: string) => void }>();
@@ -26,7 +26,7 @@
         error = "";
 
         try {
-            const data = await parseBatchTasks(url);
+            const data = await goalsStore.parseBatchTasks(url);
             if (data.tasks.length === 0) {
                 error = "Could not find any videos in this playlist or text.";
             } else {
@@ -39,10 +39,10 @@
         }
     }
 
-    function createGoal() {
+    async function createGoal() {
         if (!previewData) return;
 
-        const newGoal = goalsStore.addGoal({
+        const newGoal = await goalsStore.addGoal({
             title: previewData.playlistTitle || "New Learning Path",
             horizon: "short",
             area: "Personal",
@@ -50,21 +50,22 @@
             vision: `Learning path from: ${url}`,
         });
 
+        if (!newGoal) return;
+
         // Add tasks
-        import("$lib/stores/tasks.svelte").then(({ tasksStore }) => {
-            if (!previewData) return;
-            previewData.tasks.forEach((t, i) => {
-                tasksStore.add({
-                    title: t.title,
-                    goalId: newGoal.id,
-                    project: "Personal",
-                    priority: "medium",
-                    link: t.link || null,
-                    deadline: null,
-                    scheduled: null,
-                });
+        const { tasksStore } = await import("$lib/stores/tasks.svelte");
+
+        for (const t of previewData.tasks) {
+            await tasksStore.add({
+                title: t.title,
+                goalId: newGoal.id,
+                project: "Personal",
+                priority: "medium",
+                link: t.link || null,
+                deadline: null,
+                scheduled: null,
             });
-        });
+        }
 
         onComplete(newGoal.id);
     }
