@@ -35,6 +35,11 @@ class AuthStore {
     get isAuthenticated() { return !!this.#user; }
 
     async signInWithGoogle() {
+        if (!supabase || !supabase.auth) {
+            console.error("Supabase client is not initialized. Please check your PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY.");
+            throw new Error("Authentication currently unavailable. Please check configuration.");
+        }
+
         // Ensure we handle subpaths (like GitHub Pages /SelfOS)
         const redirectUrl = base
             ? `${window.location.origin}${base}/auth/callback`
