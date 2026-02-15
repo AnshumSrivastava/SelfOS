@@ -1,126 +1,131 @@
-# SelfOS - Your Mindful Personal Operating System
+# <img src="./static/favicon.png" width="32" height="32" valign="middle"> SelfOS
 
-SelfOS is a minimalist, intentional, and feature-rich personal dashboard designed to help you manage your life with clarity and focus. Built with SvelteKit and Tailwind CSS, it provides a seamless experience for tracking tasks, habits, finances, and focus sessions.
+### **A Mindful Personal Operating System for High-Focus Rituals**
 
-## 🌟 Vision
+SelfOS is a minimalist, intentional, and feature-rich personal dashboard designed to help you manage your digital life with clarity and focus. It transforms your browser into a unified workstation for tracking tasks, habits, finances, and growth.
 
-SelfOS aims to be a single source of truth for your digital life, prioritizing:
-
-- **Intentionality**: Focus on what matters, not just what's next.
-- **Privacy**: Your data stays local (Local-First architecture).
-- **Aesthetics**: A calm, premium interface that doesn't overwhelm.
-- **Modularity**: Individual modules for different aspects of life (PARA system).
+> [!IMPORTANT]
+> **Local-First Architecture:** Your data belongs to you. SelfOS prioritizes local privacy while offering seamless Supabase cloud synchronization for multi-device harmony.
 
 ---
 
-## 📸 Screenshots
+## 🌟 Vision & Values
 
-| Dashboard | Tasks | Habits |
-|-----------|-------|--------|
-| ![Dashboard](./screenshots/dashboard.png) | ![Tasks](./screenshots/tasks.png) | ![Habits](./screenshots/habits.png) |
+SelfOS isn't just a productivity app; it's a philosophy of intentional living.
 
-| Focus | Finance | Nutrition |
-|-------|---------|-----------|
-| ![Focus](./screenshots/focus.png) | ![Finish](./screenshots/finance.png) | ![Nutrition](./screenshots/nutrition.png) |
-
----
-
-## ✨ Key Features
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| **🎯 Dashboard** | Central overview of your day and priority tasks. | ✅ Done |
-| **✅ Tasks** | PARA-based task management with scratchpad support. | ✅ Done |
-| **📅 Habits** | Visual habit tracker with streak mechanics. | ✅ Done |
-| **🎯 Goals** | Strategic 'War Room' dashboard with hierarchy, Roadmaps, and Playlist Importer. | ✅ Done |
-| **🧘 Focus** | Zen mode with pomodoro-style timers. | ✅ Done |
-| **💰 Finance** | Expense tracking, budgeting, and financial goals. | ✅ Done |
-| **🍎 Nutrition** | Macronutrient calculation and meal tracking. | ✅ Done |
-| **🏋️ Fitness** | Workout logging and health statistics tracking. | ✅ Done |
-| **📓 Journal** | Daily reflection and thought tracking. | ✅ Done |
-| **📚 Library** | Book tracking and reading progress. | ✅ Done |
-| **📝 Notes** | Intentional note-taking and knowledge management. | ✅ Done |
-| **📁 PARA** | Projects, Areas, Resources, Archives organization. | ✅ Done |
-| **📱 Mobile** | Responsive design optimized for all devices. | ✅ Done |
+* **Intentionality**: Focus on what matters, not just what's next.
+* **Aesthetics**: High-end glassmorphism and motion-rich design for a calm digital environment.
+* **Efficiency**: Navigate your entire OS via global keyboard shortcuts.
+* **Modularity**: Choose the modules that fit your life using the built-in Feature Flags.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Key Modules
 
-- **Framework**: [SvelteKit](https://kit.svelte.dev/) (Svelte 5 Runes)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Lucide Svelte](https://lucide.dev/guide/svelte)
-- **State Management**: Svelte 5 `$state` and `$derived` via custom stores
-- **Storage**: Browser LocalStorage (Local-First logic) with **Supabase Cloud Sync**
-- **Authentication**: Supabase Auth with secure session management
+SelfOS utilizes a custom implementation of the **PARA System** (Projects, Areas, Resources, Archives) to organize your knowledge.
+
+| Module | Description | Highlights |
+| :--- | :--- | :--- |
+| **🎯 Dashboard** | Your daily command center. | Asymmetrical "Hero" view, Quick Start widgets. |
+| **✅ Tasks** | Beyond a simple To-Do list. | Scratchpad support, PARA-linked projects. |
+| **🔥 Habits** | Ritual consistency tracker. | GitHub-style heatmap, "Champion" streak status. |
+| **📉 Goals** | Strategic 'War Room'. | Hierarchical roadmaps, YT Playlist Importer. |
+| **🧘 Focus** | Zen workstation. | Pomodoro timers, immersive ambient modes. |
+| **💰 Finance** | Wealth management. | Expense tracking and monthly budget vitals. |
+| **🏋️ Vitals** | Fitness & Nutrition. | Macro tracking, workout logs, health metrics. |
+| **📝 Knowledge** | Notes & Journaling. | Obsidian-style intentional note-taking. |
 
 ---
 
-## 🚀 Getting Started
+## ⌨️ Global Command Center
+
+SelfOS is built for power users. Master these shortcuts to fly through your day:
+
+| Shortcut | Action |
+| :--- | :--- |
+| <kbd>Space</kbd> | Global Search / Command Palette |
+| <kbd>s</kbd> | System Settings |
+| <kbd>Tab</kbd> | Toggle Chrome (Sidebar/Header) |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>/</kbd> | Open Tutorial Hub |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>.</kbd> | Next Tutorial Step |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>,</kbd> | Previous Tutorial Step |
+
+---
+
+## 🛠️ The Core Stack
+
+SelfOS leverages modern web primitives to ensure performance and reliability.
+
+* **Framework**: [SvelteKit](https://kit.svelte.dev/) (Powered by Svelte 5 Runes)
+* **Language**: TypeScript for end-to-end type safety
+* **Styling**: Vanilla CSS with Tailwind CSS for utility spacing
+* **Icons**: [Lucide Svelte](https://lucide.dev/guide/svelte)
+* **Backend**: [Supabase](https://supabase.com/) (Auth, Database, Storage)
+* **Animation**: Svelte Native Transitions & Framer-like micro-interactions
+
+---
+
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm (or pnpm / yarn)
+- Node.js (v18+)
+* npm / pnpm / yarn
 
-### Installation
+### Launching SelfOS
 
-1. **Clone the repository**:
+1. **Clone & Enter**
 
-   ```sh
+   ```bash
    git clone https://github.com/AnshumSrivastava/SelfOS.git
    cd SelfOS
    ```
 
-2. **Install dependencies**:
+2. **Install Rituals**
 
-   ```sh
+   ```bash
    npm install
    ```
 
-3. **Start the development server**:
+3. **Initialize Environment**
+   Create a `.env` file with your Supabase credentials:
 
-   ```sh
-   npm run dev
+   ```env
+   PUBLIC_SUPABASE_URL=your_project_url
+   PUBLIC_SUPABASE_ANON_KEY=your_anon_key
    ```
 
-4. **Build for production**:
+4. **Boot Up**
 
-   ```sh
-   npm run build
+   ```bash
+   npm run dev
    ```
 
 ---
 
-## 📂 Project Structure
+## 📂 Architecture Overview
 
 ```text
-SelfOS/
-├── src/
-│   ├── lib/              # Core application logic
-│   │   ├── components/   # UI components grouped by feature
-│   │   ├── stores/       # Svelte 5 state stores (LocalStore wrapper)
-│   │   ├── utils/        # Shared helper functions (date, math, etc.)
-│   │   └── types/        # TypeScript interfaces and types
-│   ├── routes/           # SvelteKit page routes
-│   └── app.html          # Main HTML entry point
-├── static/               # Public assets (images, fonts)
-├── screenshots/          # Documentation media
-└── tailwind.config.ts    # Styling configuration
+src/
+├── lib/
+│   ├── components/   # Atomic UI components & Feature modules
+│   ├── stores/       # Svelte 5 Stores (LocalStore + Supabase sync)
+│   ├── tutorial/     # Interactive onboarding engine
+│   └── utils/        # Date formatting, math, and helpers
+├── routes/           # File-based routing (SvelteKit)
+└── app.css           # Core Design System & Tokens
 ```
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing & Community
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to get started.
+We believe in open growth. Check out our [CONTRIBUTING.md](./CONTRIBUTING.md) to see how you can help build the future of SelfOS.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the `LICENSE` file for details.
-
----
+Distributed under the MIT License. See `LICENSE` for more information.
 
 *Built with ❤️ for a more mindful life.*
