@@ -37,17 +37,25 @@
 
 <div class="h-screen flex flex-col overflow-hidden bg-background">
     <!-- Header Area -->
-    <div class="px-8 py-10 shrink-0">
-        <div class="flex items-end justify-between">
+    <div class="px-10 py-12 shrink-0">
+        <div class="flex items-end justify-between max-w-[1600px] mx-auto">
             <div>
-                <h1 class="text-4xl font-light text-white tracking-tight mb-2">
-                    P.A.R.A. <span class="text-primary font-bold">Board</span>
+                <h1 class="text-5xl font-light text-white tracking-tight mb-3">
+                    P.A.R.A. <span class="text-primary font-bold">Registry</span
+                    >
                 </h1>
-                <p
-                    class="text-sm font-bold text-muted uppercase tracking-[0.3em]"
-                >
-                    Strategic Indexing & Capture
-                </p>
+                <div class="flex items-center gap-4">
+                    <p
+                        class="text-[10px] font-bold text-muted uppercase tracking-[0.4em] opacity-60"
+                    >
+                        Strategic Metadata Management
+                    </p>
+                    <div class="h-px w-12 bg-line"></div>
+                    <span
+                        class="text-[10px] font-bold text-primary uppercase tracking-widest"
+                        >v2.0 Beta</span
+                    >
+                </div>
             </div>
 
             <div class="flex items-center gap-6">
@@ -66,7 +74,7 @@
 
     <!-- Kanban Board (Horizontal) -->
     <div
-        class="flex-1 flex gap-6 px-8 overflow-x-auto pb-12 custom-scrollbar-h items-start"
+        class="flex-1 flex gap-8 px-10 overflow-x-auto pb-12 custom-scrollbar-h items-start max-w-[1800px] mx-auto w-full"
     >
         {#if projectsStore.loading}
             <div class="flex gap-6 w-full">

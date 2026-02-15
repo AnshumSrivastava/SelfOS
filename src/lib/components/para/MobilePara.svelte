@@ -7,8 +7,14 @@
 
     let selectedProject: Project | null = $state(null);
 
-    function handleAdd() {
-        projectsStore.addProject({ name: "New Project", type: "project" });
+    async function handleAdd() {
+        const project = await projectsStore.addProject({
+            name: "",
+            type: "project",
+        });
+        if (project) {
+            openProject(project);
+        }
     }
 
     function openProject(project: Project) {
@@ -25,13 +31,24 @@
 
 <div class="page-container h-full">
     <!-- Header -->
-    <div class="module-header">
-        <h1 class="text-3xl font-light text-white tracking-tight">Projects</h1>
+    <div class="px-6 py-8 flex items-center justify-between shrink-0">
+        <div>
+            <h1
+                class="text-3xl font-bold text-white tracking-tight leading-none mb-1"
+            >
+                P.A.R.A.
+            </h1>
+            <p
+                class="text-[10px] font-bold text-primary uppercase tracking-widest"
+            >
+                Digital Registry
+            </p>
+        </div>
         <button
             onclick={handleAdd}
-            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center shadow-xl active:scale-95 transition-all"
         >
-            <Plus size={20} />
+            <Plus size={24} />
         </button>
     </div>
 
@@ -63,52 +80,48 @@
         {:else}
             {#each projectsStore.activeProjects as project}
                 <button
-                    class="w-full text-left card-subtle active:scale-[0.98] transition-all group relative overflow-hidden"
+                    class="w-full text-left bg-surface/40 backdrop-blur-md border border-line/50 rounded-2xl p-4 active:scale-[0.98] transition-all group relative overflow-hidden shadow-lg ring-1 ring-white/5"
                     onclick={() => openProject(project)}
                 >
                     <!-- Color Indicator Bar -->
                     <div
-                        class="absolute left-0 top-0 bottom-0 w-1.5 {project.color ||
-                            'bg-gray-500'}"
+                        class="absolute left-0 top-0 bottom-0 w-1 {project.color ||
+                            'bg-gray-500'} opacity-70"
                     ></div>
 
-                    <div class="flex justify-between items-start pl-2">
+                    <div class="flex justify-between items-start">
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 mb-1">
                                 <h3
                                     class="font-bold text-white text-lg leading-tight truncate"
                                 >
-                                    {project.name}
+                                    {project.name || "Untitled Item"}
                                 </h3>
                                 {#if projectsStore.isDormant(project)}
                                     <span
-                                        class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                        class="text-[9px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold"
                                     >
                                         Dormant
                                     </span>
                                 {/if}
                             </div>
-                            {#if project.intent}
-                                <p class="text-sm text-muted line-clamp-1">
-                                    {project.intent}
-                                </p>
-                            {:else}
-                                <p class="text-sm text-muted italic opacity-50">
-                                    No intent set
-                                </p>
-                            {/if}
+                            <p
+                                class="text-xs text-muted line-clamp-2 leading-relaxed h-8"
+                            >
+                                {project.intent || "No objective defined yet."}
+                            </p>
                         </div>
                     </div>
 
                     <!-- Last Updated / Metadata -->
                     <div
-                        class="mt-4 pt-3 border-t border-neutral-900 flex items-center justify-between pl-2"
+                        class="mt-4 pt-3 border-t border-white/5 flex items-center justify-between"
                     >
                         <div
-                            class="flex items-center gap-3 text-xs text-gray-500"
+                            class="flex items-center gap-3 text-[10px] text-muted font-bold uppercase tracking-wider"
                         >
-                            <div class="flex items-center gap-1">
-                                <span class="font-medium text-gray-400"
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-emerald-400"
                                     >{projectsStore
                                         .getScratchpad(project.id)
                                         .filter(
@@ -116,19 +129,19 @@
                                                 e.type === "task" &&
                                                 !e.isCompleted,
                                         ).length}</span
-                                > tasks
+                                > Tasks
                             </div>
-                            <div
-                                class="w-1 h-1 bg-neutral-800 rounded-full"
-                            ></div>
-                            <div class="flex items-center gap-1">
-                                <span class="font-medium text-gray-400"
+                            <div class="w-1 h-1 bg-white/10 rounded-full"></div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-blue-400"
                                     >{projectsStore.getResources(project.id)
                                         .length}</span
-                                > links
+                                > Assets
                             </div>
                         </div>
-                        <div class="text-xs text-neutral-600">
+                        <div
+                            class="text-[10px] text-muted font-mono bg-white/5 px-2 py-0.5 rounded"
+                        >
                             {new Date(project.updatedAt).toLocaleDateString(
                                 undefined,
                                 { month: "short", day: "numeric" },

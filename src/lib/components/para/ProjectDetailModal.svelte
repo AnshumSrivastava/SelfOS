@@ -12,6 +12,7 @@
         Maximize2,
         Minimize2,
         Save,
+        Pencil,
     } from "lucide-svelte";
     import { projectsStore } from "$lib/stores/projects.svelte";
     import type { Project, ScratchpadEntry } from "$lib/stores/projects.svelte";
@@ -168,9 +169,13 @@
         projectsStore.deleteResource(liveProject.id, id);
     }
 
-    function handleArchive() {
-        if (confirm("Archive this project?")) {
-            projectsStore.archiveProject(liveProject.id);
+    function handleDelete() {
+        if (
+            confirm(
+                `Are you sure you want to permanently delete this ${liveProject.type}? This will remove all associated notes and tasks.`,
+            )
+        ) {
+            projectsStore.deleteProject(liveProject.id);
             onClose();
         }
     }
@@ -206,24 +211,30 @@
                                 class="w-3 h-3 bg-current rounded-full opacity-50"
                             ></div>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <input
-                                bind:value={editName}
-                                onblur={saveMetadata}
-                                class="bg-transparent border-none text-lg font-bold text-white leading-tight w-full focus:outline-none focus:ring-0 placeholder:opacity-50"
-                                placeholder="Project Name"
-                            />
-                            <div class="flex items-center gap-2 mt-0.5">
+                        <div class="flex-1 min-w-0 group/name relative">
+                            <div class="flex items-center gap-2">
+                                <input
+                                    bind:value={editName}
+                                    onblur={saveMetadata}
+                                    class="bg-transparent border-none text-xl font-bold text-white leading-tight w-full focus:outline-none focus:ring-0 placeholder:opacity-50 pr-8"
+                                    placeholder="Project Name"
+                                />
+                                <Pencil
+                                    size={14}
+                                    class="absolute right-0 top-1.5 text-muted opacity-0 group-hover/name:opacity-100 transition-opacity pointer-events-none"
+                                />
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
                                 {#if isDormant}
                                     <span
-                                        class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
+                                        class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 font-bold"
                                         >Dormant</span
                                     >
                                 {/if}
                                 {#if isSaving}
                                     <span
-                                        class="text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse"
-                                        >Saving...</span
+                                        class="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse font-bold"
+                                        >Saving Changes...</span
                                     >
                                 {/if}
                             </div>
@@ -231,31 +242,39 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4 flex-1 justify-end px-4">
-                    <input
-                        bind:value={editIntent}
-                        onblur={saveMetadata}
-                        class="hidden md:block bg-transparent border-none text-xs text-muted italic text-right focus:outline-none focus:ring-0 placeholder:opacity-30 w-full max-w-[400px]"
-                        placeholder="Add an intent or objective..."
-                    />
+                    <div
+                        class="relative group/intent flex-1 max-w-[400px] hidden md:block"
+                    >
+                        <input
+                            bind:value={editIntent}
+                            onblur={saveMetadata}
+                            class="bg-transparent border-none text-xs text-muted italic text-right focus:outline-none focus:ring-0 placeholder:opacity-30 w-full pr-6"
+                            placeholder="Add an intent or objective..."
+                        />
+                        <Pencil
+                            size={10}
+                            class="absolute right-0 top-1 text-muted opacity-0 group-hover/intent:opacity-100 transition-opacity pointer-events-none"
+                        />
+                    </div>
                     <div class="w-px h-4 bg-line hidden md:block"></div>
+                    <button
+                        onclick={handleDelete}
+                        class="text-muted hover:text-red-400 transition-colors p-1.5 hover:bg-red-400/10 rounded-lg"
+                        title="Delete Project"
+                    >
+                        <Trash2 size={18} />
+                    </button>
                     <button
                         onclick={() =>
                             (viewMode =
                                 viewMode === "default" ? "history" : "default")}
-                        class="text-muted hover:text-white transition-colors {viewMode ===
+                        class="text-muted hover:text-white transition-colors p-1.5 hover:bg-white/5 rounded-lg {viewMode ===
                         'history'
                             ? 'text-white'
                             : ''}"
                         title="Toggle History"
                     >
                         <Clock size={18} />
-                    </button>
-                    <button
-                        onclick={handleArchive}
-                        class="text-muted hover:text-white transition-colors"
-                        title="Archive Project"
-                    >
-                        <Archive size={18} />
                     </button>
                     <button
                         onclick={onClose}

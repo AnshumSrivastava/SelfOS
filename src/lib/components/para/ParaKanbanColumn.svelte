@@ -7,6 +7,7 @@
         BookOpen,
         Archive,
         GripVertical,
+        Trash2,
     } from "lucide-svelte";
     import { projectsStore, type Project } from "$lib/stores/projects.svelte";
     import { fade } from "svelte/transition";
@@ -113,7 +114,7 @@
                 draggable="true"
                 ondragstart={(e) => handleDragStart(e, item.id)}
                 transition:fade={{ duration: 200 }}
-                class="group relative p-4 rounded-2xl bg-surface border border-line hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98] shadow-sm hover:shadow-primary/5"
+                class="group relative p-4 rounded-2xl bg-surface/40 backdrop-blur-md border border-line/50 hover:border-primary/40 transition-all cursor-pointer active:scale-[0.98] shadow-lg hover:shadow-primary/5 ring-1 ring-white/5"
                 onclick={() => onOpenProject(item)}
                 onkeydown={(e) => e.key === "Enter" && onOpenProject(item)}
                 role="button"
@@ -135,11 +136,23 @@
                         {/if}
                     </div>
                     <div
-                        class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                        class="opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1"
                     >
+                        <button
+                            onclick={(e) => {
+                                e.stopPropagation();
+                                if (confirm(`Delete this ${section.type}?`)) {
+                                    projectsStore.deleteProject(item.id);
+                                }
+                            }}
+                            class="p-1.5 rounded-lg text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                            title="Delete Item"
+                        >
+                            <Trash2 size={14} />
+                        </button>
                         <GripVertical
                             size={14}
-                            class="text-muted cursor-grab active:cursor-grabbing"
+                            class="text-muted cursor-grab active:cursor-grabbing ml-1"
                         />
                     </div>
                 </div>
