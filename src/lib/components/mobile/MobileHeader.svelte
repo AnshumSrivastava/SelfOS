@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { Search, Bell, HelpCircle, X } from "lucide-svelte";
     import { searchStore } from "$lib/stores/search.svelte";
     import { tutorialStore } from "$lib/stores/tutorial.svelte";
@@ -66,10 +66,14 @@
 </header>
 
 {#if showNotifications}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         transition:fade={{ duration: 200 }}
         onclick={() => (showNotifications = false)}
+        role="button"
+        tabindex="-1"
     >
         <div
             class="w-full max-w-sm bg-surface border border-line rounded-[32px] overflow-hidden shadow-2xl"
