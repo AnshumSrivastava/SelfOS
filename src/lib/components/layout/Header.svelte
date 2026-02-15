@@ -12,12 +12,19 @@
     import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { userStore } from "$lib/stores/user.svelte";
     import Logo from "$lib/components/ui/Logo.svelte";
+    import { fade, scale } from "svelte/transition";
 
     let showUserMenu = $state(false);
+    let showNotifications = $state(false);
 
     function handleLogout() {
         userStore.logout();
         goto(`${base}/login`);
+    }
+
+    function triggerTutorial() {
+        showNotifications = false;
+        tutorialStore.showHub = true;
     }
 
     // Get user initials for avatar
@@ -70,13 +77,91 @@
         >
             <Search size={20} />
         </button>
-        <button
-            class="p-2 hover:bg-surface rounded-full transition-colors text-muted hover:text-white relative"
-        >
-            <Bell size={20} />
-            <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"
-            ></span>
-        </button>
+
+        <!-- Notifications -->
+        <div class="relative">
+            <button
+                onclick={() => (showNotifications = !showNotifications)}
+                class="p-2 hover:bg-surface rounded-full transition-colors text-muted hover:text-white relative"
+                aria-label="Notifications"
+            >
+                <Bell size={20} />
+                {#if !tutorialStore.state.hasEverOpenedHub}
+                    <span
+                        class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse"
+                    ></span>
+                {/if}
+            </button>
+
+            {#if showNotifications}
+                <div
+                    class="absolute right-0 mt-2 w-80 bg-surface border border-line rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right"
+                    transition:scale={{
+                        duration: 200,
+                        start: 0.95,
+                        opacity: 0,
+                    }}
+                >
+                    <div
+                        class="px-4 py-3 border-b border-line flex items-center justify-between bg-white/[0.02]"
+                    >
+                        <h3 class="text-sm font-bold text-white">
+                            Notifications
+                        </h3>
+                    </div>
+
+                    <div class="max-h-[400px] overflow-y-auto">
+                        {#if !tutorialStore.state.hasEverOpenedHub}
+                            <div
+                                class="p-4 hover:bg-white/[0.02] transition-colors border-b border-line group"
+                            >
+                                <div class="flex gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0 group-hover:scale-110 transition-transform"
+                                    >
+                                        <HelpCircle size={20} />
+                                    </div>
+                                    <div class="flex-1">
+                                        <p
+                                            class="text-sm font-bold text-white mb-1"
+                                        >
+                                            Welcome to SelfOS!
+                                        </p>
+                                        <p
+                                            class="text-xs text-muted leading-relaxed mb-3"
+                                        >
+                                            Learn how to master your workflow
+                                            with our interactive guide.
+                                        </p>
+                                        <button
+                                            onclick={triggerTutorial}
+                                            class="w-full px-4 py-2 bg-primary text-black rounded-xl text-xs font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                                        >
+                                            Start the Tour
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {:else}
+                            <div
+                                class="py-12 flex flex-col items-center justify-center text-center opacity-50"
+                            >
+                                <Bell size={40} class="mb-4 text-muted" />
+                                <p class="text-sm font-bold text-white">
+                                    All caught up
+                                </p>
+                                <p
+                                    class="text-[10px] uppercase tracking-widest mt-1 text-muted"
+                                >
+                                    No new notifications
+                                </p>
+                            </div>
+                        {/if}
+                    </div>
+                </div>
+            {/if}
+        </div>
+
         <div class="h-6 w-px bg-line"></div>
 
         <!-- User Menu -->
@@ -95,7 +180,12 @@
             <!-- Dropdown Menu -->
             {#if showUserMenu}
                 <div
-                    class="absolute right-0 mt-2 w-56 bg-surface border border-line rounded-xl shadow-xl overflow-hidden"
+                    class="absolute right-0 mt-2 w-56 bg-surface border border-line rounded-xl shadow-xl overflow-hidden z-50 origin-top-right"
+                    transition:scale={{
+                        duration: 200,
+                        start: 0.95,
+                        opacity: 0,
+                    }}
                 >
                     <!-- User Info -->
                     {#if userStore.currentUser}
@@ -132,12 +222,15 @@
     </div>
 </header>
 
-<!-- Click outside to close menu -->
-{#if showUserMenu}
+<!-- Click outside to close menus -->
+{#if showUserMenu || showNotifications}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 z-30"
-        onclick={() => (showUserMenu = false)}
+        onclick={() => {
+            showUserMenu = false;
+            showNotifications = false;
+        }}
     ></div>
 {/if}

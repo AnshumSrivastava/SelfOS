@@ -1,9 +1,17 @@
 <script>
-    import { Search } from "lucide-svelte";
+    import { Search, Bell, HelpCircle, X } from "lucide-svelte";
     import { searchStore } from "$lib/stores/search.svelte";
-    import { fade } from "svelte/transition";
+    import { tutorialStore } from "$lib/stores/tutorial.svelte";
+    import { fade, slide, scale } from "svelte/transition";
 
     let { title = "SelfOS", action = null, showMenu = true } = $props();
+
+    let showNotifications = $state(false);
+
+    function triggerTutorial() {
+        showNotifications = false;
+        tutorialStore.showHub = true;
+    }
 </script>
 
 <header
@@ -24,17 +32,30 @@
         {/if}
     </div>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-2">
         {#if action}
             {@render action()}
         {/if}
 
         <button
             onclick={() => searchStore.open()}
-            class="p-2 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all"
+            class="p-2.5 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all"
             aria-label="Open Search"
         >
             <Search size={18} />
+        </button>
+
+        <button
+            onclick={() => (showNotifications = !showNotifications)}
+            class="p-2.5 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all relative"
+            aria-label="Notifications"
+        >
+            <Bell size={18} />
+            {#if !tutorialStore.state.hasEverOpenedHub}
+                <span
+                    class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse"
+                ></span>
+            {/if}
         </button>
 
         {#if showMenu}
@@ -43,3 +64,66 @@
         {/if}
     </div>
 </header>
+
+{#if showNotifications}
+    <div
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        transition:fade={{ duration: 200 }}
+        onclick={() => (showNotifications = false)}
+    >
+        <div
+            class="w-full max-w-sm bg-surface border border-line rounded-[32px] overflow-hidden shadow-2xl"
+            transition:slide={{ axis: "y" }}
+            onclick={(e) => e.stopPropagation()}
+        >
+            <div
+                class="px-6 py-4 border-b border-line flex items-center justify-between bg-white/[0.02]"
+            >
+                <h3 class="font-bold text-white">Notifications</h3>
+                <button
+                    onclick={() => (showNotifications = false)}
+                    class="p-2 text-muted hover:text-white"
+                >
+                    <X size={20} />
+                </button>
+            </div>
+
+            <div class="p-6">
+                {#if !tutorialStore.state.hasEverOpenedHub}
+                    <div class="flex flex-col gap-4 text-center">
+                        <div
+                            class="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mx-auto"
+                        >
+                            <HelpCircle size={32} />
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-white mb-2">
+                                Welcome Guide
+                            </h4>
+                            <p class="text-sm text-muted leading-relaxed">
+                                Let's get you up to speed. Start the interactive
+                                tour to master SelfOS.
+                            </p>
+                        </div>
+                        <button
+                            onclick={triggerTutorial}
+                            class="w-full py-4 bg-primary text-black rounded-2xl font-bold active:scale-95 transition-all shadow-lg shadow-primary/20"
+                        >
+                            Start the Tour
+                        </button>
+                    </div>
+                {:else}
+                    <div
+                        class="py-12 flex flex-col items-center justify-center text-center opacity-50"
+                    >
+                        <Bell size={48} class="mb-4 text-muted" />
+                        <p class="font-bold text-white">All caught up</p>
+                        <p class="text-xs mt-1 text-muted">
+                            No new notifications
+                        </p>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    </div>
+{/if}
