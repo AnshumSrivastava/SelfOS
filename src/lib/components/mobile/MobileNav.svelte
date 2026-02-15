@@ -27,6 +27,7 @@
                 : $page.url.pathname.startsWith(link.href)}
         <a
             href={link.href}
+            data-sveltekit-preload-hover
             class="relative flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[64px] {isActive
                 ? 'text-[var(--color-primary)]'
                 : 'text-[var(--color-muted)]'}"

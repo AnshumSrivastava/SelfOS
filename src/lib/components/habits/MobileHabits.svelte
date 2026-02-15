@@ -4,6 +4,7 @@
     import { scale, fade, slide } from "svelte/transition";
     import ConsistencyChart from "./ConsistencyChart.svelte";
     import StreakFire from "$lib/components/ui/StreakFire.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     // Helper to get day letter and date number for the weekly strip
     const today = new Date();
@@ -45,63 +46,71 @@
 
     <!-- Habits List -->
     <div class="space-y-3 mb-6">
-        {#each habitsStore.habits as habit (habit.id)}
-            {@const isCompleted = habitsStore.isCompleted(habit.id)}
-            <div
-                class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
-            >
-                <button
-                    onclick={(e) => {
-                        if (!isCompleted) {
-                            fire.ignite(e.clientX, e.clientY);
-                        }
-                        habitsStore.toggle(habit.id);
-                    }}
-                    class="flex items-center gap-3 flex-1 text-left"
+        {#if habitsStore.loading}
+            <SkeletonLoader lines={4} height="h-16" />
+        {:else}
+            {#each habitsStore.habits as habit (habit.id)}
+                {@const isCompleted = habitsStore.isCompleted(habit.id)}
+                <div
+                    class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
                 >
-                    <div
-                        class="w-6 h-6 rounded border-2 {isCompleted
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-line'} flex items-center justify-center transition-colors"
-                    >
-                        {#if isCompleted}
-                            <Check
-                                size={14}
-                                class="text-black"
-                                strokeWidth={3}
-                            />
-                        {/if}
-                    </div>
-                    <span
-                        class="text-lg font-medium {isCompleted
-                            ? 'text-muted line-through'
-                            : 'text-white'}"
-                    >
-                        {habit.name}
-                    </span>
-                </button>
-
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-1.5 text-xs text-muted">
-                        <Flame
-                            size={12}
-                            class={habit.streak > 10 ? "text-orange-500" : ""}
-                        />
-                        <span>{habit.streak}</span>
-                    </div>
-
                     <button
                         onclick={(e) => {
-                            e.stopPropagation();
-                            habitsStore.remove(habit.id);
+                            if (!isCompleted) {
+                                fire.ignite(e.clientX, e.clientY);
+                            }
+                            habitsStore.toggle(habit.id);
                         }}
-                        class="text-muted hover:text-red-500 p-1"
+                        class="flex items-center gap-3 flex-1 text-left"
                     >
-                        <Trash2 size={16} />
+                        <div
+                            class="w-6 h-6 rounded border-2 {isCompleted
+                                ? 'bg-emerald-500 border-emerald-500'
+                                : 'border-line'} flex items-center justify-center transition-colors"
+                        >
+                            {#if isCompleted}
+                                <Check
+                                    size={14}
+                                    class="text-black"
+                                    strokeWidth={3}
+                                />
+                            {/if}
+                        </div>
+                        <span
+                            class="text-lg font-medium {isCompleted
+                                ? 'text-muted line-through'
+                                : 'text-white'}"
+                        >
+                            {habit.name}
+                        </span>
                     </button>
+
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="flex items-center gap-1.5 text-xs text-muted"
+                        >
+                            <Flame
+                                size={12}
+                                class={habit.streak > 10
+                                    ? "text-orange-500"
+                                    : ""}
+                            />
+                            <span>{habit.streak}</span>
+                        </div>
+
+                        <button
+                            onclick={(e) => {
+                                e.stopPropagation();
+                                habitsStore.remove(habit.id);
+                            }}
+                            class="text-muted hover:text-red-500 p-1"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
                 </div>
-            </div>
-        {/each}
+            {/each}
+        {/if}
     </div>
 
     <!-- Consistency Graph -->

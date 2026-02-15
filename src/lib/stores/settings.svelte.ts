@@ -113,6 +113,10 @@ class SettingsStore {
     get pagePreferences() { return this.current.pagePreferences; }
     get mobileNavItems() { return this.current.mobileNavItems; }
 
+    async setMobileNavItems(mobileNavItems: string[]) {
+        await this.update({ mobileNavItems });
+    }
+
     async update(updates: Partial<UserSettings>) {
         await this.store.upsertSingle(updates);
     }

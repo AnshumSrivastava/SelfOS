@@ -16,6 +16,7 @@
     import ConsistencyChart from "./ConsistencyChart.svelte";
     import StreakFire from "$lib/components/ui/StreakFire.svelte";
     import { settings } from "$lib/stores/settings.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     const isMinimal = $derived(settings.theme === "minimal");
 
@@ -129,56 +130,22 @@
 
             <!-- Habits Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {#each enhancedHabits as habit (habit.id)}
-                    <div
-                        class="card-subtle group hover:border-primary transition-all relative overflow-hidden text-left {habit.status ===
-                        'at-risk'
-                            ? 'border-orange-500/30'
-                            : habit.status === 'champion'
-                              ? 'border-purple-500/30'
-                              : ''}"
-                    >
+                {#if habitsStore.loading}
+                    <SkeletonLoader lines={6} height="h-24" />
+                    <SkeletonLoader lines={6} height="h-24" />
+                {:else}
+                    {#each enhancedHabits as habit (habit.id)}
                         <div
-                            class="flex justify-between items-start mb-4 relative z-10"
+                            class="card-subtle group hover:border-primary transition-all relative overflow-hidden text-left {habit.status ===
+                            'at-risk'
+                                ? 'border-orange-500/30'
+                                : habit.status === 'champion'
+                                  ? 'border-purple-500/30'
+                                  : ''}"
                         >
-                            <button
-                                onclick={(e) => {
-                                    if (!habit.isCompleted) {
-                                        fire.ignite(e.clientX, e.clientY);
-                                    }
-                                    habitsStore.toggle(habit.id);
-                                }}
-                                class="text-left flex-1"
+                            <div
+                                class="flex justify-between items-start mb-4 relative z-10"
                             >
-                                <h3
-                                    class="font-bold text-lg text-white group-hover:text-primary transition-colors mb-2"
-                                >
-                                    {habit.name}
-                                </h3>
-                                {#if habit.statusMessage}
-                                    <span
-                                        class="text-xs px-2 py-0.5 rounded-full bg-current/10 {habit.statusColor} font-medium"
-                                    >
-                                        {habit.statusMessage}
-                                    </span>
-                                {:else}
-                                    <span
-                                        class="text-xs text-muted border border-line px-2 py-0.5 rounded-full"
-                                        >Daily</span
-                                    >
-                                {/if}
-                            </button>
-                            <div class="flex gap-2 items-center">
-                                <button
-                                    onclick={(e) => {
-                                        e.stopPropagation();
-                                        habitsStore.remove(habit.id);
-                                    }}
-                                    class="w-8 h-8 rounded-full border border-line flex items-center justify-center text-muted hover:text-red-500 hover:border-red-500 transition-colors bg-surface opacity-0 group-hover:opacity-100"
-                                    title="Delete Habit"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
                                 <button
                                     onclick={(e) => {
                                         if (!habit.isCompleted) {
@@ -186,91 +153,135 @@
                                         }
                                         habitsStore.toggle(habit.id);
                                     }}
-                                    class="w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all {habit.isCompleted
-                                        ? 'bg-primary border-primary text-black scale-110'
-                                        : 'border-line hover:border-primary bg-surface hover:scale-105'}"
+                                    class="text-left flex-1"
                                 >
-                                    {#if habit.isCompleted}<Check
-                                            size={18}
-                                        />{/if}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div
-                            class="relative z-10 pt-4 border-t border-line/50 mt-4 flex items-center justify-between"
-                        >
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="flex items-center gap-1 text-sm {habit.isCompleted
-                                        ? 'text-primary'
-                                        : 'text-muted'}"
-                                >
-                                    <Flame
-                                        size={16}
-                                        class={habit.isCompleted
-                                            ? "text-orange-500"
-                                            : habit.status === "at-risk"
-                                              ? "text-orange-400"
-                                              : "text-muted"}
-                                    />
-                                    <span class="font-semibold"
-                                        >{habit.streak}</span
+                                    <h3
+                                        class="font-bold text-lg text-white group-hover:text-primary transition-colors mb-2"
                                     >
-                                    <span class="text-xs">days</span>
+                                        {habit.name}
+                                    </h3>
+                                    {#if habit.statusMessage}
+                                        <span
+                                            class="text-xs px-2 py-0.5 rounded-full bg-current/10 {habit.statusColor} font-medium"
+                                        >
+                                            {habit.statusMessage}
+                                        </span>
+                                    {:else}
+                                        <span
+                                            class="text-xs text-muted border border-line px-2 py-0.5 rounded-full"
+                                            >Daily</span
+                                        >
+                                    {/if}
+                                </button>
+                                <div class="flex gap-2 items-center">
+                                    <button
+                                        onclick={(e) => {
+                                            e.stopPropagation();
+                                            habitsStore.remove(habit.id);
+                                        }}
+                                        class="w-8 h-8 rounded-full border border-line flex items-center justify-center text-muted hover:text-red-500 hover:border-red-500 transition-colors bg-surface opacity-0 group-hover:opacity-100"
+                                        title="Delete Habit"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                    <button
+                                        onclick={(e) => {
+                                            if (!habit.isCompleted) {
+                                                fire.ignite(
+                                                    e.clientX,
+                                                    e.clientY,
+                                                );
+                                            }
+                                            habitsStore.toggle(habit.id);
+                                        }}
+                                        class="w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all {habit.isCompleted
+                                            ? 'bg-primary border-primary text-black scale-110'
+                                            : 'border-line hover:border-primary bg-surface hover:scale-105'}"
+                                    >
+                                        {#if habit.isCompleted}<Check
+                                                size={18}
+                                            />{/if}
+                                    </button>
                                 </div>
                             </div>
-                            {#if habit.streak >= 21}
-                                <Trophy size={16} class="text-purple-400" />
-                            {:else if habit.streak >= 7}
-                                <Trophy size={16} class="text-yellow-500" />
-                            {:else if habit.status === "at-risk"}
-                                <AlertTriangle
-                                    size={16}
-                                    class="text-orange-400"
-                                />
+
+                            <div
+                                class="relative z-10 pt-4 border-t border-line/50 mt-4 flex items-center justify-between"
+                            >
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="flex items-center gap-1 text-sm {habit.isCompleted
+                                            ? 'text-primary'
+                                            : 'text-muted'}"
+                                    >
+                                        <Flame
+                                            size={16}
+                                            class={habit.isCompleted
+                                                ? "text-orange-500"
+                                                : habit.status === "at-risk"
+                                                  ? "text-orange-400"
+                                                  : "text-muted"}
+                                        />
+                                        <span class="font-semibold"
+                                            >{habit.streak}</span
+                                        >
+                                        <span class="text-xs">days</span>
+                                    </div>
+                                </div>
+                                {#if habit.streak >= 21}
+                                    <Trophy size={16} class="text-purple-400" />
+                                {:else if habit.streak >= 7}
+                                    <Trophy size={16} class="text-yellow-500" />
+                                {:else if habit.status === "at-risk"}
+                                    <AlertTriangle
+                                        size={16}
+                                        class="text-orange-400"
+                                    />
+                                {/if}
+                            </div>
+
+                            <!-- Background Effects -->
+                            {#if !isMinimal}
+                                {#if habit.isCompleted}
+                                    <div
+                                        class="absolute bottom-0 left-0 w-full h-1 bg-primary"
+                                    ></div>
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
+                                    ></div>
+                                {:else if habit.status === "at-risk"}
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"
+                                    ></div>
+                                {:else if habit.status === "champion"}
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"
+                                    ></div>
+                                {/if}
                             {/if}
                         </div>
+                    {/each}
 
-                        <!-- Background Effects -->
-                        {#if !isMinimal}
-                            {#if habit.isCompleted}
-                                <div
-                                    class="absolute bottom-0 left-0 w-full h-1 bg-primary"
-                                ></div>
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
-                                ></div>
-                            {:else if habit.status === "at-risk"}
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none"
-                                ></div>
-                            {:else if habit.status === "champion"}
-                                <div
-                                    class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent pointer-events-none"
-                                ></div>
-                            {/if}
-                        {/if}
-                    </div>
-                {/each}
-
-                {#if habitsStore.habits.length === 0}
-                    <div
-                        class="col-span-full text-center py-12 text-muted card border-dashed"
-                    >
-                        <Flame size={48} class="mx-auto mb-4 opacity-50" />
-                        <p class="text-lg font-medium mb-2">No habits yet</p>
-                        <p class="text-sm mb-4">
-                            Start building positive habits to track your
-                            progress
-                        </p>
-                        <button
-                            onclick={() => (isAdding = true)}
-                            class="btn btn-primary"
+                    {#if habitsStore.habits.length === 0}
+                        <div
+                            class="col-span-full text-center py-12 text-muted card border-dashed"
                         >
-                            <Plus size={18} /> Create Your First Habit
-                        </button>
-                    </div>
+                            <Flame size={48} class="mx-auto mb-4 opacity-50" />
+                            <p class="text-lg font-medium mb-2">
+                                No habits yet
+                            </p>
+                            <p class="text-sm mb-4">
+                                Start building positive habits to track your
+                                progress
+                            </p>
+                            <button
+                                onclick={() => (isAdding = true)}
+                                class="btn btn-primary"
+                            >
+                                <Plus size={18} /> Create Your First Habit
+                            </button>
+                        </div>
+                    {/if}
                 {/if}
             </div>
         </div>

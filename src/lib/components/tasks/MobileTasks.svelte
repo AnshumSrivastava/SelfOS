@@ -3,6 +3,7 @@
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import MobileTaskCard from "$lib/components/tasks/MobileQuestCard.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     let filter = $state("active");
     let isQuickCaptureOpen = $state(false);
@@ -59,22 +60,26 @@
 
     <!-- Task List -->
     <div class="space-y-0">
-        {#if filteredTasks.length === 0}
-            <div class="text-center py-16">
-                <p class="text-muted">No tasks found</p>
-                <p class="text-sm text-muted/60 mt-1">
-                    Tap + to add a new task
-                </p>
-            </div>
-        {/if}
+        {#if tasksStore.loading}
+            <SkeletonLoader lines={4} height="h-20" />
+        {:else}
+            {#if filteredTasks.length === 0}
+                <div class="text-center py-16">
+                    <p class="text-muted">No tasks found</p>
+                    <p class="text-sm text-muted/60 mt-1">
+                        Tap + to add a new task
+                    </p>
+                </div>
+            {/if}
 
-        {#each filteredTasks as task (task.id)}
-            <MobileTaskCard
-                {task}
-                onToggle={() => tasksStore.toggle(task.id)}
-                onDelete={() => tasksStore.remove(task.id)}
-            />
-        {/each}
+            {#each filteredTasks as task (task.id)}
+                <MobileTaskCard
+                    {task}
+                    onToggle={() => tasksStore.toggle(task.id)}
+                    onDelete={() => tasksStore.remove(task.id)}
+                />
+            {/each}
+        {/if}
     </div>
 
     <!-- Floating Add Button -->

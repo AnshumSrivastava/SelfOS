@@ -125,6 +125,13 @@ export class SupabaseStore<T extends { id: string }> {
             return;
         }
 
+        const tempId = `temp-${crypto.randomUUID()}`;
+        const previousValue = [...this.#value];
+
+        // Optimistic update
+        const optimisticItem = this.toCamel({ ...item, id: tempId });
+        this.#value = [optimisticItem, ...this.#value];
+
         try {
             const dbItem = this.toSnake({ ...item, user_id: auth.user?.id });
             this.#log('Inserting dbItem:', dbItem);
@@ -138,19 +145,23 @@ export class SupabaseStore<T extends { id: string }> {
             if (error) {
                 this.#log('Insert query error:', error, 'error');
                 this.#handleError('insert', error);
+                this.#value = previousValue; // Rollback
                 throw error;
             }
 
             if (data) {
                 const mapped = this.toCamel(data);
-                this.#value = [mapped, ...this.#value];
-                this.#log('Insert successful, new ID:', mapped.id);
+                // Replace optimistic item with actual data
+                this.#value = this.#value.map(i => i.id === tempId ? mapped : i);
+                this.#log('Insert successful, replaced temp ID with:', mapped.id);
                 return mapped;
             } else {
                 this.#log('Insert returned no data (unexpected)', null, 'warn');
+                this.#value = previousValue; // Rollback just in case
             }
         } catch (e) {
             this.#log('Unexpected error during insert', e, 'error');
+            this.#value = previousValue; // Rollback
             throw e;
         }
     }

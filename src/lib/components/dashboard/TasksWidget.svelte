@@ -7,8 +7,10 @@
         Flame,
     } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     /**
      * Dashboard widget for displaying priority tasks.
@@ -64,6 +66,9 @@
 
                 return {
                     ...task,
+                    project: projectsStore.projects.find(
+                        (p) => p.id === task.projectId,
+                    )?.name,
                     urgency,
                     urgencyLabel,
                     urgencyColor,
@@ -124,77 +129,85 @@
         </button>
     </div>
 
-    <div class="space-y-2">
-        {#each upcomingTasks as task}
-            <button
-                onclick={() => tasksStore.toggle(task.id)}
-                class="w-full flex items-start gap-3 p-3 rounded-xl bg-surface hover:bg-surface/80 transition-all group text-left border border-transparent {task.urgency >=
-                90
-                    ? 'border-red-500/20'
-                    : task.urgency >= 80
-                      ? 'border-orange-500/20'
-                      : ''}"
-            >
-                <div
-                    class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 mt-0.5 {task.status ===
-                    'completed'
-                        ? 'bg-primary border-primary'
-                        : 'border-line group-hover:border-primary/50'}"
+    <div class="space-y-4">
+        {#if tasksStore.loading}
+            <SkeletonLoader lines={4} height="h-16" />
+        {:else}
+            {#each upcomingTasks as task}
+                <button
+                    onclick={() => tasksStore.toggle(task.id)}
+                    class="w-full flex items-start gap-3 p-3 rounded-xl bg-surface hover:bg-surface/80 transition-all group text-left border border-transparent {task.urgency >=
+                    90
+                        ? 'border-red-500/20'
+                        : task.urgency >= 80
+                          ? 'border-orange-500/20'
+                          : ''}"
                 >
-                    {#if task.status === "completed"}
-                        <Check size={14} class="text-black" />
-                    {/if}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-start gap-2 mb-1">
-                        <p
-                            class="text-sm font-medium text-white flex-1 {task.status ===
-                            'completed'
-                                ? 'line-through text-muted'
-                                : ''}"
-                        >
-                            {task.title}
-                        </p>
-                        {#if task.urgencyLabel}
+                    <div
+                        class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 mt-0.5 {task.status ===
+                        'completed'
+                            ? 'bg-primary border-primary'
+                            : 'border-line group-hover:border-primary/50'}"
+                    >
+                        {#if task.status === "completed"}
+                            <Check size={14} class="text-black" />
+                        {/if}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start gap-2 mb-1">
+                            <p
+                                class="text-sm font-medium text-white flex-1 {task.status ===
+                                'completed'
+                                    ? 'line-through text-muted'
+                                    : ''}"
+                            >
+                                {task.title}
+                            </p>
+                            {#if task.urgencyLabel}
+                                <span
+                                    class="text-xs font-medium flex items-center gap-1 {task.urgencyColor} whitespace-nowrap"
+                                >
+                                    {#if task.urgency >= 90}
+                                        <AlertCircle size={12} />
+                                    {:else if task.urgency >= 80}
+                                        <Flame size={12} />
+                                    {:else}
+                                        <Clock size={12} />
+                                    {/if}
+                                    {task.urgencyLabel}
+                                </span>
+                            {/if}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-1.5 h-1.5 rounded-full {getPriorityDot(
+                                    task.priority,
+                                )}"
+                            ></div>
                             <span
-                                class="text-xs font-medium flex items-center gap-1 {task.urgencyColor} whitespace-nowrap"
+                                class="text-xs {getPriorityColor(
+                                    task.priority,
+                                )}"
                             >
-                                {#if task.urgency >= 90}
-                                    <AlertCircle size={12} />
-                                {:else if task.urgency >= 80}
-                                    <Flame size={12} />
-                                {:else}
-                                    <Clock size={12} />
-                                {/if}
-                                {task.urgencyLabel}
+                                {task.priority}
                             </span>
-                        {/if}
+                            {#if task.project}
+                                <span class="text-xs text-muted"
+                                    >· {task.project}</span
+                                >
+                            {/if}
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-1.5 h-1.5 rounded-full {getPriorityDot(
-                                task.priority,
-                            )}"
-                        ></div>
-                        <span class="text-xs {getPriorityColor(task.priority)}">
-                            {task.priority}
-                        </span>
-                        {#if task.project}
-                            <span class="text-xs text-muted"
-                                >· {task.project}</span
-                            >
-                        {/if}
-                    </div>
-                </div>
-            </button>
-        {/each}
+                </button>
+            {/each}
 
-        {#if upcomingTasks.length === 0}
-            <div class="text-center py-8 text-muted">
-                <CheckSquare size={32} class="mx-auto mb-2 opacity-50" />
-                <p class="text-sm">No tasks pending</p>
-                <p class="text-xs mt-1">You're all caught up!</p>
-            </div>
+            {#if upcomingTasks.length === 0}
+                <div class="text-center py-8 text-muted">
+                    <CheckSquare size={32} class="mx-auto mb-2 opacity-50" />
+                    <p class="text-sm">No tasks pending</p>
+                    <p class="text-xs mt-1">You're all caught up!</p>
+                </div>
+            {/if}
         {/if}
     </div>
 

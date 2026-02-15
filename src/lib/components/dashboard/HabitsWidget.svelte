@@ -9,6 +9,7 @@
     import { habitsStore } from "$lib/stores/habits.svelte";
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     // Get today's habits with enhanced information
     let todayHabits = $derived.by(() => {
@@ -98,70 +99,77 @@
         </div>
     {/if}
 
-    <div class="space-y-2">
-        {#each todayHabits as habit}
-            <button
-                onclick={() => habitsStore.toggle(habit.id)}
-                class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface/80 transition-all group"
-            >
-                <div
-                    class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all {habit.completed
-                        ? 'bg-primary border-primary'
-                        : 'border-line group-hover:border-primary/50'}"
+    <div class="space-y-4">
+        {#if habitsStore.loading}
+            <SkeletonLoader lines={3} height="h-12" />
+        {:else}
+            {#each todayHabits as habit}
+                <button
+                    onclick={() => habitsStore.toggle(habit.id)}
+                    class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface/80 transition-all group"
                 >
-                    {#if habit.completed}
-                        <Check size={14} class="text-black" />
-                    {/if}
-                </div>
-                <div class="flex-1 text-left">
-                    <p
-                        class="text-sm font-medium {habit.completed
-                            ? 'text-muted line-through'
-                            : 'text-white'}"
-                    >
-                        {habit.name}
-                    </p>
-                    {#if habit.streakMessage}
-                        <p
-                            class="text-xs mt-0.5 {getStreakColor(
-                                habit.streakStatus,
-                            )}"
-                        >
-                            {habit.streakMessage}
-                        </p>
-                    {/if}
-                </div>
-                {#if habit.streak > 0}
                     <div
-                        class="flex items-center gap-1.5 px-2 py-1 rounded-lg {habit.streakStatus ===
-                        'at-risk'
-                            ? 'bg-red-500/10 text-red-400'
-                            : habit.streakStatus === 'warning'
-                              ? 'bg-orange-500/10 text-orange-400'
-                              : habit.streakStatus === 'strong'
-                                ? 'bg-green-500/10 text-green-400'
-                                : 'bg-primary/10 text-primary'}"
+                        class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all {habit.completed
+                            ? 'bg-primary border-primary'
+                            : 'border-line group-hover:border-primary/50'}"
                     >
-                        {#if habit.streakStatus === "at-risk"}
-                            <AlertTriangle size={12} />
-                        {:else if habit.streakStatus === "strong"}
-                            <TrendingUp size={12} />
-                        {:else}
-                            <Flame size={12} />
+                        {#if habit.completed}
+                            <Check size={14} class="text-black" />
                         {/if}
-                        <span class="text-xs font-semibold">{habit.streak}</span
-                        >
                     </div>
-                {/if}
-            </button>
-        {/each}
+                    <div class="flex-1 text-left">
+                        <p
+                            class="text-sm font-medium {habit.completed
+                                ? 'text-muted line-through'
+                                : 'text-white'}"
+                        >
+                            {habit.name}
+                        </p>
+                        {#if habit.streakMessage}
+                            <p
+                                class="text-xs mt-0.5 {getStreakColor(
+                                    habit.streakStatus,
+                                )}"
+                            >
+                                {habit.streakMessage}
+                            </p>
+                        {/if}
+                    </div>
+                    {#if habit.streak > 0}
+                        <div
+                            class="flex items-center gap-1.5 px-2 py-1 rounded-lg {habit.streakStatus ===
+                            'at-risk'
+                                ? 'bg-red-500/10 text-red-400'
+                                : habit.streakStatus === 'warning'
+                                  ? 'bg-orange-500/10 text-orange-400'
+                                  : habit.streakStatus === 'strong'
+                                    ? 'bg-green-500/10 text-green-400'
+                                    : 'bg-primary/10 text-primary'}"
+                        >
+                            {#if habit.streakStatus === "at-risk"}
+                                <AlertTriangle size={12} />
+                            {:else if habit.streakStatus === "strong"}
+                                <TrendingUp size={12} />
+                            {:else}
+                                <Flame size={12} />
+                            {/if}
+                            <span class="text-xs font-semibold"
+                                >{habit.streak}</span
+                            >
+                        </div>
+                    {/if}
+                </button>
+            {/each}
 
-        {#if todayHabits.length === 0}
-            <div class="text-center py-8 text-muted">
-                <Activity size={32} class="mx-auto mb-2 opacity-50" />
-                <p class="text-sm">No habits yet</p>
-                <p class="text-xs mt-1">Start building good habits today!</p>
-            </div>
+            {#if todayHabits.length === 0}
+                <div class="text-center py-8 text-muted">
+                    <Activity size={32} class="mx-auto mb-2 opacity-50" />
+                    <p class="text-sm">No habits yet</p>
+                    <p class="text-xs mt-1">
+                        Start building good habits today!
+                    </p>
+                </div>
+            {/if}
         {/if}
     </div>
 </div>

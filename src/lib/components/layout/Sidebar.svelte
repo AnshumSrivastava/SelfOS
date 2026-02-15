@@ -218,6 +218,7 @@
         <!-- svelte-ignore a11y_missing_attribute -->
         <a
             href={`${base}/`}
+            data-sveltekit-preload-hover
             class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative {$page
                 .url.pathname === `${base}/`
                 ? 'bg-surface text-primary border border-line'
@@ -285,6 +286,7 @@
                             <!-- svelte-ignore a11y_missing_attribute -->
                             <a
                                 href={item.href}
+                                data-sveltekit-preload-hover
                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group {item.href ===
                                 `${base}/`
                                     ? $page.url.pathname === item.href
@@ -320,6 +322,7 @@
                             <!-- svelte-ignore a11y_missing_attribute -->
                             <a
                                 href={item.href}
+                                data-sveltekit-preload-hover
                                 class="flex items-center justify-center px-3 py-2.5 rounded-lg transition-all duration-200 group relative {item.href ===
                                 `${base}/`
                                     ? $page.url.pathname === item.href

@@ -4,6 +4,7 @@
     import type { Project } from "$lib/stores/projects.svelte";
     import ProjectDetailModal from "./ProjectDetailModal.svelte";
     import ParaKanbanColumn from "./ParaKanbanColumn.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     let selectedProject: Project | null = $state(null);
 
@@ -67,13 +68,23 @@
     <div
         class="flex-1 flex gap-6 px-8 overflow-x-auto pb-12 custom-scrollbar-h items-start"
     >
-        {#each projectsStore.sections as section}
-            <ParaKanbanColumn
-                {section}
-                items={getSectionItems(section.type)}
-                onOpenProject={openProject}
-            />
-        {/each}
+        {#if projectsStore.loading}
+            <div class="flex gap-6 w-full">
+                {#each Array(4) as _}
+                    <div class="w-80 shrink-0">
+                        <SkeletonLoader lines={5} height="h-32" />
+                    </div>
+                {/each}
+            </div>
+        {:else}
+            {#each projectsStore.sections as section}
+                <ParaKanbanColumn
+                    {section}
+                    items={getSectionItems(section.type)}
+                    onOpenProject={openProject}
+                />
+            {/each}
+        {/if}
 
         <!-- Spacer for end padding -->
         <div class="w-8 shrink-0"></div>

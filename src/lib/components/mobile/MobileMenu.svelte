@@ -20,6 +20,7 @@
     import { page } from "$app/stores";
     import { base } from "$app/paths";
     import { settings } from "$lib/stores/settings.svelte";
+    import { goto } from "$app/navigation";
 
     let { isOpen = $bindable(false) } = $props();
 
@@ -148,12 +149,12 @@
 
     function togglePin(key: string) {
         if (settings.mobileNavItems.includes(key)) {
-            settings.mobileNavItems = settings.mobileNavItems.filter(
-                (k) => k !== key,
+            settings.setMobileNavItems(
+                settings.mobileNavItems.filter((k) => k !== key),
             );
         } else {
             if (settings.mobileNavItems.length < 4) {
-                settings.mobileNavItems = [...settings.mobileNavItems, key];
+                settings.setMobileNavItems([...settings.mobileNavItems, key]);
             }
         }
     }
@@ -220,7 +221,7 @@
                             togglePin(link.key);
                         } else {
                             isOpen = false;
-                            window.location.href = link.href;
+                            goto(link.href);
                         }
                     }}
                     class="relative flex flex-col items-center gap-3 p-4 rounded-2xl border border-[var(--color-line)]/50 bg-[var(--theme-surface)]/50 active:scale-[0.94] transition-all cursor-pointer backdrop-blur-sm

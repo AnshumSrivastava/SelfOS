@@ -103,36 +103,63 @@ class HabitsStore {
     async toggle(id: string) {
         const today = new Date().toISOString().split('T')[0];
         const existingCheckin = this.checkins.find(c => c.habit_id === id && c.date === today);
+        const previousCheckins = [...this.checkins];
 
         if (existingCheckin) {
-            const { error } = await supabase
-                .from('habit_checkins')
-                .delete()
-                .eq('id', existingCheckin.id);
-
-            if (error) {
-                this.#log('Failed to delete checkin', error, 'error');
-                throw error;
-            }
+            // Optimistic Remove
             this.checkins = this.checkins.filter(c => c.id !== existingCheckin.id);
-        } else {
-            const { data, error } = await supabase
-                .from('habit_checkins')
-                .insert([{
-                    user_id: auth.user?.id,
-                    habit_id: id,
-                    date: today,
-                    status: 'completed'
-                }])
-                .select()
-                .single();
 
-            if (error) {
-                this.#log('Failed to insert checkin', error, 'error');
-                throw error;
+            try {
+                const { error } = await supabase
+                    .from('habit_checkins')
+                    .delete()
+                    .eq('id', existingCheckin.id);
+
+                if (error) {
+                    this.#log('Failed to delete checkin, rolling back', error, 'error');
+                    this.checkins = previousCheckins;
+                    throw error;
+                }
+            } catch (err) {
+                this.checkins = previousCheckins;
+                throw err;
             }
-            if (data) {
-                this.checkins.push(data);
+        } else {
+            // Optimistic Add
+            const tempId = `temp-${crypto.randomUUID()}`;
+            const optimisticCheckin: HabitCheckin = {
+                id: tempId,
+                habit_id: id,
+                date: today,
+                status: 'completed'
+            };
+            this.checkins = [...this.checkins, optimisticCheckin];
+
+            try {
+                const { data, error } = await supabase
+                    .from('habit_checkins')
+                    .insert([{
+                        user_id: auth.user?.id,
+                        habit_id: id,
+                        date: today,
+                        status: 'completed'
+                    }])
+                    .select()
+                    .single();
+
+                if (error) {
+                    this.#log('Failed to insert checkin, rolling back', error, 'error');
+                    this.checkins = previousCheckins;
+                    throw error;
+                }
+
+                if (data) {
+                    // Replace tempId with actual id from DB
+                    this.checkins = this.checkins.map(c => c.id === tempId ? data : c);
+                }
+            } catch (err) {
+                this.checkins = previousCheckins;
+                throw err;
             }
         }
 

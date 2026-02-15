@@ -21,6 +21,7 @@
     import { fade, fly } from "svelte/transition";
     import { page } from "$app/stores";
     import { base } from "$app/paths";
+    import { goto } from "$app/navigation";
 
     function getIcon(type: string) {
         switch (type) {
@@ -112,7 +113,7 @@
             const result = searchStore.results[selectedIndex];
             if (result) {
                 searchStore.close();
-                window.location.href = result.href;
+                goto(result.href);
             }
         }
     }
