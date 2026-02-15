@@ -92,9 +92,14 @@
       ["INPUT", "TEXTAREA"].includes(target.tagName) ||
       target.isContentEditable;
 
-    if (e.key === "s" && !isInput) {
+    if (e.key === " " && !isInput) {
       e.preventDefault();
       searchStore.open();
+    }
+
+    if (e.key === "s" && !isInput) {
+      e.preventDefault();
+      goto(`${base}/settings`);
     }
 
     if (e.key === "Tab" && !isInput) {
