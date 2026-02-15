@@ -9,6 +9,7 @@ export type Habit = {
     color?: string;
     frequency?: string;
     streak: number;
+    completedDates: string[];
     last_completed?: string;
     created_at?: string;
     updated_at?: string;
@@ -46,7 +47,12 @@ class HabitsStore {
     }
 
     get habits() {
-        return this.store.value;
+        return this.store.value.map(habit => ({
+            ...habit,
+            completedDates: this.checkins
+                .filter(c => c.habit_id === habit.id && c.status === 'completed')
+                .map(c => c.date)
+        }));
     }
 
     get loading() {

@@ -9,7 +9,7 @@
         GripVertical,
     } from "lucide-svelte";
     import { projectsStore, type Project } from "$lib/stores/projects.svelte";
-    import { fade, slide } from "svelte/transition";
+    import { fade } from "svelte/transition";
 
     let {
         section,
@@ -112,7 +112,7 @@
             <div
                 draggable="true"
                 ondragstart={(e) => handleDragStart(e, item.id)}
-                transition:slide={{ duration: 200 }}
+                transition:fade={{ duration: 200 }}
                 class="group relative p-4 rounded-2xl bg-surface border border-line hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98] shadow-sm hover:shadow-primary/5"
                 onclick={() => onOpenProject(item)}
                 onkeydown={(e) => e.key === "Enter" && onOpenProject(item)}
@@ -153,7 +153,7 @@
                                 >
                                     <div
                                         class="h-full bg-emerald-500"
-                                        style="width: {item.progress}%"
+                                        style="width: {item.progress || 0}%"
                                     ></div>
                                 </div>
                                 <span

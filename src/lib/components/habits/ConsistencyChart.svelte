@@ -20,7 +20,7 @@
 
             const totalHabits = habitsStore.totalCount;
             const completedCount = habitsStore.habits.filter((h) =>
-                h.completedDates.includes(dateStr),
+                (h.completedDates || []).includes(dateStr),
             ).length;
             const percentage =
                 totalHabits > 0 ? (completedCount / totalHabits) * 100 : 0;

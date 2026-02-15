@@ -124,7 +124,7 @@ class ProjectsStore {
             const section = DEFAULT_SECTIONS.find(s => s.type === type);
 
             return await this.projectsStore.insert({
-                name: project.name || 'New Item',
+                name: (project.name && project.name.trim()) || 'New ' + (section?.name || 'Item'),
                 type: type,
                 progress: 0,
                 color: section?.color.replace('text-', '') || "emerald-500",

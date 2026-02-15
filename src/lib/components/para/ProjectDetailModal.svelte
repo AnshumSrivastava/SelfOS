@@ -37,6 +37,32 @@
     let viewMode = $state<"default" | "history">("default");
     let mobileMode = $state<"view" | "edit">("view");
 
+    // Editing metadata
+    let editName = $state(liveProject.name);
+    let editIntent = $state(liveProject.intent || "");
+    let isSaving = $state(false);
+
+    const hasUnsavedChanges = $derived(
+        editName !== liveProject.name ||
+            editIntent !== (liveProject.intent || ""),
+    );
+
+    async function saveMetadata() {
+        if (!editName.trim()) {
+            editName = liveProject.name; // Reset if empty
+            return;
+        }
+        isSaving = true;
+        try {
+            await projectsStore.updateProject(liveProject.id, {
+                name: editName.trim(),
+                intent: editIntent.trim(),
+            });
+        } finally {
+            isSaving = false;
+        }
+    }
+
     // Derived Lists
     let tasks = $derived(
         projectsStore
@@ -180,28 +206,37 @@
                                 class="w-3 h-3 bg-current rounded-full opacity-50"
                             ></div>
                         </div>
-                        <div>
-                            <h1
-                                class="text-lg font-bold text-white leading-tight flex items-center gap-2"
-                            >
-                                {liveProject.name}
+                        <div class="flex-1 min-w-0">
+                            <input
+                                bind:value={editName}
+                                onblur={saveMetadata}
+                                class="bg-transparent border-none text-lg font-bold text-white leading-tight w-full focus:outline-none focus:ring-0 placeholder:opacity-50"
+                                placeholder="Project Name"
+                            />
+                            <div class="flex items-center gap-2 mt-0.5">
                                 {#if isDormant}
                                     <span
-                                        class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                        class="text-[10px] text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
                                         >Dormant</span
                                     >
                                 {/if}
-                            </h1>
+                                {#if isSaving}
+                                    <span
+                                        class="text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse"
+                                        >Saving...</span
+                                    >
+                                {/if}
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    {#if liveProject.intent}
-                        <span
-                            class="hidden md:block text-xs text-muted italic truncate max-w-[300px]"
-                            >"{liveProject.intent}"</span
-                        >
-                    {/if}
+                <div class="flex items-center gap-4 flex-1 justify-end px-4">
+                    <input
+                        bind:value={editIntent}
+                        onblur={saveMetadata}
+                        class="hidden md:block bg-transparent border-none text-xs text-muted italic text-right focus:outline-none focus:ring-0 placeholder:opacity-30 w-full max-w-[400px]"
+                        placeholder="Add an intent or objective..."
+                    />
                     <div class="w-px h-4 bg-line hidden md:block"></div>
                     <button
                         onclick={() =>
@@ -307,15 +342,19 @@
                 class="md:hidden px-6 py-4 flex flex-col gap-4 border-b border-neutral-800 bg-neutral-900/50"
             >
                 <div class="flex justify-between items-start">
-                    <div>
-                        <h2 class="text-xl font-bold text-white leading-tight">
-                            {liveProject.name}
-                        </h2>
-                        {#if liveProject.intent}
-                            <p class="text-sm text-muted mt-1">
-                                {liveProject.intent}
-                            </p>
-                        {/if}
+                    <div class="w-full">
+                        <input
+                            bind:value={editName}
+                            onblur={saveMetadata}
+                            class="text-xl font-bold text-white leading-tight bg-transparent border-none w-full focus:outline-none placeholder:opacity-50"
+                            placeholder="Project Name"
+                        />
+                        <input
+                            bind:value={editIntent}
+                            onblur={saveMetadata}
+                            class="text-sm text-muted mt-1 bg-transparent border-none w-full focus:outline-none placeholder:opacity-30"
+                            placeholder="Add intent..."
+                        />
                     </div>
                 </div>
 
