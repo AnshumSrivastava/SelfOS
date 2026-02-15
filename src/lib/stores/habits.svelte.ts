@@ -9,7 +9,7 @@ export type Habit = {
     color?: string;
     frequency?: string;
     streak: number;
-    completedDates: string[];
+    completed_dates?: string[];
     last_completed?: string;
     created_at?: string;
     updated_at?: string;
@@ -43,7 +43,20 @@ class HabitsStore {
     }
 
     constructor() {
-        this.fetchCheckins();
+        if (typeof window !== 'undefined') {
+            $effect.root(() => {
+                $effect(() => {
+                    if (!auth.loading) {
+                        if (auth.isAuthenticated) {
+                            this.#log(`Auth ready, fetching initial checkins...`);
+                            this.fetchCheckins();
+                        } else {
+                            this.checkinsLoading = false;
+                        }
+                    }
+                });
+            });
+        }
     }
 
     get habits() {

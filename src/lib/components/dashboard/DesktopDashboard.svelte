@@ -76,16 +76,20 @@
     {/if}
 
     <!-- Dynamic Dashboard Layout -->
-    <div class="flex flex-col gap-10">
+    <div class="flex flex-col gap-10 group/dashboard">
         <!-- Top Tier: Welcome & Critical Quick Capture -->
-        <div class="w-full">
+        <div
+            class="w-full transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+        >
             <WelcomeWidget />
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <!-- Main Content: Direct Execution and Decisions -->
             <div class="lg:col-span-2 space-y-10">
-                <section class="space-y-4">
+                <section
+                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+                >
                     <div class="flex items-center gap-2 px-1">
                         <div class="w-1 h-4 bg-primary rounded-full"></div>
                         <h2
@@ -100,7 +104,9 @@
                     </div>
                 </section>
 
-                <section class="space-y-4">
+                <section
+                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+                >
                     <div class="flex items-center gap-2 px-1">
                         <div class="w-1 h-4 bg-secondary rounded-full"></div>
                         <h2
@@ -118,7 +124,9 @@
 
             <!-- Sidebar: Context & Snapshots -->
             <div class="space-y-10">
-                <section class="space-y-4">
+                <section
+                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+                >
                     <div class="flex items-center gap-2 px-1">
                         <h2
                             class="text-xs font-bold uppercase tracking-widest text-muted"
@@ -129,7 +137,9 @@
                     <CalendarSnapshot />
                 </section>
 
-                <section class="space-y-4">
+                <section
+                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+                >
                     <div class="flex items-center gap-2 px-1">
                         <h2
                             class="text-xs font-bold uppercase tracking-widest text-muted"
@@ -140,7 +150,9 @@
                     <MomentumSnapshot />
                 </section>
 
-                <section class="space-y-4">
+                <section
+                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
+                >
                     <div class="flex items-center gap-2 px-1">
                         <h2
                             class="text-xs font-bold uppercase tracking-widest text-muted"
