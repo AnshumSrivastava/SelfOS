@@ -63,71 +63,84 @@
     }
 </script>
 
-<div class="card-subtle">
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
+<div class="card-subtle overflow-hidden relative group">
+    <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
+    ></div>
+
+    <div class="flex items-center justify-between mb-8 relative z-10">
+        <div class="flex items-center gap-4">
             <div
-                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"
+                class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shadow-inner"
             >
-                <Activity size={20} />
+                <Activity size={24} />
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-white">Daily Habits</h2>
-                <p class="text-xs text-muted">
-                    {habitsStore.completedCount}/{habitsStore.totalCount} completed
-                    · {completionRate}%
-                </p>
+                <h2 class="text-xl font-bold text-white tracking-tight">
+                    Rituals
+                </h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-primary"
+                        >{completionRate}% Done</span
+                    >
+                    <span class="w-1 h-1 rounded-full bg-line"></span>
+                    <span class="text-xs text-muted"
+                        >{habitsStore.completedCount}/{habitsStore.totalCount} completed</span
+                    >
+                </div>
             </div>
         </div>
         <button
             onclick={() => goto(`${base}/habits`)}
-            class="text-sm text-primary hover:underline font-medium"
+            class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-muted hover:text-white hover:bg-white/10 transition-all"
         >
-            View All
+            Manage
         </button>
     </div>
 
     <!-- Progress Bar -->
     {#if todayHabits.length > 0}
-        <div class="mb-4">
-            <div class="h-2 bg-surface rounded-full overflow-hidden">
+        <div class="mb-8 relative z-10">
+            <div
+                class="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5"
+            >
                 <div
-                    class="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
+                    class="h-full bg-primary transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--color-primary-rgb),0.5)]"
                     style="width: {completionRate}%"
                 ></div>
             </div>
         </div>
     {/if}
 
-    <div class="space-y-4">
+    <div class="space-y-3 relative z-10">
         {#if habitsStore.loading}
             <SkeletonLoader lines={3} height="h-12" />
         {:else}
             {#each todayHabits as habit}
                 <button
                     onclick={() => habitsStore.toggle(habit.id)}
-                    class="w-full flex items-center gap-3 p-3 rounded-xl bg-surface hover:bg-surface/80 transition-all group"
+                    class="w-full flex items-center gap-4 p-3 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 hover:bg-white/10 transition-all group"
                 >
                     <div
-                        class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all {habit.completed
-                            ? 'bg-primary border-primary'
-                            : 'border-line group-hover:border-primary/50'}"
+                        class="w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-all duration-300 {habit.completed
+                            ? 'bg-primary border-primary text-black scale-105'
+                            : 'border-white/10 group-hover:border-primary/50'}"
                     >
                         {#if habit.completed}
-                            <Check size={14} class="text-black" />
+                            <Check size={18} strokeWidth={3} />
                         {/if}
                     </div>
                     <div class="flex-1 text-left">
                         <p
-                            class="text-sm font-medium {habit.completed
-                                ? 'text-muted line-through'
+                            class="text-sm font-bold transition-all {habit.completed
+                                ? 'text-muted line-through opacity-50'
                                 : 'text-white'}"
                         >
                             {habit.name}
                         </p>
-                        {#if habit.streakMessage}
+                        {#if habit.streakMessage && !habit.completed}
                             <p
-                                class="text-xs mt-0.5 {getStreakColor(
+                                class="text-[10px] uppercase font-bold tracking-wider mt-0.5 {getStreakColor(
                                     habit.streakStatus,
                                 )}"
                             >
@@ -137,14 +150,14 @@
                     </div>
                     {#if habit.streak > 0}
                         <div
-                            class="flex items-center gap-1.5 px-2 py-1 rounded-lg {habit.streakStatus ===
+                            class="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-white/5 {habit.streakStatus ===
                             'at-risk'
-                                ? 'bg-red-500/10 text-red-400'
+                                ? 'bg-red-500/10 text-red-400 border-red-400/20'
                                 : habit.streakStatus === 'warning'
-                                  ? 'bg-orange-500/10 text-orange-400'
+                                  ? 'bg-orange-500/10 text-orange-400 border-orange-400/20'
                                   : habit.streakStatus === 'strong'
-                                    ? 'bg-green-500/10 text-green-400'
-                                    : 'bg-primary/10 text-primary'}"
+                                    ? 'bg-green-500/10 text-green-400 border-green-400/20'
+                                    : 'bg-primary/10 text-primary border-primary/20'}"
                         >
                             {#if habit.streakStatus === "at-risk"}
                                 <AlertTriangle size={12} />
@@ -153,7 +166,8 @@
                             {:else}
                                 <Flame size={12} />
                             {/if}
-                            <span class="text-xs font-semibold"
+                            <span
+                                class="text-xs font-mono font-bold tracking-tighter"
                                 >{habit.streak}</span
                             >
                         </div>
@@ -162,11 +176,13 @@
             {/each}
 
             {#if todayHabits.length === 0}
-                <div class="text-center py-8 text-muted">
-                    <Activity size={32} class="mx-auto mb-2 opacity-50" />
-                    <p class="text-sm">No habits yet</p>
-                    <p class="text-xs mt-1">
-                        Start building good habits today!
+                <div
+                    class="text-center py-12 text-muted bg-white/5 rounded-3xl border border-dashed border-white/10"
+                >
+                    <Activity size={40} class="mx-auto mb-4 opacity-20" />
+                    <p class="text-sm font-bold text-white/50">Quiet Day</p>
+                    <p class="text-[10px] uppercase tracking-widest mt-2">
+                        No active rituals
                     </p>
                 </div>
             {/if}
