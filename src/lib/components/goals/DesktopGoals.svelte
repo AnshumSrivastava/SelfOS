@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { getContext } from "svelte";
     import {
         Target,
         Plus,
@@ -11,268 +12,261 @@
         Clock,
         Calendar,
         Flame,
-        ArrowUpRight,
         Map,
         Upload,
+        Search,
+        PanelRightClose,
+        PanelRightOpen,
+        PanelLeftClose,
+        PanelLeftOpen,
+        TrendingUp,
+        BookOpen,
     } from "lucide-svelte";
-    import {
-        goalsStore,
-        type Goal,
-        type GoalArea,
-        type GoalHorizon,
-    } from "$lib/stores/goals.svelte";
+    import { goalsStore, type Goal } from "$lib/stores/goals.svelte";
     import GoalModal from "./GoalModal.svelte";
     import GoalBoard from "./GoalBoard.svelte";
     import GoalHierarchyTree from "./GoalHierarchyTree.svelte";
-    import GoalProgressRing from "./GoalProgressRing.svelte";
-    import NextStepPanel from "./NextStepPanel.svelte";
-    import GoalDetailModal from "./GoalDetailModal.svelte";
     import GoalRoadmap from "./GoalRoadmap.svelte";
     import PlaylistImporter from "./PlaylistImporter.svelte";
+    import GoalsFilters from "./GoalsFilters.svelte";
+    import GoalsTodayView from "./GoalsTodayView.svelte";
+    import GoalsReviewView from "./GoalsReviewView.svelte";
+    import GoalContextPanel from "./GoalContextPanel.svelte";
     import { fade, slide } from "svelte/transition";
 
+    let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
+        activeTab: "today" | "plan" | "review";
+        onTabChange: (tab: "today" | "plan" | "review") => void;
+        filters: any;
+        selectedGoalId: string | null;
+    }>();
+
+    const ux = getContext<{
+        selectedGoalId: string | null;
+        activeTab: string;
+    }>("goalsUX") as any;
+
     let showGoalModal = $state(false);
-    let showDetailModal = $state(false);
     let editingGoal = $state<Goal | null>(null);
-    let selectedGoal = $state<Goal | null>(null);
-    let viewMode = $state<
-        "strategic" | "board" | "roadmap" | "importer" | "focus"
-    >("strategic");
-    let focusedGoalId = $state<string | null>(null);
-    let activeHorizon = $state<GoalHorizon | "all">("all");
-    let activeArea = $state<GoalArea | "All">("All");
+    let leftPaneOpen = $state(true);
+    let rightPaneOpen = $state(true);
 
-    function handleOpenFocus(goalId: string) {
-        focusedGoalId = goalId;
-        viewMode = "focus";
-    }
-
-    function clearFocus() {
-        focusedGoalId = null;
-        viewMode = "strategic";
-    }
-
-    const horizons: { id: GoalHorizon | "all"; name: string; icon: any }[] = [
-        { id: "all", name: "All Horizons", icon: Compass },
-        { id: "life", name: "Life Goals", icon: Flame },
-        { id: "long", name: "Long Term", icon: Calendar },
-        { id: "mid", name: "Mid Term", icon: Clock },
-        { id: "short", name: "Short Term", icon: Zap },
-    ];
+    let planViewMode = $state<"tree" | "board" | "roadmap" | "importer">(
+        "tree",
+    );
 
     function openGoalModal(goal: Goal | null = null) {
         editingGoal = goal;
         showGoalModal = true;
     }
 
-    const topGoals = $derived(
-        goalsStore.goals
-            .filter((g) => !g.parentId && g.status === "active")
-            .sort((a, b) => (a.priority === "high" ? -1 : 1))
-            .slice(0, 3),
-    );
+    const tabs = [
+        { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
+        { id: "plan", label: "Plan", icon: Network, color: "text-primary" },
+        {
+            id: "review",
+            label: "Review",
+            icon: TrendingUp,
+            color: "text-purple-400",
+        },
+    ];
 </script>
 
-<div class="page-container h-full max-w-[1400px] mx-auto px-6 py-8">
-    <!-- War Room Header -->
-    <div
-        class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12"
-    >
-        <div class="flex-1">
-            <h1 class="text-4xl font-light text-white mb-2 tracking-tight">
-                Strategic <span class="text-primary font-medium">Dashboard</span
+<div class="h-full flex overflow-hidden">
+    <!-- 1. LEFT PANE: Navigator -->
+    {#if leftPaneOpen}
+        <aside
+            class="w-80 flex-shrink-0 border-r border-line bg-surface/10 flex flex-col overflow-hidden"
+            in:slide={{ axis: "x" }}
+        >
+            <div
+                class="p-6 border-b border-line flex items-center justify-between"
+            >
+                <span
+                    class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                    >Goal Navigator</span
                 >
-            </h1>
-            <p class="text-muted text-sm max-w-lg">
-                Your mission control for long-term vision and daily execution.
-                Architecting future trajectories via intentional action.
-            </p>
-
-            <!-- Quick Stats -->
-            <div class="flex gap-6 mt-6">
-                {#each topGoals as goal}
-                    <div
-                        class="flex items-center gap-3 bg-surface border border-line p-3 rounded-2xl"
-                    >
-                        <GoalProgressRing
-                            progress={goalsStore.getGoalProgress(goal.id)}
-                            health={goalsStore.getGoalHealth(goal.id)}
-                            size="sm"
-                        />
-                        <div class="min-w-0 max-w-[120px]">
-                            <p
-                                class="text-[10px] font-bold text-muted uppercase tracking-wider truncate"
-                            >
-                                {goal.title}
-                            </p>
-                            <p
-                                class="text-xs text-white/70 font-medium truncate"
-                            >
-                                {goalsStore.getGoalProgress(goal.id)}% Complete
-                            </p>
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 self-end lg:self-center">
-            <div class="flex bg-surface p-1 rounded-2xl border border-line">
                 <button
-                    class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
-                    'strategic'
-                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
-                        : 'text-muted hover:text-white'}"
-                    onclick={() => (viewMode = "strategic")}
+                    onclick={() => (leftPaneOpen = false)}
+                    class="text-muted hover:text-white"
                 >
-                    <Network size={16} />
-                    <span class="font-medium">Strategic</span>
-                </button>
-                <button
-                    class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
-                    'board'
-                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
-                        : 'text-muted hover:text-white'}"
-                    onclick={() => (viewMode = "board")}
-                >
-                    <LayoutGrid size={16} />
-                    <span class="font-medium">Board</span>
-                </button>
-                <button
-                    class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
-                    'roadmap'
-                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
-                        : 'text-muted hover:text-white'}"
-                    onclick={() => (viewMode = "roadmap")}
-                >
-                    <Map size={16} />
-                    <span class="font-medium">Roadmap</span>
-                </button>
-                <button
-                    class="p-2 px-4 rounded-xl transition-all flex items-center gap-2 text-sm {viewMode ===
-                    'importer'
-                        ? 'bg-primary text-black shadow-lg shadow-primary/10'
-                        : 'text-muted hover:text-white'}"
-                    onclick={() => (viewMode = "importer")}
-                >
-                    <Upload size={16} />
-                    <span class="font-medium">Import</span>
+                    <PanelLeftClose size={16} />
                 </button>
             </div>
 
-            {#if viewMode === "focus"}
+            <div class="p-4 space-y-4">
+                <div class="relative">
+                    <Search
+                        size={14}
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search vision..."
+                        class="w-full bg-surface/50 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-muted/50 outline-none focus:border-primary/50"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    {#each tabs as tab}
+                        <button
+                            onclick={() => onTabChange(tab.id as any)}
+                            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {activeTab ===
+                            tab.id
+                                ? 'bg-primary/10 text-primary border border-primary/20'
+                                : 'text-muted hover:bg-surface border border-transparent'}"
+                        >
+                            <tab.icon
+                                size={18}
+                                class={activeTab === tab.id ? tab.color : ""}
+                            />
+                            <span
+                                class="font-bold text-xs uppercase tracking-widest"
+                                >{tab.label}</span
+                            >
+                        </button>
+                    {/each}
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
+                <GoalHierarchyTree
+                    horizon={filters.horizon}
+                    onGoalClick={(g) => (ux.selectedGoalId = g.id)}
+                />
+            </div>
+
+            <div class="p-4 border-t border-line">
                 <button
-                    onclick={clearFocus}
-                    class="flex items-center gap-2 px-4 py-2.5 bg-surface border border-line hover:border-white/20 text-white rounded-xl font-medium transition-all active:scale-95 shadow-lg"
+                    onclick={() => openGoalModal()}
+                    class="w-full flex items-center justify-center gap-2 py-3 bg-primary text-black rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-primary/10"
                 >
-                    <ArrowLeft size={18} />
-                    Exit Focus
+                    <Plus size={18} />
+                    New Goal
                 </button>
-            {/if}
-
+            </div>
+        </aside>
+    {:else}
+        <div class="p-4 border-r border-line flex flex-col bg-surface/10">
             <button
-                onclick={() => openGoalModal()}
-                class="flex items-center gap-2 px-6 py-2.5 bg-primary hover:opacity-90 text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-primary/10"
+                onclick={() => (leftPaneOpen = true)}
+                class="text-muted hover:text-white mb-4"
             >
-                <Plus size={20} />
-                New Initiative
+                <PanelLeftOpen size={18} />
             </button>
-        </div>
-    </div>
-
-    <!-- Horizon Tabs -->
-    <div
-        class="flex gap-2 overflow-x-auto pb-6 scrollbar-hide border-b border-line mb-8"
-    >
-        {#each horizons as horizon}
-            <button
-                class="flex items-center gap-2.5 px-5 py-2.5 rounded-xl transition-all border shrink-0 {activeHorizon ===
-                horizon.id
-                    ? 'bg-primary/10 border-primary/30 text-primary font-bold'
-                    : 'bg-transparent border-transparent text-muted hover:text-white hover:bg-surface'}"
-                onclick={() => (activeHorizon = horizon.id)}
-            >
-                <horizon.icon size={18} />
-                <span class="text-sm tracking-wide">{horizon.name}</span>
-            </button>
-        {/each}
-    </div>
-
-    <!-- Execution Intelligence -->
-    {#if !activeHorizon || activeHorizon === "all"}
-        <div class="mb-10" in:slide>
-            <NextStepPanel />
         </div>
     {/if}
 
-    <!-- Main Content -->
-    <div class="min-h-[500px]">
-        {#if viewMode === "strategic"}
-            <div in:fade class="text-white">
-                <GoalHierarchyTree
-                    horizon={activeHorizon}
-                    onFocusGoal={handleOpenFocus}
-                    onGoalClick={(g: Goal) => {
-                        selectedGoal = g;
-                        showDetailModal = true;
-                    }}
-                />
+    <!-- 2. CENTER PANE: Work Area -->
+    <main
+        class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative"
+    >
+        <header
+            class="h-16 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-md z-10"
+        >
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-white capitalize">
+                    {activeTab}
+                </h1>
+                {#if activeTab === "plan"}
+                    <div
+                        class="flex bg-surface p-1 rounded-xl border border-line ml-4 shadow-inner"
+                    >
+                        <button
+                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            'tree'
+                                ? 'bg-primary text-black'
+                                : 'text-muted'}"
+                            onclick={() => (planViewMode = "tree")}>Tree</button
+                        >
+                        <button
+                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            'board'
+                                ? 'bg-primary text-black'
+                                : 'text-muted'}"
+                            onclick={() => (planViewMode = "board")}
+                            >Board</button
+                        >
+                        <button
+                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            'roadmap'
+                                ? 'bg-primary text-black'
+                                : 'text-muted'}"
+                            onclick={() => (planViewMode = "roadmap")}
+                            >Roadmap</button
+                        >
+                    </div>
+                {/if}
             </div>
-        {:else if viewMode === "focus" && focusedGoalId}
-            <div in:fade class="text-white">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="p-3 rounded-2xl bg-primary/10 text-primary">
-                        <Zap size={24} />
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">
-                            Focusing on: {goalsStore.goals.find(
-                                (g) => g.id === focusedGoalId,
-                            )?.title || "Goal"}
-                        </h2>
-                        <p class="text-muted text-sm">
-                            Concentrating all resources on this initiative and
-                            its sub-objectives.
-                        </p>
-                    </div>
-                </div>
 
-                <GoalHierarchyTree
-                    horizon="all"
-                    {focusedGoalId}
-                    onGoalClick={(g: Goal) => {
-                        selectedGoal = g;
-                        showDetailModal = true;
-                    }}
-                />
+            <div class="flex items-center gap-4">
+                {#if activeTab === "plan"}
+                    <button
+                        onclick={() => (planViewMode = "importer")}
+                        class="flex items-center gap-2 px-4 py-2 border border-line rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-surface transition-all"
+                    >
+                        <Upload size={14} />
+                        Import
+                    </button>
+                {/if}
+                <button
+                    onclick={() => (rightPaneOpen = !rightPaneOpen)}
+                    class="text-muted hover:text-white ml-2"
+                >
+                    {#if rightPaneOpen}
+                        <PanelRightClose size={18} />
+                    {:else}
+                        <PanelRightOpen size={18} />
+                    {/if}
+                </button>
             </div>
-        {:else if viewMode === "board"}
-            <div in:fade>
-                <GoalBoard
-                    {activeArea}
-                    {focusedGoalId}
-                    onOpenModal={openGoalModal}
-                />
-            </div>
-        {:else if viewMode === "roadmap"}
-            <div in:fade>
-                <GoalRoadmap />
-            </div>
-        {:else if viewMode === "importer"}
-            <div in:fade>
-                <PlaylistImporter
-                    onComplete={(id) => {
-                        const goal = goalsStore.goals.find((g) => g.id === id);
-                        if (goal) {
-                            selectedGoal = goal;
-                            showDetailModal = true;
-                            viewMode = "strategic";
-                        }
-                    }}
-                />
-            </div>
-        {/if}
-    </div>
+        </header>
+
+        <!-- Filters Section -->
+        <GoalsFilters bind:filters />
+
+        <div class="flex-1 overflow-hidden flex flex-col">
+            {#if activeTab === "today"}
+                <GoalsTodayView />
+            {:else if activeTab === "plan"}
+                <div class="flex-1 overflow-auto p-8 custom-scrollbar">
+                    {#if planViewMode === "tree"}
+                        <GoalHierarchyTree
+                            horizon={filters.horizon}
+                            onGoalClick={(g) => (ux.selectedGoalId = g.id)}
+                        />
+                    {:else if planViewMode === "board"}
+                        <GoalBoard
+                            activeArea={filters.area}
+                            focusedGoalId={ux.selectedGoalId}
+                            onOpenModal={openGoalModal}
+                        />
+                    {:else if planViewMode === "roadmap"}
+                        <GoalRoadmap />
+                    {:else if planViewMode === "importer"}
+                        <PlaylistImporter
+                            onComplete={(id) => {
+                                ux.selectedGoalId = id;
+                                planViewMode = "tree";
+                            }}
+                        />
+                    {/if}
+                </div>
+            {:else if activeTab === "review"}
+                <GoalsReviewView {filters} />
+            {/if}
+        </div>
+    </main>
+
+    <!-- 3. RIGHT PANE: Context Panel -->
+    {#if rightPaneOpen}
+        <aside class="w-96 flex-shrink-0" in:slide={{ axis: "x" }}>
+            <GoalContextPanel
+                goalId={ux.selectedGoalId}
+                onEdit={openGoalModal}
+            />
+        </aside>
+    {/if}
 </div>
 
 <GoalModal
@@ -284,29 +278,15 @@
     goal={editingGoal}
 />
 
-{#if selectedGoal}
-    <GoalDetailModal
-        bind:isOpen={showDetailModal}
-        goal={selectedGoal}
-        onClose={() => {
-            showDetailModal = false;
-            selectedGoal = null;
-        }}
-        onEdit={(g) => {
-            selectedGoal = null;
-            showDetailModal = false;
-            editingGoal = g;
-            showGoalModal = true;
-        }}
-    />
-{/if}
-
 <style>
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
     }
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
     }
 </style>

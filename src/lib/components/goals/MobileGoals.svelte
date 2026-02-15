@@ -1,23 +1,22 @@
 <script lang="ts">
+    import { getContext } from "svelte";
     import {
         Target,
         Plus,
-        Trash2,
         Calendar,
-        ChevronDown,
+        Clock,
+        Zap,
         ChevronRight,
-        Loader2,
-        ExternalLink,
-        LayoutGrid,
-        Link,
-        Type,
-        Briefcase,
-        User,
-        Heart,
-        Users,
-        PartyPopper,
-        Flame,
-        Box,
+        TrendingUp,
+        BookOpen,
+        Filter,
+        Settings2,
+        ArrowLeft,
+        MoreHorizontal,
+        CheckCircle2,
+        Play,
+        Archive,
+        Network,
     } from "lucide-svelte";
     import {
         goalsStore,
@@ -25,469 +24,316 @@
         type GoalArea,
     } from "$lib/stores/goals.svelte";
     import GoalModal from "./GoalModal.svelte";
-    import ProgressBar from "$lib/components/ui/ProgressBar.svelte";
-    import { slide } from "svelte/transition";
+    import GoalContextPanel from "./GoalContextPanel.svelte";
+    import GoalsTodayView from "./GoalsTodayView.svelte";
+    import GoalsReviewView from "./GoalsReviewView.svelte";
+    import GoalHierarchyTree from "./GoalHierarchyTree.svelte";
+    import { slide, fade, fly } from "svelte/transition";
+
+    let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
+        activeTab: "today" | "plan" | "review";
+        onTabChange: (tab: "today" | "plan" | "review") => void;
+        filters: any;
+        selectedGoalId: string | null;
+    }>();
+
+    const ux = getContext<{
+        selectedGoalId: string | null;
+        activeTab: string;
+    }>("goalsUX") as any;
 
     let showGoalModal = $state(false);
     let editingGoal = $state<Goal | null>(null);
-    let selectionParentId = $state<string | undefined>(undefined);
-    let expandedGoals = $state<Set<string>>(new Set());
-    let newTaskInputs = $state<Record<string, string>>({});
-    let processingBatch = $state<Record<string, boolean>>({});
+    let showFilterSheet = $state(false);
 
-    // Filtering
-    let activeArea = $state<GoalArea | "All">("All");
-
-    const areas: {
-        id: GoalArea;
-        name: string;
-        icon: any;
-        color: string;
-        bg: string;
-    }[] = [
-        {
-            id: "Professional",
-            name: "Prof",
-            icon: Briefcase,
-            color: "text-primary",
-            bg: "bg-primary",
-        },
-        {
-            id: "Personal",
-            name: "Pers",
-            icon: User,
-            color: "text-green-500",
-            bg: "bg-green-500",
-        },
-        {
-            id: "Health",
-            name: "Health",
-            icon: Heart,
-            color: "text-red-500",
-            bg: "bg-red-500",
-        },
-        {
-            id: "Family",
-            name: "Fam",
-            icon: Users,
-            color: "text-indigo-500",
-            bg: "bg-indigo-500",
-        },
-        {
-            id: "Fun",
-            name: "Fun",
-            icon: PartyPopper,
-            color: "text-yellow-500",
-            bg: "bg-yellow-500",
-        },
-        {
-            id: "Spiritual",
-            name: "Spirit",
-            icon: Flame,
-            color: "text-purple-500",
-            bg: "bg-purple-500",
-        },
-        {
-            id: "Other",
-            name: "Other",
-            icon: Box,
-            color: "text-gray-500",
-            bg: "bg-gray-500",
-        },
-    ];
-
-    const goals = $derived(
-        goalsStore.activeGoals
-            .filter((g) => activeArea === "All" || g.area === activeArea)
-            .filter((g) => !g.parentId),
-    );
-
-    function openGoalModal(goal: Goal | null = null, parentId?: string) {
+    function openGoalModal(goal: Goal | null = null) {
         editingGoal = goal;
-        selectionParentId = parentId;
         showGoalModal = true;
     }
 
-    function toggleGoal(goalId: string) {
-        if (expandedGoals.has(goalId)) {
-            expandedGoals.delete(goalId);
-        } else {
-            expandedGoals.add(goalId);
-        }
-        expandedGoals = new Set(expandedGoals);
-    }
+    const tabs = [
+        { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
+        { id: "plan", label: "Plan", icon: Network, color: "text-primary" },
+        {
+            id: "review",
+            label: "Review",
+            icon: TrendingUp,
+            color: "text-purple-400",
+        },
+    ];
 
-    async function addTask(goalId: string) {
-        const input = newTaskInputs[goalId]?.trim();
-        if (!input) return;
+    const areas: { id: GoalArea; name: string; icon: any; color: string }[] = [
+        {
+            id: "Professional",
+            name: "Prof",
+            icon: Archive,
+            color: "text-primary",
+        },
+        { id: "Personal", name: "Pers", icon: Target, color: "text-green-500" },
+        { id: "Health", name: "Health", icon: Target, color: "text-red-500" },
+    ];
 
-        processingBatch[goalId] = true;
-        try {
-            await goalsStore.addTasksBatch(goalId, input);
-            newTaskInputs[goalId] = "";
-            if (!expandedGoals.has(goalId)) {
-                expandedGoals.add(goalId);
-                expandedGoals = new Set(expandedGoals);
-            }
-            setTimeout(() => {
-                processingBatch[goalId] = false;
-            }, 800);
-        } catch (error) {
-            console.error("Failed to add tasks:", error);
-            processingBatch[goalId] = false;
-        }
-    }
-
-    function formatDeadline(deadline?: string) {
-        if (!deadline) return null;
-        const date = new Date(deadline);
-        const diffDays = Math.ceil(
-            (date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
-        );
-        if (diffDays < 0) return { text: "Late", color: "text-red-500" };
-        if (diffDays === 0) return { text: "Today", color: "text-orange-500" };
-        if (diffDays <= 7)
-            return { text: `${diffDays}d`, color: "text-yellow-500" };
-        return {
-            text: date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-            }),
-            color: "text-muted",
-        };
-    }
-
-    const priorityColors = {
-        high: "text-red-500",
-        normal: "text-primary",
-        low: "text-gray-500",
-    };
+    // Filtered goals for Plan tab
+    const goalsByArea = $derived(
+        goalsStore.goals.filter(
+            (g) =>
+                !g.parentId &&
+                (filters.area === "All" || g.area === filters.area),
+        ),
+    );
 </script>
 
-<div class="p-4 pb-24 space-y-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-white">Goals</h1>
-            <p class="text-xs text-muted">Set & track your ambitions</p>
-        </div>
-        <button
-            onclick={() => openGoalModal()}
-            class="w-12 h-12 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform"
-        >
-            <Plus size={24} />
-        </button>
-    </div>
-
-    <!-- Balance Overview (Horizontal Scroll) -->
-    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
-        {#each areas as area}
-            {@const progress = goalsStore.getAreaProgress(area.id)}
-            <button
-                class="flex-shrink-0 card-subtle p-3 min-w-[100px] transition-all {activeArea ===
-                area.id
-                    ? 'border-primary ring-1 ring-primary/20'
-                    : ''}"
-                onclick={() =>
-                    (activeArea = activeArea === area.id ? "All" : area.id)}
+<div class="h-full flex flex-col bg-background overflow-hidden relative">
+    <!-- 1. Header Area -->
+    <header
+        class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line bg-background/80 backdrop-blur-xl z-20"
+    >
+        <div class="flex flex-col">
+            <span
+                class="text-[9px] font-black text-primary uppercase tracking-[0.2em]"
+                >Strategy</span
             >
-                <div class="flex flex-col gap-2">
-                    <span
-                        class="text-[10px] font-bold text-muted uppercase tracking-wider"
-                        >{area.name}</span
+            <h1 class="text-xl font-bold text-white tracking-tight">
+                {activeTab === "today"
+                    ? "Daily Focus"
+                    : activeTab === "plan"
+                      ? "Global Plan"
+                      : "Performance"}
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button
+                onclick={() => (showFilterSheet = !showFilterSheet)}
+                class="p-2 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all"
+            >
+                <Filter size={18} />
+            </button>
+            <button
+                onclick={() => openGoalModal()}
+                class="w-10 h-10 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-90 transition-transform"
+            >
+                <Plus size={22} />
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. Main Content -->
+    <main class="flex-1 overflow-hidden flex flex-col pt-2">
+        {#if activeTab === "today"}
+            <div class="flex-1 overflow-y-auto" in:fade>
+                <GoalsTodayView isMobile={true} />
+            </div>
+        {:else if activeTab === "plan"}
+            <div class="flex-1 overflow-y-auto p-4 space-y-6" in:fade>
+                <!-- Area Chips -->
+                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                    {#each ["All", "Professional", "Personal", "Health", "Family", "Fun"] as area}
+                        <button
+                            onclick={() => (filters.area = area as any)}
+                            class="px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap {filters.area ===
+                            area
+                                ? 'bg-primary border-primary text-black'
+                                : 'bg-surface border-line text-muted'}"
+                        >
+                            {area}
+                        </button>
+                    {/each}
+                </div>
+
+                <div class="space-y-3">
+                    {#each goalsByArea as goal (goal.id)}
+                        <button
+                            onclick={() => (ux.selectedGoalId = goal.id)}
+                            class="w-full card-subtle p-5 flex items-center justify-between border-l-4 group active:scale-[0.98] transition-all"
+                            style="border-left-color: var(--color-primary)"
+                        >
+                            <div class="flex flex-col items-start gap-1">
+                                <span
+                                    class="text-[9px] font-black text-muted uppercase tracking-widest"
+                                    >{goal.horizon} • {goal.area}</span
+                                >
+                                <span
+                                    class="text-base font-bold text-white group-active:text-primary transition-colors"
+                                    >{goal.title}</span
+                                >
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right">
+                                    <div class="text-lg font-black text-white">
+                                        {goalsStore.getGoalProgress(goal.id)}%
+                                    </div>
+                                </div>
+                                <ChevronRight size={18} class="text-muted" />
+                            </div>
+                        </button>
+                    {/each}
+                </div>
+
+                <div class="pt-4">
+                    <h3
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-4 px-2"
                     >
-                    <span class="text-lg font-black text-white"
-                        >{progress}%</span
-                    >
-                    <ProgressBar
-                        value={progress}
-                        color={area.bg.replace("bg-", "")}
-                        label={area.name}
+                        Visual Hierarchy
+                    </h3>
+                    <GoalHierarchyTree
+                        horizon={filters.horizon}
+                        onGoalClick={(g) => (ux.selectedGoalId = g.id)}
                     />
                 </div>
+            </div>
+        {:else if activeTab === "review"}
+            <div class="flex-1 overflow-y-auto" in:fade>
+                <GoalsReviewView {filters} isMobile={true} />
+            </div>
+        {/if}
+    </main>
+
+    <!-- 3. Bottom Tabs (Action Bar) -->
+    <nav
+        class="h-20 flex-shrink-0 flex items-center justify-around px-4 border-t border-line bg-background/80 backdrop-blur-xl pb-6"
+    >
+        {#each tabs as tab}
+            <button
+                onclick={() => onTabChange(tab.id as any)}
+                class="flex flex-col items-center gap-1.5 px-6 py-2 transition-all relative {activeTab ===
+                tab.id
+                    ? 'text-primary'
+                    : 'text-muted opacity-60'}"
+            >
+                <div class="relative">
+                    <tab.icon
+                        size={20}
+                        class={activeTab === tab.id ? "animate-pulse" : ""}
+                    />
+                    {#if activeTab === tab.id}
+                        <div
+                            class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full blur-[4px]"
+                        ></div>
+                    {/if}
+                </div>
+                <span class="text-[9px] font-black uppercase tracking-widest"
+                    >{tab.label}</span
+                >
+                {#if activeTab === tab.id}
+                    <div
+                        class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
+                        in:slide={{ axis: "x" }}
+                    ></div>
+                {/if}
             </button>
         {/each}
-    </div>
+    </nav>
 
-    <!-- Goals List -->
-    {#if goals.length === 0}
-        <div class="card-subtle text-center py-12">
-            <Target size={48} class="text-muted mx-auto mb-4 opacity-50" />
-            <p class="text-muted">No goals found here</p>
+    <!-- 4. Goal Detail Sheet (Progressive Disclosure) -->
+    {#if ux.selectedGoalId}
+        <div
+            class="fixed inset-0 z-[100] bg-background lg:hidden flex flex-col"
+            in:fly={{ y: "100%", duration: 400, opacity: 1 }}
+            out:fly={{ y: "100%", duration: 300, opacity: 1 }}
+        >
+            <header
+                class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line"
+            >
+                <button
+                    onclick={() => (ux.selectedGoalId = null)}
+                    class="p-2 -ml-2 text-muted hover:text-white"
+                >
+                    <ArrowLeft size={22} />
+                </button>
+                <span
+                    class="text-xs font-bold text-white uppercase tracking-widest"
+                    >Goal Dynamics</span
+                >
+                <button class="p-2 -mr-2 text-muted">
+                    <MoreHorizontal size={22} />
+                </button>
+            </header>
+
+            <div class="flex-1 overflow-hidden">
+                <GoalContextPanel
+                    goalId={ux.selectedGoalId}
+                    onEdit={openGoalModal}
+                />
+            </div>
         </div>
-    {:else}
-        <div class="space-y-4">
-            {#each goals as goal (goal.id)}
-                {@render GoalCardItem({ goal })}
-            {/each}
+    {/if}
+
+    <!-- 5. Global Filter Sheet -->
+    {#if showFilterSheet}
+        <div
+            class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+            onclick={() => (showFilterSheet = false)}
+            transition:fade
+        ></div>
+        <div
+            class="fixed left-0 right-0 bottom-0 z-[70] bg-surface rounded-t-[2.5rem] border-t border-line p-8 pb-12 space-y-8 shadow-2xl"
+            transition:fly={{ y: "100%" }}
+        >
+            <div class="w-12 h-1.5 bg-line rounded-full mx-auto -mt-2"></div>
+
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white">Refine Logic</h3>
+                    <button
+                        onclick={() => (showFilterSheet = false)}
+                        class="text-xs font-bold text-primary uppercase"
+                        >Done</button
+                    >
+                </div>
+
+                <!-- Horizon -->
+                <div class="space-y-3">
+                    <span
+                        class="text-[10px] font-black text-muted uppercase tracking-widest"
+                        >Active Horizon</span
+                    >
+                    <div class="flex flex-wrap gap-2">
+                        {#each ["all", "life", "long", "mid", "short"] as h}
+                            <button
+                                onclick={() => (filters.horizon = h as any)}
+                                class="px-5 py-2.5 rounded-2xl text-xs font-bold border transition-all {filters.horizon ===
+                                h
+                                    ? 'bg-primary border-primary text-black'
+                                    : 'bg-background border-line text-muted'}"
+                                >{h}</button
+                            >
+                        {/each}
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="space-y-3">
+                    <span
+                        class="text-[10px] font-black text-muted uppercase tracking-widest"
+                        >Fulfillment Status</span
+                    >
+                    <div class="flex flex-wrap gap-2">
+                        {#each ["active", "paused", "completed"] as s}
+                            <button
+                                onclick={() => (filters.status = s as any)}
+                                class="px-5 py-2.5 rounded-2xl text-xs font-bold border transition-all {filters.status ===
+                                s
+                                    ? 'bg-primary border-primary text-black'
+                                    : 'bg-background border-line text-muted'}"
+                                >{s}</button
+                            >
+                        {/each}
+                    </div>
+                </div>
+            </div>
         </div>
     {/if}
 </div>
 
-<!-- Modal -->
 <GoalModal
     bind:isOpen={showGoalModal}
     onClose={() => {
         showGoalModal = false;
         editingGoal = null;
-        selectionParentId = undefined;
     }}
     goal={editingGoal}
-    initialParentId={selectionParentId}
 />
-
-<!-- Snippet -->
-{#snippet GoalCardItem({ goal, depth = 0 }: { goal: Goal; depth?: number })}
-    {@const tasks = goalsStore.getGoalTasks(goal.id)}
-    {@const children = goalsStore.getGoalChildren(goal.id)}
-    {@const progress = goalsStore.getGoalProgress(goal.id)}
-    {@const isExpanded = expandedGoals.has(goal.id)}
-    {@const deadlineInfo = formatDeadline(goal.deadline)}
-    {@const isProcessing = processingBatch[goal.id]}
-    {@const areaInfo = areas.find((a) => a.id === goal.area)}
-
-    <div
-        class="card-subtle overflow-hidden {depth > 0 ? 'mt-3 border-l-2' : ''}"
-        style="border-left-color: var(--color-primary)"
-    >
-        <div
-            class="p-4 active:bg-surface/50 transition-colors"
-            onclick={() => toggleGoal(goal.id)}
-            onkeydown={(e) => e.key === "Enter" && toggleGoal(goal.id)}
-            role="button"
-            tabindex="0"
-        >
-            <div class="flex items-start gap-4">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span
-                            class="text-xs font-bold {(() => {
-                                const colors = {
-                                    high: 'text-red-500',
-                                    medium: 'text-amber-500',
-                                    low: 'text-primary',
-                                };
-                                return colors[goal.priority] || 'text-muted';
-                            })()} uppercase">{goal.priority}</span
-                        >
-                        <span class="text-[10px] text-muted">•</span>
-                        <span class="text-[10px] text-muted uppercase"
-                            >{goal.horizon}</span
-                        >
-                        <span class="text-[10px] text-muted">•</span>
-                        <span class="text-[10px] text-muted">{goal.area}</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white truncate mb-1">
-                        {goal.title}
-                    </h3>
-                    {#if goal.vision}
-                        <p
-                            class="text-xs text-primary font-medium line-clamp-1 mb-2"
-                        >
-                            {goal.vision}
-                        </p>
-                    {/if}
-
-                    <div class="flex items-center gap-3 text-[10px] text-muted">
-                        <span class="flex items-center gap-1"
-                            ><LayoutGrid size={10} />
-                            {tasks.length + children.length} items</span
-                        >
-                        {#if deadlineInfo}
-                            <span
-                                class="flex items-center gap-1 {deadlineInfo.color}"
-                                ><Calendar size={10} />
-                                {deadlineInfo.text}</span
-                            >
-                        {/if}
-                    </div>
-                </div>
-                <div class="text-right flex flex-col items-end gap-1">
-                    <div class="text-2xl font-black text-white">
-                        {progress}%
-                    </div>
-                    <div class="flex items-center gap-2">
-                        {#if goal.horizon !== "short"}
-                            <button
-                                class="p-2 text-muted active:text-primary transition-colors"
-                                onclick={(e) => {
-                                    e.stopPropagation();
-                                    openGoalModal(null, goal.id);
-                                }}
-                            >
-                                <Plus size={18} />
-                            </button>
-                        {/if}
-                        <div class="text-muted">
-                            {#if isExpanded}
-                                <ChevronDown size={18} />
-                            {:else}
-                                <ChevronRight size={18} />
-                            {/if}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-3 h-1 w-full bg-line rounded-full overflow-hidden">
-                <div
-                    class="h-full bg-primary transition-all duration-300"
-                    style="width: {progress}%"
-                ></div>
-            </div>
-        </div>
-
-        {#if isExpanded}
-            <div
-                class="p-4 pt-0 space-y-4 border-t border-line/50 bg-surface/30"
-                transition:slide
-            >
-                <div class="flex justify-between items-center pt-3">
-                    <button
-                        onclick={(e) => {
-                            e.stopPropagation();
-                            openGoalModal(goal);
-                        }}
-                        class="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1"
-                    >
-                        <Type size={10} /> Edit Details
-                    </button>
-                    <button
-                        onclick={(e) => {
-                            e.stopPropagation();
-                            if (confirm("Delete goal?"))
-                                goalsStore.deleteGoal(goal.id);
-                        }}
-                        class="text-[10px] font-bold text-red-500/50 uppercase flex items-center gap-1"
-                    >
-                        <Trash2 size={10} /> Delete
-                    </button>
-                </div>
-
-                {#if children.length > 0 || goal.horizon !== "short"}
-                    <div class="space-y-3 pt-1 border-t border-line/10">
-                        <div class="flex items-center justify-between">
-                            <h4
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                            >
-                                Sub-Goals
-                            </h4>
-                            {#if goal.horizon !== "short"}
-                                <button
-                                    onclick={() => openGoalModal(null, goal.id)}
-                                    class="text-[9px] font-black text-primary uppercase"
-                                >
-                                    + Add
-                                </button>
-                            {/if}
-                        </div>
-                        {#each children as child (child.id)}
-                            {@render GoalCardItem({
-                                goal: child,
-                                depth: depth + 1,
-                            })}
-                        {/each}
-                    </div>
-                {/if}
-
-                <div class="space-y-2 pt-3 border-t border-line/10">
-                    <h4
-                        class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                    >
-                        Tasks
-                    </h4>
-                    {#each tasks as task (task.id)}
-                        <div class="flex items-center gap-3 py-1 group">
-                            <button
-                                onclick={() => goalsStore.toggleTask(task.id)}
-                                class="flex-shrink-0"
-                            >
-                                <div
-                                    class="w-5 h-5 rounded border-2 {task.status ===
-                                    'completed'
-                                        ? 'bg-primary border-primary flex items-center justify-center text-black'
-                                        : 'border-muted'}"
-                                >
-                                    {#if task.status === "completed"}
-                                        <svg
-                                            class="w-3.5 h-3.5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="3"
-                                                d="M5 13l4 4L19 7"
-                                            ></path>
-                                        </svg>
-                                    {/if}
-                                </div>
-                            </button>
-                            <span
-                                class="text-sm text-white flex-1 truncate {task.status ===
-                                'completed'
-                                    ? 'opacity-30 line-through'
-                                    : ''}">{task.title}</span
-                            >
-                            <div
-                                class="flex items-center gap-2 opacity-0 group-active:opacity-100 transition-opacity"
-                            >
-                                {#if task.link}
-                                    <a
-                                        href={task.link}
-                                        target="_blank"
-                                        class="text-primary p-2"
-                                        ><ExternalLink size={14} /></a
-                                    >
-                                {/if}
-                                <button
-                                    onclick={() =>
-                                        goalsStore.deleteTask(task.id)}
-                                    class="text-red-500/50 p-2"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-
-                <!-- Task Scratchpad -->
-                <div class="pt-3">
-                    <div class="bg-surface border border-line rounded-xl p-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <h5
-                                class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5"
-                            >
-                                <span
-                                    class="w-1 h-1 rounded-full bg-primary animate-pulse"
-                                ></span>
-                                Goal Scratchpad
-                            </h5>
-                            <button
-                                onclick={() => addTask(goal.id)}
-                                disabled={processingBatch[goal.id]}
-                                class="text-[9px] font-black text-primary uppercase disabled:opacity-50"
-                            >
-                                {processingBatch[goal.id]
-                                    ? "Adding..."
-                                    : "Add Tasks"}
-                            </button>
-                        </div>
-
-                        <textarea
-                            bind:value={newTaskInputs[goal.id]}
-                            placeholder="Add tasks (one per line) or YouTube URL..."
-                            rows="2"
-                            class="w-full bg-transparent border-none p-0 text-sm text-white placeholder-muted/50 resize-none focus:ring-0 outline-none leading-relaxed"
-                        ></textarea>
-                    </div>
-                </div>
-            </div>
-        {/if}
-    </div>
-{/snippet}
 
 <style>
     .scrollbar-hide::-webkit-scrollbar {
