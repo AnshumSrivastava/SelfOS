@@ -14,8 +14,17 @@
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
   import LoadingScreen from "$lib/components/ui/LoadingScreen.svelte";
+  import { tutorialStore } from "$lib/stores/tutorial.svelte";
+  import { tutorialEngine } from "$lib/tutorial/engine";
+  import TutorialPromptModal from "$lib/components/tutorial/TutorialPromptModal.svelte";
+  import TutorialHubModal from "$lib/components/tutorial/TutorialHubModal.svelte";
+  import TutorialBackdrop from "$lib/components/tutorial/TutorialBackdrop.svelte";
+  import TutorialCoachmark from "$lib/components/tutorial/TutorialCoachmark.svelte";
+  import TutorialProgressPill from "$lib/components/tutorial/TutorialProgressPill.svelte";
 
   let { children } = $props();
+
+  let showTutorialPrompt = $state(false);
 
   // Check if current route is a public auth route
   let isAuthRoute = $derived(
@@ -27,6 +36,19 @@
   // Use auth store state
   let isAuthenticated = $derived(auth.isAuthenticated);
   let isLoading = $derived(auth.loading);
+
+  // Tutorial auto-prompt logic
+  $effect(() => {
+    if (!auth.loading && auth.isAuthenticated) {
+      const status = tutorialStore.currentPlatformStatus;
+      if (!status.firstPromptSeen && !tutorialEngine.isRunning) {
+        // Small delay to ensure everything else is loaded
+        setTimeout(() => {
+          showTutorialPrompt = true;
+        }, 2000);
+      }
+    }
+  });
 
   // Redirect logic
   $effect(() => {
@@ -85,12 +107,13 @@
     }
     lastTap = currentTime;
   }
-  function handleKeydown(e) {
-    const target = e.target;
+  function handleKeydown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement;
     // Check if user is typing in an input
     const isInput =
-      ["INPUT", "TEXTAREA"].includes(target.tagName) ||
-      target.isContentEditable;
+      target &&
+      (["INPUT", "TEXTAREA"].includes(target.tagName) ||
+        target.isContentEditable);
 
     if (e.key === " " && !isInput) {
       e.preventDefault();
@@ -105,6 +128,23 @@
     if (e.key === "Tab" && !isInput) {
       e.preventDefault();
       uiState.toggleChrome();
+    }
+
+    // Tutorial Shortcuts
+    if (e.key === "/" && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      tutorialStore.showHub = true;
+    }
+
+    if (tutorialEngine.isRunning && !isInput) {
+      if (e.key === "." && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        tutorialEngine.nextStep();
+      }
+      if (e.key === "," && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        tutorialEngine.prevStep();
+      }
     }
   }
 </script>
@@ -166,11 +206,11 @@
 
       <form
         class="space-y-4"
-        onsubmit={(e) => {
+        onsubmit={(e: SubmitEvent) => {
           e.preventDefault();
-          const form = e.target;
-          const input = form.elements.namedItem("subject");
-          if (input.value.trim()) {
+          const form = e.currentTarget as HTMLFormElement;
+          const input = form.elements.namedItem("subject") as HTMLInputElement;
+          if (input?.value.trim()) {
             focusStore.logSession(input.value);
           }
         }}
@@ -204,3 +244,16 @@
 
 <SearchModal />
 <ConfirmModal />
+
+<!-- Tutorial System -->
+<TutorialPromptModal bind:show={showTutorialPrompt} />
+<TutorialHubModal bind:show={tutorialStore.showHub} />
+
+{#if tutorialEngine.isRunning}
+  <TutorialBackdrop
+    targetSelector={tutorialEngine.currentStep?.targetSelector}
+  />
+  <TutorialCoachmark />
+{/if}
+
+<TutorialProgressPill />

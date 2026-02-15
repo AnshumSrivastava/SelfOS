@@ -1,7 +1,15 @@
 <script>
     import { page } from "$app/stores";
     import { base } from "$app/paths";
-    import { House, CheckSquare, RotateCw, Zap, Menu } from "lucide-svelte";
+    import {
+        House,
+        CheckSquare,
+        RotateCw,
+        Zap,
+        Menu,
+        HelpCircle,
+    } from "lucide-svelte";
+    import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { fade } from "svelte/transition";
     import MobileMenu from "./MobileMenu.svelte";
 
@@ -14,6 +22,16 @@
         { name: "Habits", icon: RotateCw, href: `${base}/habits` },
         { name: "Focus", icon: Zap, href: `${base}/focus` },
     ];
+
+    let pressTimer: any;
+    function handleTouchStart() {
+        pressTimer = setTimeout(() => {
+            tutorialStore.showHub = true;
+        }, 800);
+    }
+    function handleTouchEnd() {
+        clearTimeout(pressTimer);
+    }
 </script>
 
 <nav
@@ -48,8 +66,22 @@
     {/each}
 
     <button
+        class="flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[50px] text-[var(--color-muted)]"
+        ontouchstart={handleTouchStart}
+        ontouchend={handleTouchEnd}
+        onclick={() => (tutorialStore.showHub = true)}
+        aria-label="Help & Tutorial"
+    >
+        <HelpCircle size={22} strokeWidth={2} />
+        <span
+            class="text-[9px] font-bold uppercase tracking-wider mt-1 opacity-40"
+            >Help</span
+        >
+    </button>
+
+    <button
         onclick={() => (isMenuOpen = true)}
-        class="flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[64px] {isMenuOpen
+        class="flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[50px] {isMenuOpen
             ? 'text-[var(--color-primary)]'
             : 'text-[var(--color-muted)]'}"
     >

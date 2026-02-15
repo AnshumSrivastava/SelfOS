@@ -1,7 +1,15 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { base } from "$app/paths";
-    import { Search, Bell, Settings, User, LogOut } from "lucide-svelte";
+    import {
+        Search,
+        Bell,
+        Settings,
+        User,
+        LogOut,
+        HelpCircle,
+    } from "lucide-svelte";
+    import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { userStore } from "$lib/stores/user.svelte";
     import Logo from "$lib/components/ui/Logo.svelte";
 
@@ -50,6 +58,13 @@
     </div>
 
     <div class="flex items-center gap-4">
+        <button
+            onclick={() => (tutorialStore.showHub = true)}
+            class="p-2 hover:bg-surface rounded-full transition-colors text-muted hover:text-white"
+            aria-label="Help & Tutorial"
+        >
+            <HelpCircle size={20} />
+        </button>
         <button
             class="p-2 hover:bg-surface rounded-full transition-colors text-muted hover:text-white"
         >

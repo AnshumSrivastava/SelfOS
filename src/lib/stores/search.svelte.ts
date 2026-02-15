@@ -13,7 +13,7 @@ import { base } from '$app/paths';
 
 export type SearchResult = {
     id: string;
-    type: 'Task' | 'Habit' | 'Finance' | 'Project' | 'Book' | 'Focus' | 'Calendar' | 'Navigation' | 'Nutrition' | 'Fitness' | 'Note' | 'Goal' | 'Journal';
+    type: 'Task' | 'Habit' | 'Finance' | 'Project' | 'Book' | 'Focus' | 'Calendar' | 'Navigation' | 'Nutrition' | 'Fitness' | 'Note' | 'Goal' | 'Journal' | 'Tutorial';
     title: string;
     subtitle?: string;
     href: string;
@@ -60,14 +60,33 @@ class SearchStore {
             }
         });
 
+        // Tutorial Commands
+        const tutorials = [
+            { name: "Start Guided Tutorial", id: "tutorial-start" },
+            { name: "Open Tutorial Hub", id: "tutorial-hub" },
+            { name: "Restart Setup Flow", id: "tutorial-setup" },
+        ];
+
+        tutorials.forEach(t => {
+            if (t.name.toLowerCase().includes(q)) {
+                results.push({
+                    id: t.id,
+                    type: 'Tutorial',
+                    title: t.name,
+                    subtitle: 'Tutorial Command',
+                    href: '#' // Handled by SearchModal
+                });
+            }
+        });
+
         // Tasks
         tasksStore.tasks.forEach(task => {
-            if (task.title.toLowerCase().includes(q) || (task.project && task.project.toLowerCase().includes(q))) {
+            if (task.title.toLowerCase().includes(q) || (task.projectId && task.projectId.toLowerCase().includes(q))) {
                 results.push({
                     id: task.id,
                     type: 'Task',
                     title: task.title,
-                    subtitle: `Project: ${task.project} • Due: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No Date'}`,
+                    subtitle: `Project: ${task.projectId} • Due: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No Date'}`,
                     href: `${base}/tasks`,
                     date: task.createdAt
                 });

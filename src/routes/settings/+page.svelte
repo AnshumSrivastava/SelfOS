@@ -16,6 +16,8 @@
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
     import { userStore } from "$lib/stores/user.svelte";
+    import { tutorialEngine } from "$lib/tutorial/engine";
+    import { HelpCircle, Info } from "lucide-svelte";
 
     const themes: { id: ThemeType; label: string; icon: any; bg: string }[] = [
         { id: "dark", label: "Dark", icon: Moon, bg: "bg-[#121214]" },
@@ -88,6 +90,7 @@
         { id: "account", label: "Account", icon: User },
         { id: "appearance", label: "Appearance", icon: Palette },
         { id: "features", label: "Features", icon: LayoutGrid },
+        { id: "onboarding", label: "Help", icon: HelpCircle },
     ];
 </script>
 
@@ -489,6 +492,87 @@
                                     </button>
                                 </div>
                             {/each}
+                        </div>
+                    </section>
+                </div>
+            {/if}
+
+            {#if activeTab === "onboarding"}
+                <div in:fly={{ y: 20, duration: 400 }}>
+                    <section class="space-y-8">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"
+                            >
+                                <HelpCircle size={20} />
+                            </div>
+                            <h2 class="text-xl font-bold text-white">
+                                Help & Onboarding
+                            </h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div
+                                class="card-subtle p-6 space-y-4 bg-surface/30"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <Sparkles size={18} class="text-primary" />
+                                    <h3 class="font-bold text-white">
+                                        Guided Tutorial
+                                    </h3>
+                                </div>
+                                <p class="text-sm text-muted leading-relaxed">
+                                    New to SelfOS? Take a quick guided tour of
+                                    all the major features and modules.
+                                </p>
+                                <button
+                                    onclick={() =>
+                                        tutorialEngine.startFlow("setup")}
+                                    class="btn btn-primary w-full py-3"
+                                >
+                                    Start Full Tutorial
+                                </button>
+                            </div>
+
+                            <div
+                                class="card-subtle p-6 space-y-4 bg-surface/30"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <Info size={18} class="text-primary" />
+                                    <h3 class="font-bold text-white">
+                                        Advanced Shortcuts
+                                    </h3>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div
+                                        class="flex justify-between text-muted"
+                                    >
+                                        <span>Command Palette</span>
+                                        <span
+                                            class="font-mono bg-white/5 px-1.5 py-0.5 rounded text-[10px] text-white"
+                                            >Space</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="flex justify-between text-muted"
+                                    >
+                                        <span>Tutorial Hub</span>
+                                        <span
+                                            class="font-mono bg-white/5 px-1.5 py-0.5 rounded text-[10px] text-white"
+                                            >Ctrl+Shift+/</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="flex justify-between text-muted"
+                                    >
+                                        <span>Next Step</span>
+                                        <span
+                                            class="font-mono bg-white/5 px-1.5 py-0.5 rounded text-[10px] text-white"
+                                            >Ctrl+Shift+.</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>

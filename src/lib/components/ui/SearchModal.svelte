@@ -18,6 +18,7 @@
         Heart,
     } from "lucide-svelte";
     import { searchStore } from "$lib/stores/search.svelte";
+    import { tutorialEngine } from "$lib/tutorial/engine";
     import { fade, fly } from "svelte/transition";
     import { page } from "$app/stores";
     import { base } from "$app/paths";
@@ -113,8 +114,25 @@
             const result = searchStore.results[selectedIndex];
             if (result) {
                 searchStore.close();
-                goto(result.href);
+                if (result.type === "Tutorial") {
+                    handleTutorialCommand(result.id);
+                } else {
+                    goto(result.href);
+                }
             }
+        }
+    }
+
+    function handleTutorialCommand(id: string) {
+        if (id === "tutorial-start") {
+            tutorialEngine.startFlow("setup");
+        } else if (id === "tutorial-hub") {
+            // How to open the hub from here?
+            // Since SearchModal is in +layout, maybe it can emit an event or just call a global state
+            // For now, let's just use the engine to start the setup flow as a default start
+            tutorialEngine.startFlow("setup");
+        } else if (id === "tutorial-setup") {
+            tutorialEngine.startFlow("setup");
         }
     }
 
@@ -200,7 +218,13 @@
                         <a
                             id="result-{i}"
                             href={result.href}
-                            onclick={() => searchStore.close()}
+                            onclick={(e) => {
+                                if (result.type === "Tutorial") {
+                                    e.preventDefault();
+                                    handleTutorialCommand(result.id);
+                                }
+                                searchStore.close();
+                            }}
                             class="flex items-center gap-4 p-3 rounded-xl transition-colors group {i ===
                             selectedIndex
                                 ? 'bg-neutral-800'
