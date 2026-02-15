@@ -120,18 +120,42 @@ class ProjectsStore {
     async addProject(project: Partial<Project>) {
         try {
             console.log('[ProjectsStore] Adding new project:', project.name);
+            const type = project.type || 'project';
+            const section = DEFAULT_SECTIONS.find(s => s.type === type);
+
             return await this.projectsStore.insert({
-                name: 'New Project',
-                type: 'project',
+                name: project.name || 'New Item',
+                type: type,
                 progress: 0,
-                color: "text-emerald-500",
-                bg: "bg-emerald-500/10",
-                status: 'Active',
+                color: section?.color.replace('text-', '') || "emerald-500",
+                bg: section?.bg || "bg-emerald-500/10",
+                status: type === 'archive' ? 'Archived' : 'Active',
                 updatedAt: new Date().toISOString(),
                 ...project
             } as any);
         } catch (error) {
             console.error('[ProjectsStore] Failed to add project:', error);
+            throw error;
+        }
+    }
+
+    async moveProject(id: string, newType: Project['type']) {
+        try {
+            const section = DEFAULT_SECTIONS.find(s => s.type === newType);
+            const updates: Partial<Project> = {
+                type: newType,
+                status: newType === 'archive' ? 'Archived' : 'Active',
+                updatedAt: new Date().toISOString()
+            };
+
+            if (section) {
+                updates.color = section.color.replace('text-', '');
+                updates.bg = section.bg;
+            }
+
+            await this.projectsStore.update(id, updates);
+        } catch (error) {
+            console.error(`[ProjectsStore] Failed to move project ${id} to ${newType}:`, error);
             throw error;
         }
     }
