@@ -9,8 +9,11 @@
         Monitor,
         Plus,
         Minus,
+        User,
+        Save,
     } from "lucide-svelte";
     import { fade } from "svelte/transition";
+    import { userStore } from "$lib/stores/user.svelte";
 
     const themes: { id: ThemeType; label: string; icon: any; bg: string }[] = [
         { id: "dark", label: "Dark", icon: Moon, bg: "bg-[#121214]" },
@@ -18,6 +21,38 @@
         { id: "amoled", label: "Amoled", icon: Monitor, bg: "bg-[#000000]" },
         { id: "minimal", label: "Minimal", icon: Minus, bg: "bg-[#1a1a1a]" },
     ];
+
+    let editDisplayName = $state(userStore.currentUser?.displayName || "");
+    let editUsername = $state(userStore.currentUser?.username || "");
+    let isSavingProfile = $state(false);
+    let profileMessage = $state({ text: "", type: "success" });
+
+    async function handleSaveProfile() {
+        isSavingProfile = true;
+        profileMessage = { text: "", type: "success" };
+
+        const result = await userStore.updateProfile({
+            displayName: editDisplayName,
+            username: editUsername,
+        });
+
+        if (result.success) {
+            profileMessage = {
+                text: "Profile updated successfully!",
+                type: "success",
+            };
+        } else {
+            profileMessage = {
+                text: result.error || "Failed to update profile",
+                type: "error",
+            };
+        }
+
+        isSavingProfile = false;
+        setTimeout(() => {
+            profileMessage = { text: "", type: "success" };
+        }, 3000);
+    }
 
     const accentColors = [
         { id: "green", value: "#00ff9d", label: "Neon Green" },
@@ -104,6 +139,77 @@
             </p>
         </div>
     </div>
+
+    <!-- Account Section -->
+    <section class="space-y-4">
+        <h2 class="text-xl font-semibold flex items-center gap-2">
+            <User size={20} class="text-primary" />
+            Account Profile
+        </h2>
+
+        <div class="card-subtle space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label
+                        for="displayName"
+                        class="text-sm font-medium text-muted"
+                        >Display Name</label
+                    >
+                    <input
+                        id="displayName"
+                        type="text"
+                        bind:value={editDisplayName}
+                        placeholder="Your Display Name"
+                        class="input w-full"
+                    />
+                </div>
+                <div class="space-y-2">
+                    <label for="username" class="text-sm font-medium text-muted"
+                        >Username</label
+                    >
+                    <input
+                        id="username"
+                        type="text"
+                        bind:value={editUsername}
+                        placeholder="username"
+                        class="input w-full"
+                    />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                {#if profileMessage.text}
+                    <p
+                        class="text-sm font-medium {profileMessage.type ===
+                        'success'
+                            ? 'text-primary'
+                            : 'text-red-400'}"
+                        transition:fade
+                    >
+                        {profileMessage.text}
+                    </p>
+                {:else}
+                    <div></div>
+                {/if}
+
+                <button
+                    onclick={handleSaveProfile}
+                    disabled={isSavingProfile}
+                    class="btn btn-primary flex items-center gap-2 px-6"
+                >
+                    {#if isSavingProfile}
+                        <div
+                            class="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"
+                        ></div>
+                        Saving...
+                    {:else}
+                        <Save size={18} />
+                        Save Changes
+                    {/if}
+                </button>
+            </div>
+        </div>
+    </section>
 
     <!-- Theme Section -->
     <section class="space-y-4">

@@ -6,9 +6,12 @@ export type Habit = {
     id: string;
     name: string;
     description?: string;
+    color?: string;
+    frequency?: string;
     streak: number;
     last_completed?: string;
     created_at?: string;
+    updated_at?: string;
 };
 
 export type HabitCheckin = {
@@ -67,14 +70,27 @@ class HabitsStore {
     }
 
     async add(name: string) {
+        if (!auth.isAuthenticated) {
+            this.#log('Failed to add habit: User not authenticated', null, 'error');
+            throw new Error("You must be logged in to add habits");
+        }
+
         this.#log(`Attempting to add habit: ${name}`);
         try {
             const result = await this.store.insert({
                 name,
-                streak: 0
+                streak: 0,
+                frequency: 'daily',
+                color: '#00ff9d'
             });
-            this.#log('Habit added successfully', result);
-        } catch (error) {
+
+            if (result) {
+                this.#log('Habit added successfully', result);
+                return result;
+            } else {
+                throw new Error("Insert succeeded but returned no data");
+            }
+        } catch (error: any) {
             this.#log('Failed to add habit', error, 'error');
             throw error;
         }

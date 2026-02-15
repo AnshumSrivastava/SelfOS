@@ -115,6 +115,19 @@ class AuthStore {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
     }
+
+    async updateUserMetadata(metadata: Record<string, any>) {
+        if (!supabase || !supabase.auth) throw new Error("Supabase not initialized");
+        const { data, error } = await supabase.auth.updateUser({
+            data: metadata
+        });
+        if (error) {
+            this.#log("Update user metadata error", error, "error");
+            throw error;
+        }
+        this.#user = data.user;
+        return data.user;
+    }
 }
 
 export const auth = new AuthStore();

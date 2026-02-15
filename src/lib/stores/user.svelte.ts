@@ -66,6 +66,24 @@ class UserStore {
     }
 
     /**
+     * Update user profile metadata
+     */
+    async updateProfile(updates: { displayName?: string; username?: string; avatar?: string }) {
+        const metadata: any = {};
+        if (updates.displayName) metadata.full_name = updates.displayName;
+        if (updates.username) metadata.username = updates.username;
+        if (updates.avatar) metadata.avatar_url = updates.avatar;
+
+        try {
+            await auth.updateUserMetadata(metadata);
+            return { success: true };
+        } catch (e: any) {
+            console.error("Profile update error:", e);
+            return { success: false, error: e.message };
+        }
+    }
+
+    /**
      * Get a unique storage key for a given key, scoped to the current user.
      * This is useful for storing user-specific data in localStorage.
      */

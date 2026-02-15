@@ -1,11 +1,8 @@
 <script lang="ts">
-    import { Settings2, GripVertical } from "lucide-svelte";
+    import { Settings2 } from "lucide-svelte";
     import { slide } from "svelte/transition";
     import { dashboardStore } from "$lib/stores/dashboard.svelte";
-    import { dndzone } from "svelte-dnd-action";
     import WelcomeWidget from "./WelcomeWidget.svelte";
-    import NextActionsWidget from "./NextActionsWidget.svelte";
-    import StatsWidget from "./StatsWidget.svelte";
     import HabitsWidget from "./HabitsWidget.svelte";
     import TasksWidget from "./TasksWidget.svelte";
     import TodayDecisions from "./TodayDecisions.svelte";
@@ -17,65 +14,6 @@
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
 
     let showSettings = $state(false);
-    let items = $state(dashboardStore.enabledWidgets);
-
-    // Watch for changes in dashboard store
-    $effect(() => {
-        items = dashboardStore.enabledWidgets;
-    });
-
-    function handleDndConsider(e: CustomEvent) {
-        items = e.detail.items;
-    }
-
-    function handleDndFinalize(e: CustomEvent) {
-        items = e.detail.items;
-        dashboardStore.reorderWidgets(items);
-    }
-
-    function getWidgetComponent(type: string) {
-        switch (type) {
-            case "welcome":
-                return WelcomeWidget;
-            case "today-decisions":
-                return TodayDecisions;
-            case "now-next-later":
-                return NowNextLater;
-            case "calendar-snapshot":
-                return CalendarSnapshot;
-            case "momentum-snapshot":
-                return MomentumSnapshot;
-            case "financial-pulse":
-                return FinancialPulse;
-            case "goal-pulse":
-                return GoalPulse;
-            case "quick-capture":
-                return QuickCapture;
-            case "stats":
-                return StatsWidget;
-            case "habits":
-                return HabitsWidget;
-            case "tasks":
-                return TasksWidget;
-            default:
-                return null;
-        }
-    }
-
-    function getWidgetGridClass(size: string) {
-        switch (size) {
-            case "small":
-                return "col-span-1";
-            case "medium":
-                return "col-span-1 lg:col-span-1";
-            case "large":
-                return "col-span-1 lg:col-span-2";
-            case "full":
-                return "col-span-1 lg:col-span-2";
-            default:
-                return "col-span-1";
-        }
-    }
 </script>
 
 <div class="page-container h-full">
@@ -137,58 +75,87 @@
         </div>
     {/if}
 
-    <!-- Widgets Grid with Drag and Drop -->
-    <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        use:dndzone={{
-            items,
-            flipDurationMs: 200,
-            dropTargetStyle: {},
-        }}
-        onconsider={handleDndConsider}
-        onfinalize={handleDndFinalize}
-    >
-        {#each items as widget (widget.id)}
-            {@const WidgetComp = getWidgetComponent(widget.type)}
-            <div class={getWidgetGridClass(widget.size)} data-id={widget.id}>
-                <div class="relative group">
-                    <!-- Drag Handle -->
-                    <div
-                        class="absolute -left-2 top-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10"
-                    >
-                        <div
-                            class="p-1 rounded bg-surface border border-line text-muted"
-                        >
-                            <GripVertical size={16} />
-                        </div>
-                    </div>
-
-                    <!-- Widget Content -->
-                    {#if WidgetComp}
-                        <WidgetComp />
-                    {/if}
-                </div>
-            </div>
-        {/each}
-    </div>
-
-    {#if items.length === 0}
-        <div class="card-subtle text-center py-12">
-            <Settings2 size={48} class="mx-auto mb-4 text-muted opacity-50" />
-            <h3 class="text-lg font-semibold text-white mb-2">
-                No widgets enabled
-            </h3>
-            <p class="text-muted mb-4">
-                Click the settings icon to customize your dashboard
-            </p>
-            <button
-                onclick={() => (showSettings = true)}
-                class="btn btn-primary"
-            >
-                Customize Dashboard
-            </button>
+    <!-- Dynamic Dashboard Layout -->
+    <div class="flex flex-col gap-10">
+        <!-- Top Tier: Welcome & Critical Quick Capture -->
+        <div class="w-full">
+            <WelcomeWidget />
         </div>
-    {/if}
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- Main Content: Direct Execution and Decisions -->
+            <div class="lg:col-span-2 space-y-10">
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <div class="w-1 h-4 bg-primary rounded-full"></div>
+                        <h2
+                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                        >
+                            Daily Precision
+                        </h2>
+                    </div>
+                    <div class="space-y-8">
+                        <TodayDecisions />
+                        <NowNextLater />
+                    </div>
+                </section>
+
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <div class="w-1 h-4 bg-secondary rounded-full"></div>
+                        <h2
+                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                        >
+                            Execution Flow
+                        </h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <HabitsWidget />
+                        <TasksWidget />
+                    </div>
+                </section>
+            </div>
+
+            <!-- Sidebar: Context & Snapshots -->
+            <div class="space-y-10">
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                        >
+                            Timeline
+                        </h2>
+                    </div>
+                    <CalendarSnapshot />
+                </section>
+
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                        >
+                            Momentum
+                        </h2>
+                    </div>
+                    <MomentumSnapshot />
+                </section>
+
+                <section class="space-y-4">
+                    <div class="flex items-center gap-2 px-1">
+                        <h2
+                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                        >
+                            Strategic Pulse
+                        </h2>
+                    </div>
+                    <div class="space-y-6">
+                        <GoalPulse />
+                        <FinancialPulse />
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
