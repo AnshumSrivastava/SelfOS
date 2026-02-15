@@ -28,13 +28,20 @@
             ></div>
         {/if}
         <div
-            class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center"
+            class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 {book.coverUrl &&
+            book.coverUrl.startsWith('http')
+                ? 'opacity-0 group-hover:opacity-100 bg-black/60 backdrop-blur-sm'
+                : ''} transition-all duration-300"
         >
             <BookIcon size={32} class="mb-2 text-white/50" />
-            <h3 class="font-bold text-white line-clamp-2">
+            <h3 class="font-bold text-white line-clamp-2 text-sm leading-tight">
                 {book.title}
             </h3>
-            <p class="text-xs text-muted mt-1">{book.author}</p>
+            <p
+                class="text-[10px] text-muted mt-1 uppercase tracking-wider font-bold"
+            >
+                {book.author}
+            </p>
         </div>
 
         {#if book.status === "Completed"}

@@ -184,6 +184,9 @@
 <svelte:window
     onkeydown={(e) => {
         if (e.key === "Escape") {
+            if (scratchpadInput.trim()) {
+                processInput();
+            }
             onClose();
         }
     }}

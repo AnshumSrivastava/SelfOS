@@ -131,7 +131,10 @@
                 >
                     <div class="flex gap-4 items-start">
                         <div
-                            class="w-12 md:w-16 aspect-[2/3] rounded shadow-lg {book.coverUrl} opacity-80 flex items-center justify-center shrink-0"
+                            class="w-12 md:w-16 aspect-[2/3] rounded shadow-lg relative {book.coverUrl &&
+                            !book.coverUrl.startsWith('http')
+                                ? book.coverUrl
+                                : 'bg-surface'} opacity-80 flex items-center justify-center shrink-0 border border-line"
                         >
                             {#if book.coverUrl && book.coverUrl.startsWith("http")}
                                 <img

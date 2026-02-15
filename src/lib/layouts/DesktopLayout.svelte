@@ -34,7 +34,9 @@
                     class="absolute top-[40%] left-[10%] w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[100px]"
                 ></div>
             </div>
-            <div class="relative z-10 max-w-7xl mx-auto w-full animate-fade-in">
+            <div
+                class="relative z-10 max-w-full mx-auto w-full animate-fade-in px-4"
+            >
                 {@render children()}
             </div>
         </main>

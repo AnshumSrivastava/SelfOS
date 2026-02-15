@@ -38,7 +38,7 @@
 <div class="h-screen flex flex-col overflow-hidden bg-background">
     <!-- Header Area -->
     <div class="px-10 py-12 shrink-0">
-        <div class="flex items-end justify-between max-w-[1600px] mx-auto">
+        <div class="flex items-end justify-between w-full mx-auto">
             <div>
                 <h1 class="text-5xl font-light text-white tracking-tight mb-3">
                     P.A.R.A. <span class="text-primary font-bold">Registry</span
@@ -74,7 +74,7 @@
 
     <!-- Kanban Board (Horizontal) -->
     <div
-        class="flex-1 flex gap-8 px-10 overflow-x-auto pb-12 custom-scrollbar-h items-start max-w-[1800px] mx-auto w-full"
+        class="flex-1 flex gap-8 px-10 overflow-x-auto pb-12 custom-scrollbar-h items-start w-full mx-auto"
     >
         {#if projectsStore.loading}
             <div class="flex gap-6 w-full">
