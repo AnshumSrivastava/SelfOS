@@ -51,6 +51,13 @@ class FitnessStore {
     get weights() { return this.weightStore.value; }
     get sleepLogs() { return this.sleepStore.value; }
     get goals() { return this.goalsStore.value[0] || { weightGoal: 70, stepGoal: 10000, waterGoal: 2.5 }; }
+    get loading() {
+        return this.workoutsStore.loading ||
+            this.weightStore.loading ||
+            this.sleepStore.loading ||
+            this.goalsStore.loading ||
+            this.dailyStore.loading;
+    }
 
     // For backward compatibility with UI
     get stats() {

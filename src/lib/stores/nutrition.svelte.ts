@@ -79,6 +79,9 @@ class NutritionStore {
             targetWater: s?.targetWater || 3.0
         };
     }
+    get loading() {
+        return this.mealsStore.loading || this.settingsStore.loading;
+    }
 
     get meals() {
         const today = new Date().toISOString().split('T')[0];

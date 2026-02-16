@@ -61,9 +61,18 @@ class DashboardStore {
         }
     }
 
-    async fetchData() {
-        if (!auth.isAuthenticated) return;
-        this.loading = true;
+    async fetchData(force: boolean = false) {
+        if (!auth.isAuthenticated || (this.loading && !force)) return;
+
+        // Only show loading state if we have no data yet
+        const hasData = this.todayDecisions.length > 0 ||
+            this.momentumRisks.length > 0 ||
+            this.financeAlerts.length > 0 ||
+            this.goalNextSteps.length > 0;
+
+        if (!hasData || force) {
+            this.loading = true;
+        }
         this.error = null;
 
         try {

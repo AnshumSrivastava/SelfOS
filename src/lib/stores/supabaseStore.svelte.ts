@@ -85,14 +85,17 @@ export class SupabaseStore<T extends { id: string }> {
         }
     }
 
-    async fetch() {
+    async fetch(force: boolean = false) {
         if (!auth.isAuthenticated) {
             this.#log('Fetch skipped: User not authenticated');
             this.#loading = false;
             return;
         }
 
-        this.#loading = true;
+        // Only show loading state if we have no data yet OR it's a forced refresh
+        if (force || this.#value.length === 0) {
+            this.#loading = true;
+        }
         try {
             this.#log('Fetching data...');
             let query = supabase.from(this.#tableName).select('*');

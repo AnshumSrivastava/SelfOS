@@ -22,14 +22,7 @@
 
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);
-    let isLoading = $state(true);
-
-    onMount(() => {
-        const timer = setTimeout(() => {
-            isLoading = false;
-        }, 800);
-        return () => clearTimeout(timer);
-    });
+    let isLoading = $derived(fitnessStore.loading);
 
     let stats = $derived(fitnessStore.stats);
     let workouts = $derived(fitnessStore.workouts);

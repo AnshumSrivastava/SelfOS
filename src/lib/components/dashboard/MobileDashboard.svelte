@@ -31,11 +31,8 @@
         }),
     );
 
-    $effect(() => {
-        if (auth.isAuthenticated) {
-            dashboardStore.fetchData();
-        }
-    });
+    // Note: dashboardStore calls fetchData in constructor for initial load
+    // Subsequent refreshes should be manual or triggered only on significant auth changes
 </script>
 
 <div class="page-container relative pb-36">

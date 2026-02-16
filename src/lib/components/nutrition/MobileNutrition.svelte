@@ -20,16 +20,9 @@
 
     let isProfileOpen = $state(false);
     let isLogMealOpen = $state(false);
-    let isLoading = $state(true);
+    let isLoading = $derived(nutritionStore.loading);
 
     // ... (rest of script)
-
-    onMount(() => {
-        const timer = setTimeout(() => {
-            isLoading = false;
-        }, 800);
-        return () => clearTimeout(timer);
-    });
 
     let stats = $derived(nutritionStore.todayStats);
     let goals = $derived(nutritionStore.goals);
