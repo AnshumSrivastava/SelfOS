@@ -206,6 +206,8 @@ export class SupabaseStore<T extends { id: string }> {
         } catch (e) {
             this.#log('Unexpected error during fetch', e, 'error');
             this.#setStatus('error', (e as Error).message);
+            // Ensure we don't block forever if fetch fails
+            this.#initialized = true;
         }
     }
 

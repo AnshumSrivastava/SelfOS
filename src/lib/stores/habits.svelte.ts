@@ -28,7 +28,7 @@ export type HabitCheckin = {
 class HabitsStore {
     private store = new SupabaseStore<Habit>('habits');
     private checkins = $state<HabitCheckin[]>([]);
-    private checkinsLoading = $state(true);
+    private checkinsLoading = $state(false);
     private checkinsStatus = $state<StoreStatus>('idle');
     private checkinsError = $state<string | null>(null);
 
@@ -49,16 +49,22 @@ class HabitsStore {
     async init() {
         await this.store.init();
         if (typeof window !== 'undefined') {
-            if (auth.loading) {
+            const checkAuthAndFetch = () => {
+                if (!auth.loading && auth.isAuthenticated) {
+                    this.fetchCheckins();
+                    return true;
+                }
+                return false;
+            };
+
+            if (!checkAuthAndFetch()) {
                 $effect.root(() => {
                     $effect(() => {
-                        if (!auth.loading && auth.isAuthenticated) {
-                            this.fetchCheckins();
+                        if (checkAuthAndFetch()) {
+                            // Successfully fetched, effect will naturally stop being useful
                         }
                     });
                 });
-            } else if (auth.isAuthenticated) {
-                this.fetchCheckins();
             }
         }
     }
@@ -90,6 +96,7 @@ class HabitsStore {
 
     async fetchCheckins() {
         if (!auth.isAuthenticated) return;
+        this.checkinsLoading = true;
         this.#setCheckinsStatus('loading');
         try {
             const { data, error } = await supabase
@@ -110,6 +117,8 @@ class HabitsStore {
         } catch (e) {
             this.#log('Unexpected error fetching checkins', e, 'error');
             this.#setCheckinsStatus('error', (e as Error).message);
+        } finally {
+            this.checkinsLoading = false;
         }
     }
 
