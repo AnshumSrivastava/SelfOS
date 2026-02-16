@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import StatCard from "$lib/components/ui/StatCard.svelte";
     import { financeStore } from "$lib/stores/finance.svelte";
     import { onMount } from "svelte";
@@ -381,27 +382,27 @@
         </div>
     {/if}
 
-    <div class="module-header" style="margin-bottom: var(--space-4)">
-        <div>
-            <h1>Finance</h1>
-            <p class="text-sm text-muted mt-1">
-                Master your wealth and cashflow.
-            </p>
-        </div>
 
-        <div class="flex gap-3">
-            <button class="btn btn-ghost flex items-center gap-2">
-                <PieChart size={16} />
-                <span class="hidden sm:inline">Reports</span>
-            </button>
-            <button
-                onclick={() => (showAddModal = true)}
-                class="btn btn-primary flex items-center gap-2"
-            >
-                <Plus size={16} /> Add Transaction
-            </button>
-        </div>
-    </div>
+
+<div class="page-container relative h-full flex flex-col">
+    <!-- ... (modals) -->
+
+    <PageHeader 
+        title="Finance" 
+        subtitle="Master your wealth and cashflow."
+        icon={Wallet}
+    >
+        <button class="btn btn-ghost flex items-center gap-2">
+            <PieChart size={16} />
+            <span class="hidden sm:inline">Reports</span>
+        </button>
+        <button
+            onclick={() => (showAddModal = true)}
+            class="btn btn-primary flex items-center gap-2"
+        >
+            <Plus size={16} /> Add Transaction
+        </button>
+    </PageHeader>
 
     {#if financeStore.loading}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

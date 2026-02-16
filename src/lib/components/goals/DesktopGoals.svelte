@@ -22,6 +22,7 @@
         TrendingUp,
         BookOpen,
     } from "lucide-svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import { goalsStore, type Goal } from "$lib/stores/goals.svelte";
     import GoalModal from "./GoalModal.svelte";
     import GoalBoard from "./GoalBoard.svelte";
@@ -40,8 +41,8 @@
     });
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
-        activeTab: "today" | "plan" | "review";
-        onTabChange: (tab: "today" | "plan" | "review") => void;
+        activeTab: "today" | "goals" | "review";
+        onTabChange: (tab: "today" | "goals" | "review") => void;
         filters: any;
         selectedGoalId: string | null;
     }>();
@@ -67,7 +68,7 @@
 
     const tabs = [
         { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
-        { id: "plan", label: "Plan", icon: Network, color: "text-primary" },
+        { id: "goals", label: "Goals", icon: Network, color: "text-primary" },
         {
             id: "review",
             label: "Review",
@@ -79,61 +80,33 @@
 
 <div class="h-full flex flex-col overflow-hidden bg-background">
     <!-- 1. UNIFIED HEADER -->
-    <header
-        class="h-20 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-xl z-20"
-    >
-        <div class="flex items-center gap-12">
-            <div class="flex items-center gap-3">
-                <div
-                    class="p-2 rounded-xl bg-primary/5 text-primary border border-primary/10"
-                >
-                    <Target size={20} />
-                </div>
-                <h1 class="text-xl font-light text-text tracking-tight">
-                    Vision
-                </h1>
-            </div>
-
-            <!-- Main Tabs -->
-            <div
-                class="flex bg-white/3 p-1 rounded-2xl border border-white/5 shadow-2xl"
-            >
+    <PageHeader title="Vision" subtitle="Strategic Operations" icon={Target}>
+        <div class="flex items-center gap-6">
+            <!-- Tabs -->
+            <div class="flex bg-white/5 p-1 rounded-xl border border-white/5">
                 {#each tabs as tab}
                     <button
                         onclick={() => onTabChange(tab.id as any)}
-                        class="px-5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] transition-all flex items-center gap-2 {activeTab ===
+                        class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 {activeTab ===
                         tab.id
-                            ? 'bg-primary text-black shadow-[0_4px_20px_rgba(var(--primary-rgb),0.3)]'
-                            : 'text-muted hover:text-text'}"
+                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                            : 'text-muted hover:text-white'}"
                     >
-                        <tab.icon size={12} />
+                        <tab.icon size={14} />
                         {tab.label}
                     </button>
                 {/each}
-            </div>
-        </div>
-
-        <div class="flex items-center gap-6">
-            <div class="relative group hidden lg:block">
-                <Search
-                    size={12}
-                    class="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
-                />
-                <input
-                    type="text"
-                    placeholder="Search vision..."
-                    class="w-64 bg-white/3 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-text placeholder:text-muted/50 outline-none focus:border-primary/30 focus:bg-white/5 transition-all"
-                />
             </div>
 
             <div class="h-6 w-px bg-line"></div>
 
             <button
                 onclick={() => openGoalModal()}
-                class="btn btn-primary flex items-center gap-2 h-9 px-5"
+                class="btn btn-primary flex items-center gap-2 h-9 px-4"
             >
                 <Plus size={16} />
-                <span class="text-[10px] uppercase tracking-widest font-bold"
+                <span
+                    class="text-[10px] uppercase tracking-widest font-bold hidden sm:inline"
                     >New Goal</span
                 >
             </button>
@@ -144,21 +117,21 @@
                 title={rightPaneOpen ? "Close Context" : "Open Context"}
             >
                 {#if rightPaneOpen}
-                    <PanelRightClose size={16} />
+                    <PanelRightClose size={18} />
                 {:else}
-                    <PanelRightOpen size={16} />
+                    <PanelRightOpen size={18} />
                 {/if}
             </button>
         </div>
-    </header>
+    </PageHeader>
 
     <div class="flex-1 flex overflow-hidden">
         <!-- 2. MAIN WORKSPACE -->
         <main
             class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative"
         >
-            <!-- Sub-navigation for Plan view -->
-            {#if activeTab === "plan"}
+            <!-- Sub-navigation for Goals view -->
+            {#if activeTab === "goals"}
                 <div
                     class="h-14 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-white/2"
                 >
@@ -204,7 +177,7 @@
             <div class="flex-1 overflow-hidden flex flex-col">
                 {#if activeTab === "today"}
                     <GoalsTodayView />
-                {:else if activeTab === "plan"}
+                {:else if activeTab === "goals"}
                     <div class="flex-1 overflow-auto custom-scrollbar">
                         {#if planViewMode === "tree"}
                             <div class="p-8 max-w-5xl mx-auto">

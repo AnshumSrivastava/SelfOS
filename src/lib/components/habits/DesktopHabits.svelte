@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import {
         Check,
         Flame,
@@ -144,45 +145,32 @@
     </div>
 {/if}
 
-<div class="page-container relative max-w-7xl mx-auto px-4 py-8">
+<div class="page-container relative max-w-7xl mx-auto flex flex-col h-full">
     <StreakFire bind:this={fire} />
 
-    <!-- Hero Header -->
-    <div
-        class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6"
+    <PageHeader
+        title="Habits"
+        subtitle="{today.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+        })} · {habitsStore.completedCount} of {habitsStore.totalCount} completed"
+        icon={Flame}
     >
-        <div class="space-y-2">
-            <h1 class="text-5xl font-light tracking-tight text-white mb-2">
-                {today.toLocaleDateString("en-US", { weekday: "long" })}
-                <span class="text-primary opacity-50">.</span>
-            </h1>
-            <div class="flex items-center gap-4 text-muted text-sm">
-                <span class="flex items-center gap-2">
-                    <Check size={14} class="text-primary" />
-                    {habitsStore.completedCount} of {habitsStore.totalCount} completed
-                </span>
-                <span class="w-1 h-1 rounded-full bg-line"></span>
-                <span
-                    >{today.toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "long",
-                    })}</span
-                >
-            </div>
-        </div>
-
         <button
             onclick={() => (isAdding = true)}
-            class="btn btn-primary flex items-center gap-2 px-8 py-3"
+            class="btn btn-primary flex items-center gap-2"
         >
-            <Plus size={18} />
+            <Plus size={16} />
             <span class="text-xs uppercase tracking-widest font-bold"
                 >New Habit</span
             >
         </button>
-    </div>
+    </PageHeader>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+    <div
+        class="px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start flex-1 overflow-y-auto custom-scrollbar"
+    >
         <!-- Main Content: Habits List (8 cols) -->
         <div class="lg:col-span-8 space-y-6">
             {#if habitsStore.loading}

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import {
         Folder,
         FileText,
@@ -56,53 +57,26 @@
 <NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
 <div class="page-container relative">
-    <div class="module-header mb-12">
-        <div class="space-y-1">
-            <h1 class="text-4xl font-light text-white tracking-tight">
-                Notes <span class="text-primary font-bold">Library</span>
-            </h1>
-            <div class="flex items-center gap-3">
-                <p
-                    class="text-[10px] uppercase font-bold tracking-[0.3em] text-muted opacity-60"
-                >
-                    Collective Archive
-                </p>
-                <div class="h-px w-8 bg-line"></div>
-                {#if notesStore.loading}
-                    <span
-                        class="text-[9px] font-bold text-primary animate-pulse tracking-widest uppercase"
-                        >Syncing...</span
-                    >
-                {:else}
-                    <span
-                        class="text-[9px] font-bold text-emerald-400 tracking-widest uppercase"
-                        >Verified</span
-                    >
-                {/if}
-            </div>
+    <PageHeader title="Notes" subtitle="Collective Archive" icon={FileText}>
+        <div class="relative">
+            <Search
+                size={18}
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+            />
+            <input
+                type="text"
+                bind:value={searchQuery}
+                placeholder="Search notes..."
+                class="input pl-10 w-64"
+            />
         </div>
-
-        <div class="flex gap-3">
-            <div class="relative">
-                <Search
-                    size={18}
-                    class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
-                />
-                <input
-                    type="text"
-                    bind:value={searchQuery}
-                    placeholder="Search notes..."
-                    class="input pl-10 w-64"
-                />
-            </div>
-            <button
-                onclick={openNewNote}
-                class="btn btn-primary flex items-center gap-2"
-            >
-                <Plus size={18} /> New Note
-            </button>
-        </div>
-    </div>
+        <button
+            onclick={openNewNote}
+            class="btn btn-primary flex items-center gap-2"
+        >
+            <Plus size={18} /> New Note
+        </button>
+    </PageHeader>
 
     <div class="flex gap-2 overflow-x-auto pb-2">
         {#each filters as f}

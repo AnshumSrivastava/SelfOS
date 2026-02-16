@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import {
         CheckSquare,
         AlertCircle,
@@ -177,16 +178,13 @@
     </div>
 {/if}
 
-<div class="page-container relative h-full">
+<div class="page-container relative h-full flex flex-col">
     <!-- Header -->
-    <div class="module-header" style="margin-bottom: var(--space-4)">
-        <div>
-            <h1>Tasks</h1>
-            <p class="text-sm text-muted mt-1">
-                {tasksStore.activeCount} active tasks · {tasksStore.completedCount}
-                completed
-            </p>
-        </div>
+    <PageHeader
+        title="Tasks"
+        subtitle="{tasksStore.activeCount} active · {tasksStore.completedCount} completed"
+        icon={CheckSquare}
+    >
         <button
             onclick={() => (isAdding = !isAdding)}
             class="btn {isAdding
@@ -199,7 +197,7 @@
                 <Plus size={16} /> New Task
             {/if}
         </button>
-    </div>
+    </PageHeader>
 
     <!-- Insights Bar -->
     {#if insights.overdue > 0 || insights.dueToday > 0 || insights.highPriority > 0}

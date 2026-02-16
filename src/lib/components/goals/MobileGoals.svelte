@@ -39,8 +39,8 @@
     });
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
-        activeTab: "today" | "plan" | "review";
-        onTabChange: (tab: "today" | "plan" | "review") => void;
+        activeTab: "today" | "goals" | "review";
+        onTabChange: (tab: "today" | "goals" | "review") => void;
         filters: any;
         selectedGoalId: string | null;
     }>();
@@ -63,7 +63,7 @@
 
     const tabs = [
         { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
-        { id: "plan", label: "Plan", icon: Network, color: "text-primary" },
+        { id: "goals", label: "Goals", icon: Target, color: "text-primary" },
         {
             id: "review",
             label: "Review",
@@ -92,13 +92,13 @@
     );
 
     function nextTab() {
-        if (activeTab === "today") onTabChange("plan");
-        else if (activeTab === "plan") onTabChange("review");
+        if (activeTab === "today") onTabChange("goals");
+        else if (activeTab === "goals") onTabChange("review");
     }
 
     function prevTab() {
-        if (activeTab === "review") onTabChange("plan");
-        else if (activeTab === "plan") onTabChange("today");
+        if (activeTab === "review") onTabChange("goals");
+        else if (activeTab === "goals") onTabChange("today");
     }
 </script>
 
@@ -119,8 +119,8 @@
     <MobileHeader
         title={activeTab === "today"
             ? "Daily Focus"
-            : activeTab === "plan"
-              ? "Global Plan"
+            : activeTab === "goals"
+              ? "Global Goals"
               : "Performance"}
         action={headerAction}
     />
@@ -136,7 +136,7 @@
             <div in:fade>
                 <GoalsTodayView isMobile={true} />
             </div>
-        {:else if activeTab === "plan"}
+        {:else if activeTab === "goals"}
             <div class="p-4 space-y-6" in:fade>
                 <!-- Area Chips -->
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">

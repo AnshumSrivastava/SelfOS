@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import {
         Plus,
         User,
@@ -55,53 +56,20 @@
 </script>
 
 <div class="page-container h-full relative">
-    <div class="module-header mb-12">
-        <div class="space-y-1">
-            <h1 class="text-4xl font-light text-white tracking-tight">
-                Nutrition <span class="text-primary font-bold">Engine</span>
-            </h1>
-            <div class="flex items-center gap-3">
-                <p
-                    class="text-[10px] uppercase font-bold tracking-[0.3em] text-muted opacity-60"
-                >
-                    Metabolic Control
-                </p>
-                <div class="h-px w-8 bg-line"></div>
-                <div class="flex items-center gap-2">
-                    <div
-                        class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
-                        'stable'
-                            ? 'bg-emerald-500'
-                            : 'bg-primary animate-pulse'}"
-                    ></div>
-                    <span
-                        class="text-[9px] font-bold {syncStore.globalStatus ===
-                        'stable'
-                            ? 'text-emerald-500'
-                            : 'text-primary'} tracking-widest uppercase"
-                    >
-                        {syncStore.globalStatus === "stable"
-                            ? "Operational"
-                            : syncStore.globalStatus.toUpperCase()}
-                    </span>
-                </div>
-            </div>
-        </div>
-        <div class="flex gap-3">
-            <button
-                onclick={() => (isProfileOpen = true)}
-                class="btn btn-ghost border-line flex items-center gap-2"
-            >
-                <User size={18} /> Profile & Goals
-            </button>
-            <button
-                onclick={() => (isLogMealOpen = true)}
-                class="btn btn-primary flex items-center gap-2"
-            >
-                <Plus size={18} /> Log Intake
-            </button>
-        </div>
-    </div>
+    <PageHeader title="Nutrition" subtitle="Metabolic Control" icon={Utensils}>
+        <button
+            onclick={() => (isProfileOpen = true)}
+            class="btn btn-ghost border-line flex items-center gap-2"
+        >
+            <User size={18} /> Profile & Goals
+        </button>
+        <button
+            onclick={() => (isLogMealOpen = true)}
+            class="btn btn-primary flex items-center gap-2"
+        >
+            <Plus size={18} /> Log Intake
+        </button>
+    </PageHeader>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <!-- Main Content -->

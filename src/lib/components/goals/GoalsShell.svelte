@@ -16,7 +16,7 @@
     import { uiState } from "$lib/stores/ui.svelte";
 
     // Shared UI State
-    let activeTab = $state<"today" | "plan" | "review">("today");
+    let activeTab = $state<"today" | "goals" | "review">("today");
     let selectedGoalId = $state<string | null>(null);
     let filters = $state({
         horizon: "all" as GoalHorizon | "all",

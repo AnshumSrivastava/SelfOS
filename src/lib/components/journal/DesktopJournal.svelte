@@ -1,4 +1,5 @@
 <script lang="ts">
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import {
         PenTool,
         Calendar,
@@ -136,12 +137,8 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="page-container h-full">
-    <div class="module-header" style="margin-bottom: var(--space-4)">
-        <div>
-            <h1>Journal</h1>
-            <p class="text-sm text-muted mt-1">Reflect, Learn, Grow.</p>
-        </div>
+<div class="page-container h-full flex flex-col">
+    <PageHeader title="Journal" subtitle="Reflect, Learn, Grow." icon={PenTool}>
         {#if view === "list"}
             <button
                 onclick={createNewEntry}
@@ -150,10 +147,12 @@
                 <PenTool size={16} /> New Entry
             </button>
         {/if}
-    </div>
+    </PageHeader>
 
     {#if view === "list"}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div
+            class="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 overflow-hidden p-6"
+        >
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Mood Stats -->

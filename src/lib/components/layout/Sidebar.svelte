@@ -137,7 +137,7 @@
             ],
         },
         {
-            name: "System",
+            name: "General",
             key: "system" as const,
             items: [
                 {

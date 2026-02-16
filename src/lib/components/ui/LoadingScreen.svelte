@@ -8,36 +8,22 @@
         dependenciesLoaded: boolean;
     }>();
 
-    let statusText = $state("INITIALIZING");
-    let progress = $state(0);
-
     // Minimum display time to prevent flickering
     let minTimeElapsed = $state(false);
 
     $effect(() => {
         if (isLoading) {
-            // Start progress animation
-            const progressInterval = setInterval(() => {
-                if (progress < 90) {
-                    progress += Math.random() * 5;
-                }
-            }, 100);
-
             // Enforce minimum time
             const minTimer = setTimeout(() => {
                 minTimeElapsed = true;
-            }, 1500);
+            }, 1200);
 
-            // Failsafe: Force entry after 8 seconds if auth hangs
+            // Failsafe
             const failsafeTimer = setTimeout(() => {
-                console.warn("Loading screen failsafe triggered");
-                progress = 100;
-                statusText = "READY";
                 isLoading = false;
-            }, 8000);
+            }, 5000);
 
             return () => {
-                clearInterval(progressInterval);
                 clearTimeout(minTimer);
                 clearTimeout(failsafeTimer);
             };
@@ -47,13 +33,10 @@
     // Watch for completion conditions
     $effect(() => {
         if (minTimeElapsed && dependenciesLoaded && isLoading) {
-            progress = 100;
-            statusText = "READY";
-
-            // Short delay to show 100% and Ready state
+            // Short delay for smooth exit
             const finishTimer = setTimeout(() => {
                 isLoading = false;
-            }, 500);
+            }, 300);
 
             return () => clearTimeout(finishTimer);
         }
@@ -63,68 +46,63 @@
 {#if isLoading}
     <div
         class="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center p-8 cursor-wait"
-        transition:fade={{ duration: 500, easing: cubicOut }}
+        transition:fade={{ duration: 800, easing: cubicOut }}
     >
         <div
-            class="flex flex-col items-center gap-12 md:scale-[2.4] transition-transform duration-500"
+            class="relative flex flex-col items-center justify-center scale-100 opacity-0 animate-fade-in"
         >
-            <!-- Logo with Pulse -->
-            <div class="relative">
+            <!-- Logo Container -->
+            <div class="relative overflow-hidden rounded-2xl">
+                <!-- Shine Effect -->
                 <div
-                    class="absolute inset-0 bg-white/5 blur-xl rounded-full animate-pulse-slow"
+                    class="absolute inset-0 z-10 w-full h-full bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full animate-shine"
                 ></div>
-                <div class="relative text-white">
-                    <Logo size={80} />
+
+                <!-- Logo -->
+                <div class="relative z-0 text-white">
+                    <Logo size={64} />
                 </div>
             </div>
 
-            <!-- Typography & Status -->
-            <div class="flex flex-col items-center gap-6">
-                <h1
-                    class="text-3xl font-light text-white tracking-[0.3em] uppercase"
-                >
-                    SelfOS
-                </h1>
-
-                <div class="flex flex-col items-center gap-3 w-48">
-                    <!-- Progress Bar -->
-                    <div
-                        class="w-full h-[2px] bg-white/10 rounded-full overflow-hidden"
-                    >
-                        <div
-                            class="h-full bg-white transition-all duration-300 ease-out"
-                            style="width: {progress}%"
-                        ></div>
-                    </div>
-
-                    <div
-                        class="h-4 overflow-hidden relative w-full flex justify-center"
-                    >
-                        {#key statusText}
-                            <span
-                                class="text-[10px] font-bold text-white/50 uppercase tracking-[0.3em] absolute"
-                                in:fly={{ y: 10, duration: 300, delay: 150 }}
-                                out:fly={{ y: -10, duration: 300 }}
-                            >
-                                {statusText}
-                            </span>
-                        {/key}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer / Version -->
-        <div
-            class="absolute bottom-12 text-[10px] font-mono text-white/20 tracking-widest uppercase"
-        >
-            v2.0 // System Active
+            <!-- Subtle Glow behind -->
+            <div
+                class="absolute inset-0 bg-primary/20 blur-[50px] rounded-full animate-pulse-slow z-[-1]"
+            ></div>
         </div>
     </div>
 {/if}
 
 <style>
     :global(body) {
-        background-color: #000; /* Prevent flash of white during load */
+        background-color: #000;
+    }
+
+    @keyframes shine {
+        0% {
+            transform: translateX(-150%) skewX(-15deg);
+        }
+        50%,
+        100% {
+            transform: translateX(150%) skewX(-15deg);
+        }
+    }
+
+    .animate-shine {
+        animation: shine 2s infinite ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
     }
 </style>
