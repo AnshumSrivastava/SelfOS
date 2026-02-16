@@ -15,20 +15,23 @@
 </script>
 
 <header
-    class="h-14 flex items-center justify-between px-6 sticky top-0 z-40 bg-background/60 backdrop-blur-2xl border-b border-white/5"
+    class="h-14 flex items-center justify-between px-6 sticky top-0 z-40 bg-background/40 backdrop-blur-3xl"
 >
     <div class="flex flex-col">
         {#if title === "SelfOS"}
-            <div class="flex items-center gap-2" in:fade>
+            <div class="flex items-center gap-2.5" in:fade>
                 <div
-                    class="w-1.5 h-5 bg-white rounded-full shadow-[0_0_10px_white]"
+                    class="w-1 h-4 bg-primary rounded-full shadow-[0_0_12px_var(--color-primary)]"
                 ></div>
-                <span class="text-lg font-bold tracking-tight text-white"
+                <span class="text-base font-bold tracking-tight text-white/90"
                     >SelfOS</span
                 >
             </div>
         {:else}
-            <h1 class="text-lg font-bold text-white tracking-tight" in:fade>
+            <h1
+                class="text-base font-bold text-white/90 tracking-tight"
+                in:fade
+            >
                 {title}
             </h1>
         {/if}
@@ -41,21 +44,21 @@
 
         <button
             onclick={() => searchStore.open()}
-            class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
+            class="p-2 rounded-full text-white/40 hover:text-white active:scale-95 transition-all"
             aria-label="Open Search"
         >
-            <Search size={20} />
+            <Search size={18} />
         </button>
 
         <button
             onclick={() => (showNotifications = !showNotifications)}
-            class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:scale-95 transition-all relative"
+            class="p-2 rounded-full text-white/40 hover:text-white active:scale-95 transition-all relative"
             aria-label="Notifications"
         >
-            <Bell size={20} />
+            <Bell size={18} />
             {#if !tutorialStore.state.hasEverOpenedHub}
                 <span
-                    class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_var(--color-primary)]"
+                    class="absolute top-2 right-2 w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_var(--color-primary)]"
                 ></span>
             {/if}
         </button>

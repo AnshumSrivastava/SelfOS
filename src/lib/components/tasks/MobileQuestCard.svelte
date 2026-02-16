@@ -118,52 +118,38 @@
         <div class="flex-1 min-w-0">
             <!-- Title -->
             <h3
-                class="text-base font-bold text-white mb-2 {task.status ===
+                class="text-base font-bold text-white/90 mb-2 {task.status ===
                 'completed'
-                    ? 'line-through text-muted'
+                    ? 'line-through text-muted/40'
                     : ''}"
             >
                 {task.title}
             </h3>
 
             <!-- Project & Priority -->
-            <div class="flex items-center gap-2 mb-3 flex-wrap">
+            <div class="flex items-center gap-3 mb-1">
                 <span
-                    class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 bg-background border border-line rounded text-muted"
+                    class="text-[9px] uppercase tracking-widest font-black text-muted/40"
                 >
                     {projectName}
                 </span>
                 <span
-                    class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded {task.priority ===
+                    class="text-[9px] uppercase tracking-widest font-black {task.priority ===
                     'high'
-                        ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                        ? 'text-red-500/60'
                         : task.priority === 'medium'
-                          ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                          : 'bg-muted/10 text-muted border border-line'}"
+                          ? 'text-yellow-500/60'
+                          : 'text-muted/20'}"
                 >
                     {task.priority}
                 </span>
-                {#if task.link}
-                    <a
-                        href={task.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 active:bg-primary/30 transition-colors flex items-center gap-1"
-                        onclick={(e) => e.stopPropagation()}
-                    >
-                        <ExternalLink size={10} />
-                        Link
-                    </a>
-                {/if}
             </div>
 
             <!-- Deadline -->
             {#if urgencyInfo}
-                <div
-                    class="flex items-center gap-1.5 pt-2 border-t border-line"
-                >
-                    <urgencyInfo.icon size={12} class={urgencyInfo.color} />
-                    <span class="text-xs {urgencyInfo.color}"
+                <div class="flex items-center gap-1.5 pt-1">
+                    <span
+                        class="text-[10px] uppercase font-black tracking-widest {urgencyInfo.color} opacity-60"
                         >{urgencyInfo.label}</span
                     >
                 </div>

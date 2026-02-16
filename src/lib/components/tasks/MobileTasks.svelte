@@ -39,22 +39,26 @@
     <div class="px-6 mt-6 space-y-6">
         <!-- Stats Summary -->
         <div
-            class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted bg-surface/30 p-3 rounded-xl border border-line/30"
+            class="flex items-center gap-4 text-[9px] font-bold uppercase tracking-[0.15em] text-muted/50 px-1"
         >
-            <span class="text-primary">{activeCount} Active</span>
-            <div class="w-1 h-1 rounded-full bg-line"></div>
-            <span>{completedCount} Completed</span>
+            <span
+                >{activeCount} <span class="text-primary/60">Active</span></span
+            >
+            <span
+                >{completedCount}
+                <span class="text-white/20">Completed</span></span
+            >
         </div>
 
         <!-- Filters -->
         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {#each [{ id: "active", label: "All Active" }, { id: "high", label: "High Priority" }, { id: "completed", label: "Completed" }] as tab}
+            {#each [{ id: "active", label: "Active" }, { id: "high", label: "Priority" }, { id: "completed", label: "Done" }] as tab}
                 <button
                     onclick={() => (filter = tab.id)}
-                    class="px-5 py-2 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all active:scale-95 {filter ===
+                    class="px-5 py-2 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 {filter ===
                     tab.id
-                        ? 'bg-primary text-black border-primary shadow-lg shadow-primary/20'
-                        : 'bg-surface text-muted border-line'}"
+                        ? 'bg-primary text-black'
+                        : 'bg-white/5 text-muted/40'}"
                 >
                     {tab.label}
                 </button>

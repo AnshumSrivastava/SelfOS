@@ -99,14 +99,14 @@
 >
     <!-- 1. Header Area -->
     <header
-        class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line bg-background/80 backdrop-blur-xl sticky top-0 z-20"
+        class="h-14 flex-shrink-0 flex items-center justify-between px-6 sticky top-0 z-20 bg-background/40 backdrop-blur-3xl"
     >
         <div class="flex flex-col">
             <span
-                class="text-[9px] font-black text-primary uppercase tracking-[0.2em]"
+                class="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]"
                 >Strategy</span
             >
-            <h1 class="text-xl font-bold text-white tracking-tight">
+            <h1 class="text-lg font-bold text-white/90 tracking-tight">
                 {activeTab === "today"
                     ? "Daily Focus"
                     : activeTab === "plan"
@@ -115,18 +115,18 @@
             </h1>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <button
                 onclick={() => (showFilterSheet = !showFilterSheet)}
-                class="p-2 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all"
+                class="p-2.5 rounded-2xl bg-white/5 text-muted/60 active:scale-95 transition-all"
             >
                 <Filter size={18} />
             </button>
             <button
                 onclick={() => openGoalModal()}
-                class="w-10 h-10 bg-primary text-black rounded-full flex items-center justify-center shadow-lg shadow-primary/20 active:scale-90 transition-transform"
+                class="p-2.5 rounded-2xl bg-primary text-black shadow-[0_8px_20px_-5px_rgba(0,255,157,0.3)] active:scale-95 transition-all"
             >
-                <Plus size={22} />
+                <Plus size={18} strokeWidth={3} />
             </button>
         </div>
     </header>
@@ -204,7 +204,7 @@
 
     <!-- 3. Bottom Tabs (Action Bar) -->
     <nav
-        class="h-20 flex-shrink-0 flex items-center justify-around px-4 border-t border-line bg-background/80 backdrop-blur-xl pb-6"
+        class="h-20 flex-shrink-0 flex items-center justify-around px-4 border-t border-white/5 bg-background/40 backdrop-blur-3xl pb-6"
     >
         {#each tabs as tab}
             <button
@@ -212,28 +212,23 @@
                 class="flex flex-col items-center gap-1.5 px-6 py-2 transition-all relative {activeTab ===
                 tab.id
                     ? 'text-primary'
-                    : 'text-muted opacity-60'}"
+                    : 'text-muted/40 hover:text-white'}"
             >
                 <div class="relative">
                     <tab.icon
-                        size={20}
-                        class={activeTab === tab.id ? "animate-pulse" : ""}
+                        size={18}
+                        strokeWidth={activeTab === tab.id ? 2.5 : 2}
+                        class="transition-all {activeTab === tab.id
+                            ? 'drop-shadow-[0_0_8px_rgba(0,255,157,0.3)] scale-110'
+                            : ''}"
                     />
-                    {#if activeTab === tab.id}
-                        <div
-                            class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full blur-[4px]"
-                        ></div>
-                    {/if}
                 </div>
-                <span class="text-[9px] font-black uppercase tracking-widest"
-                    >{tab.label}</span
+                <span
+                    class="text-[9px] font-black uppercase tracking-widest transition-opacity {activeTab ===
+                    tab.id
+                        ? 'opacity-100'
+                        : 'opacity-40'}">{tab.label}</span
                 >
-                {#if activeTab === tab.id}
-                    <div
-                        class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
-                        in:slide={{ axis: "x" }}
-                    ></div>
-                {/if}
             </button>
         {/each}
     </nav>
