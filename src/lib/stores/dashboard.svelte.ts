@@ -52,6 +52,7 @@ class DashboardStore {
     financeAlerts = $state<any[]>([]);
     goalNextSteps = $state<any[]>([]);
     loading = $state(false);
+    error = $state<string | null>(null);
 
     constructor() {
         if (browser) {
@@ -63,8 +64,10 @@ class DashboardStore {
     async fetchData() {
         if (!auth.isAuthenticated) return;
         this.loading = true;
+        this.error = null;
 
         try {
+            console.log('[DashboardStore] Fetching data...');
             const [decisions, risks, alerts, steps] = await Promise.all([
                 supabase.from('v_today_decisions').select('*').order('score', { ascending: false }),
                 supabase.from('v_momentum_risks').select('*').order('streak', { ascending: false }),
@@ -81,8 +84,9 @@ class DashboardStore {
             this.momentumRisks = risks.data || [];
             this.financeAlerts = alerts.data || [];
             this.goalNextSteps = steps.data || [];
-        } catch (e) {
+        } catch (e: any) {
             console.error('Failed to fetch dashboard data:', e);
+            this.error = e.message || 'Unknown error occurred';
         } finally {
             this.loading = false;
         }

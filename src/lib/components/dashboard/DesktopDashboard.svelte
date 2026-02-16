@@ -42,6 +42,21 @@
         </div>
     </div>
 
+    {#if dashboardStore.error}
+        <div
+            class="p-4 mb-8 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3"
+        >
+            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            <p class="text-sm font-medium">
+                Data Error: {dashboardStore.error}
+            </p>
+            <button
+                onclick={() => dashboardStore.fetchData()}
+                class="ml-auto underline hover:text-white">Retry</button
+            >
+        </div>
+    {/if}
+
     <!-- Settings Panel -->
     {#if showSettings}
         <div

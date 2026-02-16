@@ -1,5 +1,12 @@
 <script lang="ts">
-    import { Check, Calendar, ArrowRight, Zap, Clock } from "lucide-svelte";
+    import {
+        Check,
+        Calendar,
+        ArrowRight,
+        Zap,
+        Clock,
+        Activity,
+    } from "lucide-svelte";
     import { dashboardStore } from "$lib/stores/dashboard.svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { calendarStore } from "$lib/stores/calendar.svelte";
