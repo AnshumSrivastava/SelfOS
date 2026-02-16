@@ -3,6 +3,7 @@
     import { page } from "$app/stores";
     import { base } from "$app/paths";
     import Logo from "$lib/components/ui/Logo.svelte";
+    import SyncIndicator from "$lib/components/ui/SyncIndicator.svelte";
 
     let scrolled = false;
     let isQuickCaptureOpen = false;
@@ -48,7 +49,8 @@
             {/each}
         </div>
 
-        <div class="nav-actions">
+        <div class="nav-actions flex items-center gap-4">
+            <SyncIndicator />
             <button
                 class="quick-capture-btn"
                 title="Quick Capture"

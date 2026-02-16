@@ -14,6 +14,7 @@
     import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import { confirmState } from "$lib/stores/confirm.svelte";
     import { generateUUID } from "$lib/utils/uuid";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     let searchQuery = $state("");
     let selectedTag = $state<string | null>(null);
@@ -147,37 +148,45 @@
 
         <!-- Notes Grid -->
         <div class="grid grid-cols-2 gap-3">
-            {#each filteredNotes as note (note.id)}
-                <button
-                    onclick={() => openNote(note)}
-                    class="card-subtle p-4 flex flex-col gap-3 text-left group active:scale-[0.98] transition-all h-48 relative overflow-hidden"
-                >
-                    <div
-                        class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-                    ></div>
-
-                    <h3
-                        class="font-bold text-white text-base leading-tight line-clamp-2"
-                    >
-                        {note.title || "Untitled"}
-                    </h3>
-                    <p
-                        class="text-xs text-muted/60 leading-relaxed line-clamp-4 font-normal"
-                    >
-                        {note.content || "No content"}
-                    </p>
-                    <div class="mt-auto flex gap-2">
-                        {#if note.tags}
-                            {#each note.tags.slice(0, 2) as tag}
-                                <span
-                                    class="text-[9px] font-bold text-muted/40 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded"
-                                    >#{tag}</span
-                                >
-                            {/each}
-                        {/if}
+            {#if notesStore.loading}
+                {#each Array(6) as _}
+                    <div class="card-subtle p-4 h-48 space-y-4">
+                        <SkeletonLoader lines={3} />
                     </div>
-                </button>
-            {/each}
+                {/each}
+            {:else}
+                {#each filteredNotes as note (note.id)}
+                    <button
+                        onclick={() => openNote(note)}
+                        class="card-subtle p-4 flex flex-col gap-3 text-left group active:scale-[0.98] transition-all h-48 relative overflow-hidden bg-surface/30 backdrop-blur-xl border-white/5"
+                    >
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                        ></div>
+
+                        <h3
+                            class="font-bold text-white text-base leading-tight line-clamp-2"
+                        >
+                            {note.title || "Untitled"}
+                        </h3>
+                        <p
+                            class="text-xs text-muted/60 leading-relaxed line-clamp-4 font-normal"
+                        >
+                            {note.content || "No content"}
+                        </p>
+                        <div class="mt-auto flex gap-2">
+                            {#if note.tags}
+                                {#each note.tags.slice(0, 2) as tag}
+                                    <span
+                                        class="text-[9px] font-bold text-muted/40 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded"
+                                        >#{tag}</span
+                                    >
+                                {/each}
+                            {/if}
+                        </div>
+                    </button>
+                {/each}
+            {/if}
         </div>
 
         {#if filteredNotes.length === 0}

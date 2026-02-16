@@ -17,7 +17,17 @@
     import { fade, fly } from "svelte/transition";
     import { userStore } from "$lib/stores/user.svelte";
     import { tutorialEngine } from "$lib/tutorial/engine";
-    import { HelpCircle, Info } from "lucide-svelte";
+    import {
+        HelpCircle,
+        Info,
+        Activity,
+        ShieldAlert,
+        CheckCircle2,
+        AlertCircle,
+        Trash2,
+    } from "lucide-svelte";
+    import { logger } from "$lib/services/logger";
+    import { syncStore } from "$lib/stores/sync.svelte";
 
     const themes: { id: ThemeType; label: string; icon: any; bg: string }[] = [
         { id: "dark", label: "Dark", icon: Moon, bg: "bg-[#121214]" },
@@ -90,6 +100,7 @@
         { id: "account", label: "Account", icon: User },
         { id: "appearance", label: "Appearance", icon: Palette },
         { id: "features", label: "Features", icon: LayoutGrid },
+        { id: "system", label: "System", icon: Activity },
         { id: "onboarding", label: "Help", icon: HelpCircle },
     ];
 </script>
@@ -492,6 +503,213 @@
                                     </button>
                                 </div>
                             {/each}
+                        </div>
+                    </section>
+                </div>
+            {/if}
+
+            {#if activeTab === "system"}
+                <div in:fly={{ y: 20, duration: 400 }} class="space-y-12">
+                    <!-- Store Health Grid -->
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"
+                                >
+                                    <Activity size={20} />
+                                </div>
+                                <h2 class="text-xl font-bold text-white">
+                                    Store Health
+                                </h2>
+                            </div>
+                            <div
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
+                            >
+                                <div
+                                    class="w-2 h-2 rounded-full {syncStore.globalStatus ===
+                                    'stable'
+                                        ? 'bg-emerald-500'
+                                        : syncStore.globalStatus === 'syncing'
+                                          ? 'bg-primary animate-pulse'
+                                          : 'bg-red-500'}"
+                                ></div>
+                                <span
+                                    class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                                    >{syncStore.globalStatus}</span
+                                >
+                            </div>
+                        </div>
+
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                        >
+                            {#each Object.entries(syncStore.registry) as [id, meta]}
+                                <div
+                                    class="p-4 rounded-2xl bg-surface/30 border border-line/50 space-y-3 relative overflow-hidden group"
+                                >
+                                    {#if meta.status === "saving" || meta.status === "loading"}
+                                        <div
+                                            class="absolute inset-x-0 top-0 h-0.5 bg-primary/20"
+                                        >
+                                            <div
+                                                class="h-full bg-primary animate-[shimmer_2s_infinite]"
+                                            ></div>
+                                        </div>
+                                    {/if}
+
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
+                                        <span
+                                            class="text-xs font-bold text-white truncate pr-4"
+                                            >{meta.label}</span
+                                        >
+                                        {#if meta.status === "error"}
+                                            <ShieldAlert
+                                                size={14}
+                                                class="text-red-400"
+                                            />
+                                        {:else if meta.status === "success" || meta.status === "idle"}
+                                            <CheckCircle2
+                                                size={14}
+                                                class="text-emerald-500"
+                                            />
+                                        {:else}
+                                            <Activity
+                                                size={14}
+                                                class="text-primary animate-pulse"
+                                            />
+                                        {/if}
+                                    </div>
+
+                                    <div
+                                        class="flex items-center justify-between"
+                                    >
+                                        <span
+                                            class="text-[10px] uppercase tracking-widest text-muted"
+                                            >Status</span
+                                        >
+                                        <span
+                                            class="text-[10px] font-mono {meta.status ===
+                                            'error'
+                                                ? 'text-red-400'
+                                                : meta.status === 'saving'
+                                                  ? 'text-primary'
+                                                  : 'text-muted'}"
+                                        >
+                                            {meta.status.toUpperCase()}
+                                        </span>
+                                    </div>
+
+                                    {#if meta.error}
+                                        <p
+                                            class="text-[9px] text-red-400/80 leading-tight border-t border-red-400/10 pt-2 line-clamp-1 italic"
+                                        >
+                                            {meta.error}
+                                        </p>
+                                    {/if}
+                                </div>
+                            {/each}
+                        </div>
+                    </section>
+
+                    <!-- Diagnostic Log Viewer -->
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-muted/10 flex items-center justify-center text-muted"
+                                >
+                                    <ShieldAlert size={20} />
+                                </div>
+                                <h2 class="text-xl font-bold text-white">
+                                    Diagnostic logs
+                                </h2>
+                            </div>
+                            <button
+                                onclick={() => logger.clear()}
+                                class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-red-400 transition-colors"
+                            >
+                                <Trash2 size={12} />
+                                Clear Console
+                            </button>
+                        </div>
+
+                        <div
+                            class="card-subtle bg-black/40 border-line/30 overflow-hidden flex flex-col h-[400px]"
+                        >
+                            <div
+                                class="p-3 border-b border-line/30 bg-white/2 flex items-center justify-between shrink-0"
+                            >
+                                <span
+                                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted"
+                                    >Internal kernel output</span
+                                >
+                                <div class="flex items-center gap-1.5">
+                                    <div
+                                        class="w-1.5 h-1.5 rounded-full bg-red-500/50"
+                                    ></div>
+                                    <div
+                                        class="w-1.5 h-1.5 rounded-full bg-amber-500/50"
+                                    ></div>
+                                    <div
+                                        class="w-1.5 h-1.5 rounded-full bg-emerald-500/50"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex-1 overflow-y-auto p-4 font-mono text-[11px] space-y-1.5 scrollbar-hide"
+                            >
+                                {#each logger.getHistory().reverse() as log}
+                                    <div class="flex gap-3 py-0.5 group">
+                                        <span
+                                            class="text-muted shrink-0 opacity-40"
+                                            >[{log.timestamp
+                                                .split("T")[1]
+                                                .split(".")[0]}]</span
+                                        >
+                                        <span
+                                            class="w-12 shrink-0 font-bold {log.level ===
+                                            'ERROR'
+                                                ? 'text-red-400'
+                                                : log.level === 'WARN'
+                                                  ? 'text-amber-400'
+                                                  : 'text-primary/60'}"
+                                        >
+                                            {log.level}
+                                        </span>
+                                        <span
+                                            class="text-muted shrink-0 italic opacity-60"
+                                            >[{log.category}]</span
+                                        >
+                                        <span class="text-text/90"
+                                            >{log.message}</span
+                                        >
+                                        {#if log.data}
+                                            <span
+                                                class="text-muted truncate opacity-40 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                {JSON.stringify(log.data).slice(
+                                                    0,
+                                                    50,
+                                                )}...
+                                            </span>
+                                        {/if}
+                                    </div>
+                                {:else}
+                                    <div
+                                        class="h-full flex flex-col items-center justify-center text-muted opacity-30 gap-3"
+                                    >
+                                        <Activity size={32} />
+                                        <span
+                                            class="text-xs uppercase tracking-[0.2em]"
+                                            >Awaiting system signals...</span
+                                        >
+                                    </div>
+                                {/each}
+                            </div>
                         </div>
                     </section>
                 </div>

@@ -46,7 +46,7 @@
         tasksStore.add({
             title: newTaskTitle.trim(),
             goalId: goal.id,
-            project: goal.area,
+            projectId: goal.area,
             priority: goal.priority === "high" ? "high" : "medium",
             deadline: null,
             link: null,

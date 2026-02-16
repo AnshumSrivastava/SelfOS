@@ -33,8 +33,8 @@
 
     .skeleton-line,
     .skeleton-circle {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: var(--radius-subtle, 12px);
         position: relative;
         overflow: hidden;
     }
@@ -53,15 +53,18 @@
         background: linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05),
             transparent
         );
-        animation: shimmer 2s infinite;
+        animation: shimmer 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
     @keyframes shimmer {
         0% {
             left: -100%;
+        }
+        50% {
+            left: 100%;
         }
         100% {
             left: 100%;

@@ -19,6 +19,7 @@
 
     import { onMount } from "svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
 
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);
@@ -43,7 +44,29 @@
 </script>
 
 <div class="page-container h-full relative pb-24">
-    <MobileHeader title="Fitness" />
+    <div class="px-6 py-8 flex items-center justify-between shrink-0">
+        <div class="space-y-1">
+            <h1
+                class="text-3xl font-light text-white tracking-tight leading-none mb-1"
+            >
+                Fitness <span class="text-primary font-bold">Protocol</span>
+            </h1>
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                    'stable'
+                        ? 'bg-emerald-500'
+                        : 'bg-primary animate-pulse'}"
+                ></div>
+                <span
+                    class="text-[10px] font-bold text-muted uppercase tracking-[0.2em]"
+                    >{syncStore.globalStatus === "stable"
+                        ? "Operational"
+                        : "Syncing..."}</span
+                >
+            </div>
+        </div>
+    </div>
 
     <FloatingActionButton
         onclick={() => (isLogWorkoutOpen = true)}

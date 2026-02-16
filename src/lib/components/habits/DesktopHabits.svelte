@@ -10,6 +10,7 @@
         AlertTriangle,
         Target,
         Award,
+        Loader2,
     } from "lucide-svelte";
     import { habitsStore } from "$lib/stores/habits.svelte";
     import { fade, scale } from "svelte/transition";
@@ -116,6 +117,28 @@
     ]);
 </script>
 
+{#if habitsStore.status === "saving" || habitsStore.status === "success"}
+    <div
+        style="animation: premiumEnter 0.6s var(--easing-premium)"
+        class="fixed top-24 right-8 z-[100] px-4 py-2 rounded-2xl border backdrop-blur-xl flex items-center gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 {habitsStore.status ===
+        'saving'
+            ? 'bg-white/5 border-white/10 text-white/70'
+            : 'bg-primary/10 border-primary/20 text-primary'}"
+    >
+        {#if habitsStore.status === "saving"}
+            <Loader2 size={14} class="animate-spin opacity-50" />
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                >Synchronizing</span
+            >
+        {:else}
+            <Check size={14} class="text-primary" />
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                >Stable</span
+            >
+        {/if}
+    </div>
+{/if}
+
 <div class="page-container relative max-w-7xl mx-auto px-4 py-8">
     <StreakFire bind:this={fire} />
 
@@ -124,15 +147,14 @@
         class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6"
     >
         <div class="space-y-2">
-            <h1 class="text-5xl font-bold tracking-tight text-white mb-2">
+            <h1 class="text-5xl font-light tracking-tight text-white mb-2">
                 {today.toLocaleDateString("en-US", { weekday: "long" })}
-                <span class="text-primary">.</span>
+                <span class="text-primary opacity-50">.</span>
             </h1>
-            <div class="flex items-center gap-4 text-muted">
+            <div class="flex items-center gap-4 text-muted text-sm">
                 <span class="flex items-center gap-2">
-                    <Check size={16} class="text-primary" />
-                    {habitsStore.completedCount}/{habitsStore.totalCount} Habits
-                    Done
+                    <Check size={14} class="text-primary" />
+                    {habitsStore.completedCount} of {habitsStore.totalCount} completed
                 </span>
                 <span class="w-1 h-1 rounded-full bg-line"></span>
                 <span
@@ -146,15 +168,12 @@
 
         <button
             onclick={() => (isAdding = true)}
-            class="group relative px-8 py-3 bg-white text-black rounded-full font-bold overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
+            class="btn btn-primary flex items-center gap-2 px-8 py-3"
         >
-            <div class="relative z-10 flex items-center gap-2">
-                <Plus size={20} strokeWidth={3} />
-                <span>New Habit</span>
-            </div>
-            <div
-                class="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"
-            ></div>
+            <Plus size={18} />
+            <span class="text-xs uppercase tracking-widest font-bold"
+                >New Habit</span
+            >
         </button>
     </div>
 
@@ -190,14 +209,15 @@
                     </button>
                 </div>
             {:else}
-                <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 gap-[var(--space-2)]">
                     {#each enhancedHabits as habit (habit.id)}
                         <div
-                            class="group relative overflow-hidden rounded-3xl border border-line bg-surface/30 backdrop-blur-md p-6 transition-all duration-500 hover:border-primary/50 hover:bg-surface/50 {habit.isCompleted
-                                ? 'bg-primary/5 border-primary/20'
+                            class="group relative card-subtle overflow-hidden !p-5 transition-all duration-500 hover:!bg-white/2 {habit.isCompleted
+                                ? 'border-primary/20 bg-primary/5'
                                 : ''}"
+                            style="border-radius: var(--radius-subtle)"
                         >
-                            <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-5">
                                 <!-- Check Button -->
                                 <button
                                     onclick={(e) => {
@@ -205,88 +225,84 @@
                                             fire.ignite(e.clientX, e.clientY);
                                         habitsStore.toggle(habit.id);
                                     }}
-                                    class="relative w-14 h-14 rounded-2xl border-2 flex items-center justify-center transition-all duration-500 {habit.isCompleted
-                                        ? 'bg-primary border-primary text-black scale-110 shadow-lg shadow-primary/20'
-                                        : 'border-line hover:border-primary group-hover:scale-105'}"
+                                    class="relative w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 active:scale-95 {habit.isCompleted
+                                        ? 'bg-primary border-primary text-black shadow-[0_4px_15px_rgba(var(--primary-rgb),0.3)]'
+                                        : 'border-line hover:border-primary/50 text-muted hover:text-primary'}"
                                 >
                                     {#if habit.isCompleted}
-                                        <Check size={28} strokeWidth={3} />
+                                        <Check size={20} strokeWidth={3} />
                                     {:else}
-                                        <Plus
-                                            size={24}
-                                            class="text-muted group-hover:text-primary transition-colors"
-                                        />
+                                        <Plus size={20} class="opacity-40" />
                                     {/if}
                                 </button>
 
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-1">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-3 mb-1.5">
                                         <h3
-                                            class="text-xl font-bold text-white transition-all {habit.isCompleted
-                                                ? 'text-white/50 line-through'
+                                            class="text-lg font-medium text-text truncate {habit.isCompleted
+                                                ? 'opacity-40 italic'
                                                 : ''}"
                                         >
                                             {habit.name}
                                         </h3>
                                         {#if habit.statusMessage}
                                             <span
-                                                class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full {habit.statusColor} bg-white/5 border border-current/20"
+                                                class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full {habit.statusColor} bg-white/5 border border-current/10"
                                             >
                                                 {habit.statusMessage}
                                             </span>
                                         {/if}
                                     </div>
-                                    <div
-                                        class="flex items-center gap-4 text-sm"
-                                    >
+                                    <div class="flex items-center gap-4">
                                         <div
                                             class="flex items-center gap-1.5 {habit.isCompleted
-                                                ? 'text-primary'
+                                                ? 'text-primary/70'
                                                 : 'text-muted'}"
                                         >
                                             <Flame
-                                                size={14}
+                                                size={12}
                                                 class={habit.streak > 0
                                                     ? "text-orange-400"
-                                                    : "text-muted"}
+                                                    : "text-muted opacity-30"}
                                             />
-                                            <span class="font-mono font-bold"
+                                            <span
+                                                class="text-xs font-bold leading-none"
                                                 >{habit.streak}</span
                                             >
                                             <span
-                                                class="text-[10px] uppercase tracking-widest opacity-60"
-                                                >day streak</span
+                                                class="text-[9px] uppercase tracking-widest font-bold opacity-50 ml-0.5"
+                                                >streak</span
                                             >
                                         </div>
                                         {#if habit.streak >= 7 && !habit.isCompleted}
                                             <div
-                                                class="flex items-center gap-1.5 text-red-400 animate-pulse"
+                                                class="flex items-center gap-1.5 text-red-400/80"
                                             >
-                                                <AlertTriangle size={14} />
+                                                <AlertTriangle size={12} />
                                                 <span
-                                                    class="text-[10px] uppercase tracking-widest font-bold"
-                                                    >Risk of breakage</span
+                                                    class="text-[9px] uppercase tracking-widest font-bold"
+                                                    >At Risk</span
                                                 >
                                             </div>
                                         {/if}
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-2">
                                     <button
                                         onclick={() =>
                                             habitsStore.remove(habit.id)}
-                                        class="p-2 rounded-xl border border-line text-muted hover:text-red-400 hover:border-red-400/50 hover:bg-red-400/5 transition-all opacity-0 group-hover:opacity-100"
+                                        class="p-2 text-muted hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={14} />
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Progress Indicator -->
+                            <!-- Success indicator -->
                             {#if habit.isCompleted}
                                 <div
-                                    class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary/50 to-primary animate-in slide-in-from-left duration-1000"
+                                    class="absolute bottom-0 left-0 h-0.5 bg-primary/30"
                                     style="width: 100%"
                                 ></div>
                             {/if}
@@ -299,29 +315,29 @@
         <!-- Sidebar: Stats & Insights (4 cols) -->
         <div class="lg:col-span-4 space-y-8">
             <!-- Performance Dashboard -->
-            <div class="card-subtle overflow-hidden relative group">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"
-                ></div>
-
-                <h3
-                    class="text-xs font-bold uppercase tracking-widest text-muted mb-6 flex items-center gap-2"
-                >
-                    <TrendingUp size={14} class="text-primary" />
-                    Performance Dashboard
+            <div
+                class="card-subtle flex flex-col !p-6"
+                style="border-radius: var(--card-radius)"
+            >
+                <h3 class="text-white mb-8 flex items-center gap-3">
+                    <div class="w-1 h-5 bg-primary rounded-full"></div>
+                     Performance
                 </h3>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-[var(--space-2)]">
                     {#each stats as stat}
                         <div
-                            class="bg-surface/50 border border-line rounded-2xl p-4 transition-all hover:border-primary/30"
+                            class="p-4 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5 transition-all hover:border-primary/20"
                         >
-                            <stat.icon size={16} class="{stat.color} mb-2" />
-                            <div class="text-2xl font-bold text-white">
+                            <stat.icon
+                                size={14}
+                                class="{stat.color} mb-3 opacity-70"
+                            />
+                            <div class="text-2xl font-light text-text">
                                 {stat.value}
                             </div>
                             <div
-                                class="text-[10px] uppercase tracking-wider text-muted font-medium"
+                                class="text-[9px] uppercase tracking-widest text-muted font-bold mt-1"
                             >
                                 {stat.label}
                             </div>
@@ -399,7 +415,6 @@
                         placeholder="Enter habit name..."
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl text-white placeholder-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
                         onkeydown={(e) => e.key === "Enter" && addHabit()}
-                        autofocus
                     />
                 </div>
 

@@ -4,7 +4,7 @@
  * Abstracts the underlying storage mechanism (localStorage, Supabase, etc.)
  */
 
-import type { IDataController } from "./types";
+import type { IDataController, BaseEntity } from "./types";
 import { LocalStorageAdapter } from "./adapters/LocalStorageAdapter";
 // import { SupabaseAdapter } from './adapters/SupabaseAdapter';
 
@@ -34,19 +34,23 @@ class DataControllerSingleton implements IDataController {
     }
 
     // Delegate all IDataController methods to the adapter
-    async get<T>(collection: string, id: string) {
+    async get<T extends BaseEntity>(collection: string, id: string) {
         return this.adapter.get<T>(collection, id);
     }
 
-    async getAll<T>(collection: string, filter?: any) {
+    async getAll<T extends BaseEntity>(collection: string, filter?: any) {
         return this.adapter.getAll<T>(collection, filter);
     }
 
-    async create<T>(collection: string, data: any) {
+    async create<T extends BaseEntity>(collection: string, data: any) {
         return this.adapter.create<T>(collection, data);
     }
 
-    async update<T>(collection: string, id: string, data: any) {
+    async update<T extends BaseEntity>(
+        collection: string,
+        id: string,
+        data: any,
+    ) {
         return this.adapter.update<T>(collection, id, data);
     }
 
@@ -54,11 +58,11 @@ class DataControllerSingleton implements IDataController {
         return this.adapter.delete(collection, id);
     }
 
-    async batchCreate<T>(collection: string, items: any[]) {
+    async batchCreate<T extends BaseEntity>(collection: string, items: any[]) {
         return this.adapter.batchCreate<T>(collection, items);
     }
 
-    async batchUpdate<T>(collection: string, updates: any[]) {
+    async batchUpdate<T extends BaseEntity>(collection: string, updates: any[]) {
         return this.adapter.batchUpdate<T>(collection, updates);
     }
 
@@ -66,7 +70,7 @@ class DataControllerSingleton implements IDataController {
         return this.adapter.batchDelete(collection, ids);
     }
 
-    async query<T>(collection: string, filter: any) {
+    async query<T extends BaseEntity>(collection: string, filter: any) {
         return this.adapter.query<T>(collection, filter);
     }
 
@@ -74,7 +78,11 @@ class DataControllerSingleton implements IDataController {
         return this.adapter.count(collection, filter);
     }
 
-    subscribe<T>(collection: string, callback: (data: T[]) => void, filter?: any) {
+    subscribe<T extends BaseEntity>(
+        collection: string,
+        callback: (data: T[]) => void,
+        filter?: any,
+    ) {
         return this.adapter.subscribe<T>(collection, callback, filter);
     }
 

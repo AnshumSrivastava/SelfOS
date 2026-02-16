@@ -24,13 +24,30 @@ class SearchStore {
     query = $state("");
     isOpen = $state(false);
 
-    get results(): SearchResult[] {
-        if (!this.query.trim()) return [];
-        const q = this.query.toLowerCase();
+    results = $derived.by(() => {
+        const q = this.query.trim().toLowerCase();
+        if (q.length < 2) return [];
 
         const results: SearchResult[] = [];
 
-        // Navigation (Modules)
+        this.addNavigationResults(results, q);
+        this.addTutorialResults(results, q);
+        this.addTaskResults(results, q);
+        this.addCalendarResults(results, q);
+        this.addHabitResults(results, q);
+        this.addFinanceResults(results, q);
+        this.addProjectResults(results, q);
+        this.addLibraryResults(results, q);
+        this.addNutritionResults(results, q);
+        this.addFitnessResults(results, q);
+        this.addNoteResults(results, q);
+        this.addGoalResults(results, q);
+        this.addJournalResults(results, q);
+
+        return results;
+    });
+
+    private addNavigationResults(results: SearchResult[], q: string) {
         const modules = [
             { name: "Dashboard", href: `${base}/` },
             { name: "Tasks", href: `${base}/tasks` },
@@ -59,8 +76,9 @@ class SearchStore {
                 });
             }
         });
+    }
 
-        // Tutorial Commands
+    private addTutorialResults(results: SearchResult[], q: string) {
         const tutorials = [
             { name: "Start Guided Tutorial", id: "tutorial-start" },
             { name: "Open Tutorial Hub", id: "tutorial-hub" },
@@ -74,28 +92,30 @@ class SearchStore {
                     type: 'Tutorial',
                     title: t.name,
                     subtitle: 'Tutorial Command',
-                    href: '#' // Handled by SearchModal
+                    href: '#'
                 });
             }
         });
+    }
 
-        // Tasks
+    private addTaskResults(results: SearchResult[], q: string) {
         tasksStore.tasks.forEach(task => {
-            if (task.title.toLowerCase().includes(q) || (task.projectId && task.projectId.toLowerCase().includes(q))) {
+            if (task.title.toLowerCase().includes(q)) {
                 results.push({
                     id: task.id,
                     type: 'Task',
                     title: task.title,
-                    subtitle: `Project: ${task.projectId} • Due: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No Date'}`,
+                    subtitle: `Due: ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No Date'}`,
                     href: `${base}/tasks`,
                     date: task.createdAt
                 });
             }
         });
+    }
 
-        // Calendar / Meetings
+    private addCalendarResults(results: SearchResult[], q: string) {
         calendarStore.events.forEach(event => {
-            if (event.title.toLowerCase().includes(q) || (event.description && event.description.toLowerCase().includes(q)) || event.type.toLowerCase().includes(q) || (event.location && event.location.toLowerCase().includes(q))) {
+            if (event.title.toLowerCase().includes(q)) {
                 results.push({
                     id: event.id,
                     type: 'Calendar',
@@ -106,8 +126,9 @@ class SearchStore {
                 });
             }
         });
+    }
 
-        // Habits
+    private addHabitResults(results: SearchResult[], q: string) {
         habitsStore.habits.forEach(habit => {
             if (habit.name.toLowerCase().includes(q)) {
                 results.push({
@@ -115,125 +136,141 @@ class SearchStore {
                     type: 'Habit',
                     title: habit.name,
                     subtitle: `Streak: ${habit.streak} days`,
-                    href: `${base}/habits`,
-                    date: undefined
+                    href: `${base}/habits`
                 });
             }
         });
+    }
 
-        // Finance
+    private addFinanceResults(results: SearchResult[], q: string) {
         financeStore.transactions.forEach(t => {
-            if (t.title.toLowerCase().includes(q) || t.type.toLowerCase().includes(q)) {
+            if (t.title.toLowerCase().includes(q)) {
                 results.push({
                     id: t.id,
                     type: 'Finance',
                     title: t.title,
-                    subtitle: `${t.type === 'expense' ? '-' : '+'}$${t.amount} • ${t.type}`,
+                    subtitle: `${t.type === 'expense' ? '-' : '+'}${t.amount} • ${t.category}`,
                     href: `${base}/finance`,
                     date: t.date
                 });
             }
         });
+    }
 
-        // Projects
+    private addProjectResults(results: SearchResult[], q: string) {
         projectsStore.projects.forEach(p => {
-            if (p.name.toLowerCase().includes(q)) {
+            const matchName = p.name.toLowerCase().includes(q);
+            const matchIntent = p.intent?.toLowerCase().includes(q);
+
+            if (matchName || matchIntent) {
                 results.push({
                     id: p.id,
                     type: 'Project',
                     title: p.name,
-                    subtitle: `${p.progress}% Complete`,
-                    href: `${base}/para`,
-                    date: undefined
+                    subtitle: matchIntent ? `Intent: ${p.intent}` : `${p.progress}% Complete`,
+                    href: `${base}/para`
                 });
             }
         });
+    }
 
-        // Library
+    private addLibraryResults(results: SearchResult[], q: string) {
         libraryStore.books.forEach(b => {
             if (b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)) {
                 results.push({
                     id: b.id,
                     type: 'Book',
                     title: b.title,
-                    subtitle: `by ${b.author} • ${b.status}`,
-                    href: `${base}/library`,
-                    date: undefined
+                    subtitle: `by ${b.author}`,
+                    href: `${base}/library`
                 });
             }
         });
+    }
 
-        // Nutrition
+    private addNutritionResults(results: SearchResult[], q: string) {
         nutritionStore.meals.forEach(m => {
             if (m.name.toLowerCase().includes(q)) {
                 results.push({
                     id: m.id,
                     type: 'Nutrition',
                     title: m.name,
-                    subtitle: `${m.calories} kcal • ${m.time}`,
-                    href: `${base}/nutrition`,
-                    date: undefined
+                    subtitle: `${m.calories} kcal`,
+                    href: `${base}/nutrition`
                 });
             }
         });
+    }
 
-        // Fitness
+    private addFitnessResults(results: SearchResult[], q: string) {
         fitnessStore.workouts.forEach(w => {
             if (w.title.toLowerCase().includes(q)) {
                 results.push({
                     id: w.id,
                     type: 'Fitness',
                     title: w.title,
-                    subtitle: `${w.duration} • ${w.calories} cal`,
-                    href: `${base}/fitness`,
-                    date: w.date === 'Today' || w.date === 'Yesterday' ? undefined : w.date
+                    subtitle: `${w.duration}`,
+                    href: `${base}/fitness`
                 });
             }
         });
+    }
 
-        // Notes
+    private addNoteResults(results: SearchResult[], q: string) {
         notesStore.notes.forEach(n => {
-            if (n.title.toLowerCase().includes(q) || (n.content && n.content.toLowerCase().includes(q))) {
+            const matchTitle = n.title.toLowerCase().includes(q);
+            const matchContent = n.content?.toLowerCase().includes(q);
+            const matchTags = n.tags?.some(t => t.toLowerCase().includes(q));
+
+            if (matchTitle || matchContent || matchTags) {
+                let subtitle = '';
+                if (matchTags) {
+                    subtitle = `Tags: ${n.tags.join(', ')}`;
+                } else if (matchContent) {
+                    const idx = n.content.toLowerCase().indexOf(q);
+                    const start = Math.max(0, idx - 15);
+                    subtitle = '...' + n.content.substring(start, start + 40) + '...';
+                } else {
+                    subtitle = n.content ? n.content.substring(0, 30) + '...' : 'Empty note';
+                }
+
                 results.push({
                     id: n.id,
                     type: 'Note',
                     title: n.title,
-                    subtitle: `${n.content ? n.content.substring(0, 30) + '...' : ''}`,
-                    href: `${base}/notes`,
-                    date: undefined
+                    subtitle,
+                    href: `${base}/notes`
                 });
             }
         });
+    }
 
-        // Goals
+    private addGoalResults(results: SearchResult[], q: string) {
         goalsStore.goals.forEach(g => {
             if (g.title.toLowerCase().includes(q)) {
                 results.push({
                     id: g.id,
                     type: 'Goal',
                     title: g.title,
-                    subtitle: `${goalsStore.getGoalProgress(g.id)}% • Deadline: ${g.deadline || 'No Deadline'}`,
-                    href: `${base}/goals`,
-                    date: undefined
+                    subtitle: `${goalsStore.getGoalProgress(g.id)}% • ${g.area}`,
+                    href: `${base}/goals`
                 });
             }
         });
+    }
 
-        // Journal
+    private addJournalResults(results: SearchResult[], q: string) {
         journalStore.entries.forEach(j => {
             if (j.title.toLowerCase().includes(q) || (j.content && j.content.toLowerCase().includes(q))) {
                 results.push({
                     id: j.id,
                     type: 'Journal',
-                    title: j.title,
-                    subtitle: `Mood: ${j.mood} • ${j.content.substring(0, 30)}...`,
-                    href: `${base}/journal`,
-                    date: undefined
+                    title: j.title || 'Untitled Entry',
+                    subtitle: j.date,
+                    href: `${base}/journal`
                 });
             }
         });
-
-        return results;
     }
 
     open() {

@@ -1,6 +1,7 @@
 import { SupabaseStore } from './supabaseStore.svelte';
-import { supabase } from '$lib/supabaseClient';
 import { auth } from './auth.svelte';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
 
 export type Workout = {
     id: string;
@@ -44,7 +45,13 @@ class FitnessStore {
     private dailyStore = new SupabaseStore<DailyMetrics & { id: string }>('fitness_daily_metrics', { orderBy: 'date' });
 
     constructor() {
-        // Init is handled by SupabaseStore
+        syncStore.register('fitness_workouts', 'Workouts');
+        syncStore.register('fitness_weight_logs', 'Weight History');
+        syncStore.register('fitness_sleep_logs', 'Sleep Tracking');
+        syncStore.register('fitness_stats', 'Fitness Goals');
+        syncStore.register('fitness_daily_metrics', 'Daily Fitness');
+
+        logger.info('SYSTEM', 'Fitness Store initialized', null, 'fitness');
     }
 
     get workouts() { return this.workoutsStore.value; }

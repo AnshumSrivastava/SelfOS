@@ -26,10 +26,10 @@ export interface QueryResult<T> {
 
 export interface IDataController {
     // CRUD Operations
-    get<T>(collection: string, id: string): Promise<T | null>;
-    getAll<T>(collection: string, filter?: FilterOptions): Promise<T[]>;
-    create<T>(collection: string, data: Omit<T, "id">): Promise<T>;
-    update<T>(
+    get<T extends BaseEntity>(collection: string, id: string): Promise<T | null>;
+    getAll<T extends BaseEntity>(collection: string, filter?: FilterOptions): Promise<T[]>;
+    create<T extends BaseEntity>(collection: string, data: Omit<T, "id">): Promise<T>;
+    update<T extends BaseEntity>(
         collection: string,
         id: string,
         data: Partial<T>,
@@ -37,19 +37,19 @@ export interface IDataController {
     delete(collection: string, id: string): Promise<boolean>;
 
     // Batch Operations
-    batchCreate<T>(collection: string, items: Omit<T, "id">[]): Promise<T[]>;
-    batchUpdate<T>(
+    batchCreate<T extends BaseEntity>(collection: string, items: Omit<T, "id">[]): Promise<T[]>;
+    batchUpdate<T extends BaseEntity>(
         collection: string,
         updates: Array<{ id: string; data: Partial<T> }>,
     ): Promise<T[]>;
     batchDelete(collection: string, ids: string[]): Promise<boolean>;
 
     // Query Operations
-    query<T>(collection: string, filter: FilterOptions): Promise<QueryResult<T>>;
+    query<T extends BaseEntity>(collection: string, filter: FilterOptions): Promise<QueryResult<T>>;
     count(collection: string, filter?: FilterOptions): Promise<number>;
 
     // Real-time Subscriptions (for future Supabase)
-    subscribe<T>(
+    subscribe<T extends BaseEntity>(
         collection: string,
         callback: (data: T[]) => void,
         filter?: FilterOptions,

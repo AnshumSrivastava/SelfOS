@@ -21,6 +21,14 @@ class JournalStore {
         return this.store.loading;
     }
 
+    get status() {
+        return this.store.status;
+    }
+
+    get errorMsg() {
+        return this.store.errorMsg;
+    }
+
     async addEntry(entry: Omit<JournalEntry, 'id'>) {
         await this.store.insert(entry);
     }

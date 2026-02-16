@@ -29,6 +29,7 @@
     class="fixed top-6 right-6 z-[10000] flex flex-col gap-3 w-full max-w-sm pointer-events-none"
 >
     {#each toasts.toasts as toast (toast.id)}
+        {@const Icon = icons[toast.type]}
         <div
             animate:flip={{ duration: 300 }}
             in:fly={{ x: 200, duration: 400 }}
@@ -38,7 +39,6 @@
             ]}"
         >
             <div class="flex-shrink-0 mt-0.5">
-                {@const Icon = icons[toast.type]}
                 <Icon size={18} />
             </div>
 

@@ -15,6 +15,8 @@
     import NutritionProfileModal from "./NutritionProfileModal.svelte";
     import LogMealModal from "./LogMealModal.svelte";
     import MealPlanModal from "./MealPlanModal.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
 
     let isProfileOpen = $state(false);
     let isLogMealOpen = $state(false);
@@ -48,10 +50,37 @@
 </script>
 
 <div class="page-container h-full relative">
-    <div class="module-header mb-10">
-        <div>
-            <h1 class="text-3xl font-light text-white">Nutrition & Macros</h1>
-            <p class="text-muted">Precision fueling for optimal performance.</p>
+    <div class="module-header mb-12">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-light text-white tracking-tight">
+                Nutrition <span class="text-primary font-bold">Engine</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <p
+                    class="text-[10px] uppercase font-bold tracking-[0.3em] text-muted opacity-60"
+                >
+                    Metabolic Control
+                </p>
+                <div class="h-px w-8 bg-line"></div>
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                        'stable'
+                            ? 'bg-emerald-500'
+                            : 'bg-primary animate-pulse'}"
+                    ></div>
+                    <span
+                        class="text-[9px] font-bold {syncStore.globalStatus ===
+                        'stable'
+                            ? 'text-emerald-500'
+                            : 'text-primary'} tracking-widest uppercase"
+                    >
+                        {syncStore.globalStatus === "stable"
+                            ? "Operational"
+                            : syncStore.globalStatus.toUpperCase()}
+                    </span>
+                </div>
+            </div>
         </div>
         <div class="flex gap-3">
             <button
@@ -88,48 +117,57 @@
                 </div>
 
                 <div class="space-y-3">
-                    {#each meals as meal (meal.id)}
-                        <div
-                            class="card-subtle flex items-center justify-between p-4 group hover:bg-surface/50 transition-all"
-                        >
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-primary group-hover:scale-110 transition-transform"
-                                >
-                                    <Utensils size={20} />
-                                </div>
-                                <div>
-                                    <h4
-                                        class="font-bold text-white group-hover:text-primary transition-colors"
-                                    >
-                                        {meal.name}
-                                    </h4>
-                                    <p
-                                        class="text-[10px] text-muted uppercase tracking-wider"
-                                    >
-                                        {meal.time} • P:{meal.protein} C:{meal.carbs}
-                                        F:{meal.fats}
-                                    </p>
-                                </div>
+                    {#if nutritionStore.loading}
+                        {#each Array(4) as _}
+                            <div class="card-subtle p-5 space-y-3">
+                                <SkeletonLoader lines={1} />
                             </div>
-                            <div class="flex items-center gap-6">
-                                <span class="text-lg font-bold text-white"
-                                    >{meal.calories}
+                        {/each}
+                    {:else}
+                        {#each meals as meal (meal.id)}
+                            <div
+                                class="card-subtle flex items-center justify-between p-5 group hover:bg-surface/50 transition-all border-white/5 bg-surface/20 backdrop-blur-xl"
+                            >
+                                <div class="flex items-center gap-5">
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-lg shadow-primary/5"
+                                    >
+                                        <Utensils size={20} />
+                                    </div>
+                                    <div>
+                                        <h4
+                                            class="font-bold text-white group-hover:text-primary transition-colors"
+                                        >
+                                            {meal.name}
+                                        </h4>
+                                        <p
+                                            class="text-[10px] text-muted uppercase font-bold tracking-widest opacity-40 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            {meal.time} • P:{meal.protein}G C:{meal.carbs}G
+                                            F:{meal.fats}G
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-6">
                                     <span
-                                        class="text-[10px] text-muted font-normal uppercase"
-                                        >kcal</span
-                                    ></span
-                                >
-                                <button
-                                    onclick={() =>
-                                        nutritionStore.removeMeal(meal.id)}
-                                    class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
+                                        class="text-xl font-bold text-white tracking-tight"
+                                        >{meal.calories}
+                                        <span
+                                            class="text-[10px] text-muted font-bold uppercase tracking-widest"
+                                            >kcal</span
+                                        ></span
+                                    >
+                                    <button
+                                        onclick={() =>
+                                            nutritionStore.removeMeal(meal.id)}
+                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    {/each}
+                        {/each}
+                    {/if}
 
                     {#if meals.length === 0}
                         <div

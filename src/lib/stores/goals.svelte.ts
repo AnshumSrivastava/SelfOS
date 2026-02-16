@@ -42,6 +42,18 @@ class GoalsStore {
     get logs() { return this.logsStore.value; }
     get loading() { return this.goalsStore.loading || this.logsStore.loading; }
 
+    get status() {
+        if (this.goalsStore.status === 'saving' || this.logsStore.status === 'saving') return 'saving';
+        if (this.goalsStore.status === 'loading' || this.logsStore.status === 'loading') return 'loading';
+        if (this.goalsStore.status === 'error' || this.logsStore.status === 'error') return 'error';
+        if (this.goalsStore.status === 'success' || this.logsStore.status === 'success') return 'success';
+        return 'idle';
+    }
+
+    get errorMsg() {
+        return this.goalsStore.errorMsg || this.logsStore.errorMsg;
+    }
+
     get activeGoals() {
         return this.goals.filter(g => g.status === 'active');
     }
@@ -172,6 +184,29 @@ class GoalsStore {
     }
 
     async parseBatchTasks(input: string): Promise<{ tasks: { title: string; link?: string }[]; playlistTitle?: string }> {
+        // Check if it's a YouTube URL
+        const isYoutube = input.includes('youtube.com/playlist') || input.includes('list=');
+
+        if (isYoutube) {
+            try {
+                // Determine base URL - this would ideally come from environment config
+                const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+                if (!SUPABASE_URL) throw new Error('Supabase URL not configured');
+
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/youtube-playlist`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: input })
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch from edge function');
+                return await response.json();
+            } catch (error) {
+                console.error('[GoalsStore] Edge function failed, falling back to local parsing:', error);
+                // Fallback to local parsing (maybe they pasted titles instead)
+            }
+        }
+
         const lines = input.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         const tasks = lines.map(line => {
             const urlMatch = line.match(/(https?:\/\/[^\s]+)/);

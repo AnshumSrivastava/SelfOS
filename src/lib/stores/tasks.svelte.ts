@@ -41,6 +41,30 @@ class TasksStore {
         return this.store.loading;
     }
 
+    get status() {
+        return this.store.status;
+    }
+
+    get errorMsg() {
+        return this.store.errorMsg;
+    }
+
+    // --- Derived Filters ---
+    get todayTasks() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.tasks.filter(t => t.status !== 'completed' && (t.scheduled === today || t.deadline === today));
+    }
+
+    get upcomingTasks() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.tasks.filter(t => t.status !== 'completed' && t.scheduled && t.scheduled > today);
+    }
+
+    get overdueTasks() {
+        const today = new Date().toISOString().split('T')[0];
+        return this.tasks.filter(t => t.status !== 'completed' && t.deadline && t.deadline < today);
+    }
+
     async add(task: Omit<Task, "id" | "createdAt" | "status" | "completedAt">) {
         try {
             return await this.store.insert({
@@ -68,7 +92,10 @@ class TasksStore {
 
     private async parseYouTubePlaylist(url: string): Promise<Array<{ title: string; url: string }>> {
         try {
-            const response = await fetch('/api/youtube-playlist', {
+            const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+            if (!SUPABASE_URL) throw new Error('Supabase URL not configured');
+
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/youtube-playlist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
@@ -78,9 +105,11 @@ class TasksStore {
                 return [];
             }
             const data = await response.json();
-            return data.videos || [];
+            // Map the edge function response format (tasks) to the expected format (videos)
+            const tasks = data.tasks || [];
+            return tasks.map((t: any) => ({ title: t.title, url: t.link }));
         } catch (error) {
-            this.#log('Failed to parse YouTube playlist', error, 'error');
+            this.#log('Failed to parse YouTube playlist via edge function', error, 'error');
             return [];
         }
     }

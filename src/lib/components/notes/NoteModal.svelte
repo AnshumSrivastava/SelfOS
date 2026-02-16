@@ -57,6 +57,8 @@
                 title: finalTitle,
                 content,
                 tags,
+                folder: "General",
+                isFavorite: false,
             });
         }
         close();
@@ -145,7 +147,7 @@
         });
     }
 
-    function handlePreviewClick(e: MouseEvent) {
+    async function handlePreviewClick(e: MouseEvent) {
         const target = e.target as HTMLElement;
         const link = target.closest(".internal-link") as HTMLElement;
         if (!link) return;
@@ -164,10 +166,12 @@
             note = existingNote;
         } else {
             // Create new note
-            const newNote = notesStore.addNote({
+            const newNote = await notesStore.addNote({
                 title: targetTitle,
                 content: "",
                 tags: [],
+                folder: "General",
+                isFavorite: false,
             });
             note = newNote;
         }

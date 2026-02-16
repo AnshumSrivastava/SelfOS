@@ -182,12 +182,13 @@
             parentId: parentId || undefined,
         };
 
-        let createdGoal: Goal;
+        let createdGoal: Goal | undefined;
         if (goal) {
             goalsStore.updateGoal(goal.id, goalData as Partial<Goal>);
             createdGoal = { ...goal, ...goalData } as Goal;
         } else {
-            createdGoal = goalsStore.addGoal(goalData);
+            createdGoal = await goalsStore.addGoal(goalData);
+            if (!createdGoal) return;
         }
 
         // Process structure plan if present
@@ -216,30 +217,31 @@
                 else if (parentGoal.horizon === "long") subHorizon = "mid";
 
                 const subTitle = line.substring(1).trim();
-                const newSub = goalsStore.addGoal({
+                const newSub = await goalsStore.addGoal({
                     title: subTitle,
                     horizon: subHorizon,
                     area: parentGoal.area,
                     priority: parentGoal.priority,
                     parentId: parentId,
                 });
-                currentSubGoalId = newSub.id;
+                if (newSub) {
+                    currentSubGoalId = newSub.id;
+                }
             } else {
                 const taskTitle = line.startsWith("-")
                     ? line.substring(1).trim()
                     : line;
                 // Add to tasksStore if we want to integrate with global tasks
-                import("$lib/stores/tasks.svelte").then(({ tasksStore }) => {
-                    tasksStore.add({
-                        title: taskTitle,
-                        goalId: currentSubGoalId,
-                        project: parentGoal.area,
-                        priority:
-                            parentGoal.priority === "high" ? "high" : "medium",
-                        deadline: null,
-                        link: null,
-                        scheduled: null,
-                    });
+                const { tasksStore } = await import("$lib/stores/tasks.svelte");
+                await tasksStore.add({
+                    title: taskTitle,
+                    goalId: currentSubGoalId,
+                    projectId: parentGoal.area,
+                    priority:
+                        parentGoal.priority === "high" ? "high" : "medium",
+                    deadline: null,
+                    link: null,
+                    scheduled: null,
                 });
             }
         }

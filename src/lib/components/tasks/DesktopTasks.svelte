@@ -14,11 +14,13 @@
         Target,
         TrendingUp,
         Loader2,
+        Check,
     } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { projectsStore } from "$lib/stores/projects.svelte";
     import { fade, slide } from "svelte/transition";
     import TaskCard from "./QuestCard.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
 
     let filter = $state("all");
     let isAdding = $state(false);
@@ -33,11 +35,8 @@
         scheduled: "",
     });
 
-    // Enhanced filtered tasks with urgency calculation
+    // Use derived filters from store
     let filteredTasks = $derived.by(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
         let tasks = tasksStore.tasks;
 
         // Apply filter
@@ -58,78 +57,37 @@
                     (t) => t.scheduled && t.status !== "completed",
                 );
                 break;
+            case "today":
+                return tasksStore.todayTasks.map((t) => ({
+                    ...t,
+                    urgency: 90,
+                    urgencyLabel: "Today",
+                    urgencyColor: "text-orange-400",
+                }));
+            case "overdue":
+                return tasksStore.overdueTasks.map((t) => ({
+                    ...t,
+                    urgency: 100,
+                    urgencyLabel: "Overdue",
+                    urgencyColor: "text-red-400",
+                }));
             default:
                 tasks = tasks.filter((t) => t.status !== "completed");
         }
 
-        // Calculate urgency for each task
         return tasks
             .map((task) => {
                 let urgency = 0;
-                let urgencyLabel = "";
-                let urgencyColor = "text-muted";
-
-                if (task.deadline) {
-                    const deadline = new Date(task.deadline);
-                    deadline.setHours(0, 0, 0, 0);
-                    const daysUntil = Math.floor(
-                        (deadline.getTime() - today.getTime()) /
-                            (1000 * 60 * 60 * 24),
-                    );
-
-                    if (daysUntil < 0) {
-                        urgency = 100;
-                        urgencyLabel = `${Math.abs(daysUntil)}d overdue`;
-                        urgencyColor = "text-red-400";
-                    } else if (daysUntil === 0) {
-                        urgency = 90;
-                        urgencyLabel = "Due today";
-                        urgencyColor = "text-orange-400";
-                    } else if (daysUntil === 1) {
-                        urgency = 80;
-                        urgencyLabel = "Due tomorrow";
-                        urgencyColor = "text-yellow-400";
-                    } else if (daysUntil <= 3) {
-                        urgency = 70;
-                        urgencyLabel = `${daysUntil}d left`;
-                        urgencyColor = "text-yellow-400";
-                    } else if (daysUntil <= 7) {
-                        urgency = 50;
-                        urgencyLabel = `${daysUntil}d left`;
-                        urgencyColor = "text-blue-400";
-                    }
-                }
-
                 if (task.priority === "high") urgency += 20;
-                else if (task.priority === "medium") urgency += 10;
-
-                return { ...task, urgency, urgencyLabel, urgencyColor };
+                return { ...task, urgency };
             })
-            .sort((a, b) => {
-                if (filter === "completed") return 0;
-                return b.urgency - a.urgency;
-            });
+            .sort((a, b) => b.urgency - a.urgency);
     });
 
-    // Calculate insights
+    // Calculate insights from store
     let insights = $derived.by(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const overdue = tasksStore.tasks.filter((t) => {
-            if (t.status === "completed" || !t.deadline) return false;
-            const deadline = new Date(t.deadline);
-            deadline.setHours(0, 0, 0, 0);
-            return deadline < today;
-        }).length;
-
-        const dueToday = tasksStore.tasks.filter((t) => {
-            if (t.status === "completed" || !t.deadline) return false;
-            const deadline = new Date(t.deadline);
-            deadline.setHours(0, 0, 0, 0);
-            return deadline.getTime() === today.getTime();
-        }).length;
-
+        const overdue = tasksStore.overdueTasks.length;
+        const dueToday = tasksStore.todayTasks.length;
         const highPriority = tasksStore.tasks.filter(
             (t) => t.priority === "high" && t.status !== "completed",
         ).length;
@@ -189,12 +147,34 @@
     }
 </script>
 
+{#if tasksStore.status === "saving" || tasksStore.status === "success"}
+    <div
+        style="animation: premiumEnter 0.6s var(--easing-premium)"
+        class="fixed top-24 right-8 z-[100] px-4 py-2 rounded-2xl border backdrop-blur-xl flex items-center gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 {tasksStore.status ===
+        'saving'
+            ? 'bg-white/5 border-white/10 text-white/70'
+            : 'bg-primary/10 border-primary/20 text-primary'}"
+    >
+        {#if tasksStore.status === "saving"}
+            <Loader2 size={14} class="animate-spin opacity-50" />
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                >Synchronizing</span
+            >
+        {:else}
+            <Check size={14} class="text-primary" />
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                >Stable</span
+            >
+        {/if}
+    </div>
+{/if}
+
 <div class="page-container relative h-full">
     <!-- Header -->
-    <div class="module-header">
+    <div class="module-header" style="margin-bottom: var(--space-4)">
         <div>
-            <h1 class="text-3xl font-light text-white">Tasks</h1>
-            <p class="text-muted">
+            <h1>Tasks</h1>
+            <p class="text-sm text-muted mt-1">
                 {tasksStore.activeCount} active tasks · {tasksStore.completedCount}
                 completed
             </p>
@@ -208,55 +188,61 @@
             {#if isAdding}
                 Cancel
             {:else}
-                <Plus size={18} /> New Task
+                <Plus size={16} /> New Task
             {/if}
         </button>
     </div>
 
     <!-- Insights Bar -->
     {#if insights.overdue > 0 || insights.dueToday > 0 || insights.highPriority > 0}
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-[var(--space-2)]">
             {#if insights.overdue > 0}
                 <div
-                    class="p-4 rounded-xl bg-red-500/10 border border-red-500/20"
+                    class="p-4 rounded-[var(--radius-subtle)] bg-red-400/5 border border-red-400/10 transition-all hover:bg-red-400/10"
                 >
                     <div class="flex items-center gap-2 mb-1">
-                        <AlertCircle size={16} class="text-red-400" />
-                        <span class="text-sm font-medium text-red-400"
+                        <AlertCircle
+                            size={14}
+                            class="text-red-400 opacity-70"
+                        />
+                        <span
+                            class="text-[10px] uppercase font-bold tracking-widest text-red-400/70"
                             >Overdue</span
                         >
                     </div>
-                    <p class="text-2xl font-bold text-white">
+                    <p class="text-2xl font-light text-white">
                         {insights.overdue}
                     </p>
                 </div>
             {/if}
             {#if insights.dueToday > 0}
                 <div
-                    class="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20"
+                    class="p-4 rounded-[var(--radius-subtle)] bg-orange-400/5 border border-orange-400/10 transition-all hover:bg-orange-400/10"
                 >
                     <div class="flex items-center gap-2 mb-1">
-                        <Flame size={16} class="text-orange-400" />
-                        <span class="text-sm font-medium text-orange-400"
-                            >Due Today</span
+                        <Flame size={14} class="text-orange-400 opacity-70" />
+                        <span
+                            class="text-[10px] uppercase font-bold tracking-widest text-orange-400/70"
+                            >Today</span
                         >
                     </div>
-                    <p class="text-2xl font-bold text-white">
+                    <p class="text-2xl font-light text-white">
                         {insights.dueToday}
                     </p>
                 </div>
             {/if}
             {#if insights.highPriority > 0}
                 <div
-                    class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20"
+                    class="p-4 rounded-[var(--radius-subtle)] bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10"
                 >
                     <div class="flex items-center gap-2 mb-1">
-                        <Target size={16} class="text-yellow-400" />
-                        <span class="text-sm font-medium text-yellow-400"
+                        <Target size={14} class="text-primary opacity-70" />
+                        <span
+                            class="text-[10px] uppercase font-bold tracking-widest text-primary/70"
                             >High Priority</span
                         >
                     </div>
-                    <p class="text-2xl font-bold text-white">
+                    <p class="text-2xl font-light text-white">
                         {insights.highPriority}
                     </p>
                 </div>
@@ -265,16 +251,21 @@
     {/if}
 
     <!-- Filters -->
-    <div class="flex gap-2 border-b border-neutral-800 pb-4 overflow-x-auto">
+    <div class="flex gap-4 border-b border-line pb-4 overflow-x-auto">
         {#each [{ id: "all", label: "All Active" }, { id: "high", label: "High Priority" }, { id: "scheduled", label: "Scheduled" }, { id: "completed", label: "Completed" }] as tab}
             <button
                 onclick={() => (filter = tab.id)}
-                class="px-4 py-1.5 rounded-full border transition-all text-sm font-medium {filter ===
+                class="px-2 py-1.5 transition-all text-sm font-medium relative {filter ===
                 tab.id
-                    ? 'bg-white text-black border-white'
-                    : 'text-neutral-400 border-transparent hover:text-white hover:bg-neutral-800'}"
+                    ? 'text-primary'
+                    : 'text-muted hover:text-text'}"
             >
                 {tab.label}
+                {#if filter === tab.id}
+                    <div
+                        class="absolute bottom-[-17px] left-0 right-0 h-[2px] bg-primary rounded-full"
+                    ></div>
+                {/if}
             </button>
         {/each}
     </div>
@@ -378,7 +369,13 @@
         <div
             class="lg:col-span-2 space-y-3 overflow-y-auto pr-2 custom-scrollbar"
         >
-            {#if filteredTasks.length === 0}
+            {#if tasksStore.loading}
+                <div class="space-y-3">
+                    <SkeletonLoader lines={1} height="h-24" />
+                    <SkeletonLoader lines={1} height="h-24" />
+                    <SkeletonLoader lines={1} height="h-24" />
+                </div>
+            {:else if filteredTasks.length === 0}
                 <div class="text-center py-12 text-neutral-500">
                     <CheckSquare size={48} class="mx-auto mb-4 opacity-50" />
                     <p class="text-lg font-medium">No tasks found</p>
@@ -400,31 +397,34 @@
         </div>
 
         <!-- Sidebar Info -->
-        <div class="space-y-6">
-            <div class="card-subtle flex flex-col">
-                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
-                    <div class="w-1.5 h-4 bg-green-500 rounded-full"></div>
-                    Progress Overview
+        <div class="space-y-[var(--space-3)]">
+            <div
+                class="card-subtle flex flex-col !p-6"
+                style="border-radius: var(--card-radius)"
+            >
+                <h3 class="text-white mb-6 flex items-center gap-3">
+                    <div class="w-1 h-5 bg-primary rounded-full"></div>
+                    Overview
                 </h3>
-                <p class="text-sm text-neutral-400 mb-6">
-                    You have <span class="text-white font-medium"
+                <p class="text-sm text-muted mb-6 leading-relaxed">
+                    You have <span class="text-text font-medium"
                         >{tasksStore.activeCount}</span
                     >
-                    active tasks.
+                    active tasks across all projects.
                     {#if insights.highPriority > 0}
-                        <br />Prioritize your
-                        <span class="text-red-400"
-                            >{insights.highPriority} high priority</span
-                        > tasks.
+                        <br /><span class="text-primary/70"
+                            >Focus on the {insights.highPriority} mission-critical
+                            items.</span
+                        >
                     {/if}
                 </p>
 
-                <div class="space-y-2 mb-6">
+                <div class="space-y-3 mb-8">
                     <div
-                        class="h-2 w-full bg-neutral-800 rounded-full overflow-hidden"
+                        class="h-1 w-full bg-line rounded-full overflow-hidden"
                     >
                         <div
-                            class="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-500"
+                            class="h-full bg-primary transition-all duration-700 ease-out"
                             style="width: {tasksStore.tasks.length
                                 ? (tasksStore.completedCount /
                                       tasksStore.tasks.length) *
@@ -432,7 +432,9 @@
                                 : 0}%"
                         ></div>
                     </div>
-                    <div class="flex justify-between text-xs text-neutral-500">
+                    <div
+                        class="flex justify-between text-[10px] uppercase tracking-widest text-muted"
+                    >
                         <span>{tasksStore.completedCount} completed</span>
                         <span
                             >{tasksStore.tasks.length > 0
@@ -447,29 +449,29 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <div
-                        class="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50"
+                        class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5"
                     >
-                        <span class="text-sm text-neutral-400">Active</span>
-                        <span class="text-sm font-semibold text-white"
+                        <span class="text-xs text-muted">Active</span>
+                        <span class="text-sm font-medium text-text"
                             >{tasksStore.activeCount}</span
                         >
                     </div>
                     <div
-                        class="flex items-center justify-between p-3 rounded-lg bg-neutral-800/50"
+                        class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5"
                     >
-                        <span class="text-sm text-neutral-400">Completed</span>
-                        <span class="text-sm font-semibold text-green-400"
+                        <span class="text-xs text-muted">Completed</span>
+                        <span class="text-sm font-medium text-primary"
                             >{tasksStore.completedCount}</span
                         >
                     </div>
                     {#if insights.overdue > 0}
                         <div
-                            class="flex items-center justify-between p-3 rounded-lg bg-red-500/10 border border-red-500/20"
+                            class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-red-400/5 border border-red-400/10"
                         >
-                            <span class="text-sm text-red-400">Overdue</span>
-                            <span class="text-sm font-semibold text-red-400"
+                            <span class="text-xs text-red-400/70">Overdue</span>
+                            <span class="text-sm font-medium text-red-400"
                                 >{insights.overdue}</span
                             >
                         </div>

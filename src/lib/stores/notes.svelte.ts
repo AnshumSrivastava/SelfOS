@@ -1,4 +1,6 @@
 import { SupabaseStore } from './supabaseStore.svelte';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
 
 export type Note = {
     id: string;
@@ -14,12 +16,24 @@ export type Note = {
 class NotesStore {
     private store = new SupabaseStore<Note>('notes');
 
+    constructor() {
+        syncStore.register('notes', 'Knowledge Notes');
+    }
+
     get notes() {
         return this.store.value;
     }
 
     get loading() {
         return this.store.loading;
+    }
+
+    get status() {
+        return this.store.status;
+    }
+
+    get errorMsg() {
+        return this.store.errorMsg;
     }
 
     get allTags() {

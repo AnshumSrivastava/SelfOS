@@ -5,6 +5,7 @@
         Calendar,
         Flame,
         ExternalLink,
+        Trash2,
     } from "lucide-svelte";
     import { scale } from "svelte/transition";
     import { projectsStore } from "$lib/stores/projects.svelte";
@@ -74,20 +75,23 @@
 </script>
 
 <div
-    class="relative group card-subtle transition-all duration-300"
+    class="relative group card-subtle transition-all duration-300 !p-4 !border-line hover:!bg-white/2"
+    style="border-radius: var(--radius-subtle)"
     transition:scale={{ duration: 200 }}
 >
     <!-- Content -->
-    <div class="flex items-start gap-4">
+    <div class="flex items-start gap-3">
         <!-- Checkbox -->
         <button
             onclick={onToggle}
-            class="flex-shrink-0 mt-1 transition-transform hover:scale-110"
+            class="flex-shrink-0 mt-0.5 transition-all active:scale-95 group/check"
         >
             {#if task.status === "completed"}
-                <CheckCircle2 size={24} class="text-emerald-500" />
+                <CheckCircle2 size={20} class="text-primary opacity-80" />
             {:else}
-                <Circle size={24} class="text-muted hover:text-white" />
+                <div
+                    class="w-5 h-5 rounded-full border border-muted opacity-40 group-hover/check:opacity-100 group-hover/check:border-primary transition-all"
+                ></div>
             {/if}
         </button>
 
@@ -96,26 +100,26 @@
             <!-- Title & Project -->
             <div class="mb-2">
                 <h3
-                    class="text-lg font-bold text-white mb-1 {task.status ===
+                    class="text-base font-medium text-text mb-1 {task.status ===
                     'completed'
-                        ? 'line-through opacity-50'
+                        ? 'line-through opacity-30 italic'
                         : ''}"
                 >
                     {task.title}
                 </h3>
                 <div class="flex items-center gap-2 flex-wrap">
                     <span
-                        class="text-xs px-2 py-0.5 bg-background border border-line rounded text-muted"
+                        class="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 bg-line border border-white/5 rounded-full text-muted"
                     >
                         {projectName}
                     </span>
                     <span
-                        class="text-xs px-2 py-0.5 rounded {task.priority ===
+                        class="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full {task.priority ===
                         'high'
-                            ? 'bg-red-500/20 text-red-400'
+                            ? 'bg-red-400/10 text-red-400 border border-red-400/10'
                             : task.priority === 'medium'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-gray-500/20 text-gray-400'}"
+                              ? 'bg-orange-400/10 text-orange-400 border border-orange-400/10'
+                              : 'bg-blue-400/10 text-blue-400 border border-blue-400/10'}"
                     >
                         {task.priority}
                     </span>
@@ -124,10 +128,10 @@
                             href={task.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="text-xs px-2 py-0.5 rounded bg-primary/20 text-primary hover:bg-primary/30 transition-colors flex items-center gap-1"
+                            class="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
                             onclick={(e) => e.stopPropagation()}
                         >
-                            <ExternalLink size={10} />
+                            <ExternalLink size={8} />
                             Link
                         </a>
                     {/if}
@@ -136,9 +140,13 @@
 
             <!-- Deadline -->
             {#if urgencyInfo}
-                <div class="flex items-center gap-2">
-                    <urgencyInfo.icon size={14} class={urgencyInfo.color} />
-                    <span class="text-sm {urgencyInfo.color}"
+                <div class="flex items-center gap-1.5">
+                    <urgencyInfo.icon
+                        size={12}
+                        class="{urgencyInfo.color} opacity-70"
+                    />
+                    <span
+                        class="text-[10px] font-bold uppercase tracking-widest {urgencyInfo.color} opacity-70"
                         >{urgencyInfo.label}</span
                     >
                 </div>
@@ -148,19 +156,10 @@
         <!-- Delete Button (on hover) -->
         <button
             onclick={onDelete}
-            class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-red-400"
+            class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-red-400 p-1"
             aria-label="Delete task"
         >
-            <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <path d="M6 6L14 14M6 14L14 6" />
-            </svg>
+            <Trash2 size={14} />
         </button>
     </div>
 </div>

@@ -1,7 +1,9 @@
-import { SupabaseStore } from './supabaseStore.svelte';
+import { SupabaseStore, type StoreStatus } from './supabaseStore.svelte';
 import { supabase } from '$lib/supabaseClient';
 import { auth } from './auth.svelte';
 import { generateUUID } from '$lib/utils/uuid';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
 
 export type Habit = {
     id: string;
@@ -27,23 +29,21 @@ class HabitsStore {
     private store = new SupabaseStore<Habit>('habits');
     private checkins = $state<HabitCheckin[]>([]);
     private checkinsLoading = $state(true);
+    private checkinsStatus = $state<StoreStatus>('idle');
+    private checkinsError = $state<string | null>(null);
 
     #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
-        const timestamp = new Date().toISOString();
-        const status = level.toUpperCase();
-        const category = 'HABITS';
-        const prefix = `[${timestamp}] [${category}] [${status}]`;
+        logger[level]('DATA', message, data, 'HabitsStore');
+    }
 
-        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
-
-        if (data) {
-            logMethod(`${prefix} ${message} |`, data);
-        } else {
-            logMethod(`${prefix} ${message}`);
-        }
+    #setCheckinsStatus(status: StoreStatus, error: string | null = null) {
+        this.checkinsStatus = status;
+        this.checkinsError = error;
+        syncStore.updateStatus('habit_checkins', status, error);
     }
 
     constructor() {
+        syncStore.register('habit_checkins', 'habit_checkins');
         if (typeof window !== 'undefined') {
             $effect.root(() => {
                 $effect(() => {
@@ -58,6 +58,18 @@ class HabitsStore {
                 });
             });
         }
+    }
+
+    get status() {
+        if (this.store.status === 'saving' || this.checkinsStatus === 'saving') return 'saving';
+        if (this.store.status === 'loading' || this.checkinsLoading) return 'loading';
+        if (this.store.status === 'error' || this.checkinsStatus === 'error') return 'error';
+        if (this.store.status === 'success' || this.checkinsStatus === 'success') return 'success';
+        return 'idle';
+    }
+
+    get errorMsg() {
+        return this.store.errorMsg || this.checkinsError;
     }
 
     get habits() {
@@ -75,18 +87,27 @@ class HabitsStore {
 
     async fetchCheckins() {
         if (!auth.isAuthenticated) return;
-        this.checkinsLoading = true;
-        const { data, error } = await supabase
-            .from('habit_checkins')
-            .select('*')
-            .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+        this.#setCheckinsStatus('loading');
+        try {
+            const { data, error } = await supabase
+                .from('habit_checkins')
+                .select('*')
+                .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
 
-        if (!error && data) {
-            this.checkins = data;
-        } else if (error) {
-            this.#log('Failed to fetch checkins', error, 'error');
+            if (error) {
+                this.#log('Failed to fetch checkins', error, 'error');
+                this.#setCheckinsStatus('error', error.message);
+                return;
+            }
+
+            if (data) {
+                this.checkins = data;
+                this.#setCheckinsStatus('idle');
+            }
+        } catch (e) {
+            this.#log('Unexpected error fetching checkins', e, 'error');
+            this.#setCheckinsStatus('error', (e as Error).message);
         }
-        this.checkinsLoading = false;
     }
 
     async add(name: string) {
@@ -124,6 +145,7 @@ class HabitsStore {
         const today = new Date().toISOString().split('T')[0];
         const existingCheckin = this.checkins.find(c => c.habit_id === id && c.date === today);
         const previousCheckins = [...this.checkins];
+        this.#setCheckinsStatus('saving');
 
         if (existingCheckin) {
             // Optimistic Remove
@@ -138,10 +160,14 @@ class HabitsStore {
                 if (error) {
                     this.#log('Failed to delete checkin, rolling back', error, 'error');
                     this.checkins = previousCheckins;
+                    this.#setCheckinsStatus('error', error.message);
                     throw error;
                 }
+                this.#setCheckinsStatus('success');
+                setTimeout(() => { if (this.checkinsStatus === 'success') this.#setCheckinsStatus('idle'); }, 2000);
             } catch (err) {
                 this.checkins = previousCheckins;
+                this.#setCheckinsStatus('error', (err as Error).message);
                 throw err;
             }
         } else {
@@ -170,15 +196,19 @@ class HabitsStore {
                 if (error) {
                     this.#log('Failed to insert checkin, rolling back', error, 'error');
                     this.checkins = previousCheckins;
+                    this.#setCheckinsStatus('error', error.message);
                     throw error;
                 }
 
                 if (data) {
                     // Replace tempId with actual id from DB
                     this.checkins = this.checkins.map(c => c.id === tempId ? data : c);
+                    this.#setCheckinsStatus('success');
+                    setTimeout(() => { if (this.checkinsStatus === 'success') this.#setCheckinsStatus('idle'); }, 2000);
                 }
             } catch (err) {
                 this.checkins = previousCheckins;
+                this.#setCheckinsStatus('error', (err as Error).message);
                 throw err;
             }
         }

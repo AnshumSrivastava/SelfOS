@@ -59,7 +59,7 @@
             await tasksStore.add({
                 title: t.title,
                 goalId: newGoal.id,
-                project: "Personal",
+                projectId: "Personal",
                 priority: "medium",
                 link: t.link || null,
                 deadline: null,

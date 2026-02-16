@@ -75,69 +75,73 @@
 <div class="h-full flex flex-col overflow-hidden bg-background">
     <!-- 1. UNIFIED HEADER -->
     <header
-        class="h-20 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-md z-20"
+        class="h-20 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-xl z-20"
     >
-        <div class="flex items-center gap-10">
+        <div class="flex items-center gap-12">
             <div class="flex items-center gap-3">
-                <div class="p-2 rounded-xl bg-primary/10 text-primary">
-                    <Target size={24} />
+                <div
+                    class="p-2 rounded-xl bg-primary/5 text-primary border border-primary/10"
+                >
+                    <Target size={20} />
                 </div>
-                <h1 class="text-xl font-bold text-white tracking-tight">
+                <h1 class="text-xl font-light text-text tracking-tight">
                     Vision
                 </h1>
             </div>
 
             <!-- Main Tabs -->
             <div
-                class="flex bg-surface/50 p-1.5 rounded-2xl border border-line shadow-inner"
+                class="flex bg-white/3 p-1 rounded-2xl border border-white/5 shadow-2xl"
             >
                 {#each tabs as tab}
                     <button
                         onclick={() => onTabChange(tab.id as any)}
-                        class="px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 {activeTab ===
+                        class="px-5 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] transition-all flex items-center gap-2 {activeTab ===
                         tab.id
-                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                            : 'text-muted hover:text-white'}"
+                            ? 'bg-primary text-black shadow-[0_4px_20px_rgba(var(--primary-rgb),0.3)]'
+                            : 'text-muted hover:text-text'}"
                     >
-                        <tab.icon size={14} />
+                        <tab.icon size={12} />
                         {tab.label}
                     </button>
                 {/each}
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-6">
             <div class="relative group hidden lg:block">
                 <Search
-                    size={14}
+                    size={12}
                     class="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
                 />
                 <input
                     type="text"
                     placeholder="Search vision..."
-                    class="w-64 bg-surface/30 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-muted/50 outline-none focus:border-primary/50 focus:bg-surface/50 transition-all"
+                    class="w-64 bg-white/3 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-text placeholder:text-muted/50 outline-none focus:border-primary/30 focus:bg-white/5 transition-all"
                 />
             </div>
 
-            <div class="h-8 w-px bg-line mx-2"></div>
+            <div class="h-6 w-px bg-line"></div>
 
             <button
                 onclick={() => openGoalModal()}
-                class="flex items-center gap-2 px-6 py-2.5 bg-primary text-black rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-primary/10"
+                class="btn btn-primary flex items-center gap-2 h-9 px-5"
             >
-                <Plus size={18} />
-                <span class="text-xs uppercase tracking-widest">New Goal</span>
+                <Plus size={16} />
+                <span class="text-[10px] uppercase tracking-widest font-bold"
+                    >New Goal</span
+                >
             </button>
 
             <button
                 onclick={() => (rightPaneOpen = !rightPaneOpen)}
-                class="p-2.5 rounded-xl border border-line text-muted hover:text-white hover:bg-surface transition-all"
+                class="p-2 rounded-xl border border-line text-muted hover:text-text hover:bg-white/5 transition-all"
                 title={rightPaneOpen ? "Close Context" : "Open Context"}
             >
                 {#if rightPaneOpen}
-                    <PanelRightClose size={18} />
+                    <PanelRightClose size={16} />
                 {:else}
-                    <PanelRightOpen size={18} />
+                    <PanelRightOpen size={16} />
                 {/if}
             </button>
         </div>
@@ -151,57 +155,42 @@
             <!-- Sub-navigation for Plan view -->
             {#if activeTab === "plan"}
                 <div
-                    class="h-14 flex-shrink-0 border-b border-line/30 flex items-center justify-between px-8 bg-surface/5"
+                    class="h-14 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-white/2"
                 >
                     <GoalsFilters bind:filters />
 
-                    <div class="flex items-center gap-2">
-                        <button
-                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
-                            'tree'
-                                ? 'text-primary'
-                                : ''}"
-                            onclick={() => (planViewMode = "tree")}
-                            title="Tree View"
-                        >
-                            <Network size={18} />
-                        </button>
-                        <button
-                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
-                            'board'
-                                ? 'text-primary'
-                                : ''}"
-                            onclick={() => (planViewMode = "board")}
-                            title="Board View"
-                        >
-                            <Columns size={18} />
-                        </button>
-                        <button
-                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
-                            'roadmap'
-                                ? 'text-primary'
-                                : ''}"
-                            onclick={() => (planViewMode = "roadmap")}
-                            title="Roadmap View"
-                        >
-                            <Map size={18} />
-                        </button>
-                        <div class="w-px h-4 bg-line mx-1"></div>
+                    <div class="flex items-center gap-1">
+                        {#each [{ id: "tree", icon: Network, title: "Network" }, { id: "board", icon: Columns, title: "Board" }, { id: "roadmap", icon: Map, title: "Map" }] as mode}
+                            <button
+                                class="p-2 rounded-xl text-muted hover:text-text hover:bg-white/5 transition-all {planViewMode ===
+                                mode.id
+                                    ? 'text-primary'
+                                    : ''}"
+                                onclick={() => (planViewMode = mode.id as any)}
+                                title={mode.title}
+                            >
+                                <mode.icon size={16} />
+                            </button>
+                        {/each}
+                        <div class="w-px h-4 bg-line mx-2"></div>
                         <button
                             onclick={() => (planViewMode = "importer")}
-                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all"
+                            class="p-2 rounded-xl text-muted hover:text-text hover:bg-white/5 transition-all {planViewMode ===
+                            'importer'
+                                ? 'text-primary'
+                                : ''}"
                             title="Import"
                         >
-                            <Upload size={18} />
+                            <Upload size={16} />
                         </button>
                     </div>
                 </div>
             {:else if activeTab === "today"}
                 <div
-                    class="h-14 flex-shrink-0 border-b border-line/30 flex items-center px-8 bg-surface/5"
+                    class="h-12 flex-shrink-0 border-b border-line flex items-center px-8 bg-white/1"
                 >
                     <span
-                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                        class="text-[10px] font-bold text-muted uppercase tracking-[0.2em]"
                         >Prioritized Strategic Operations</span
                     >
                 </div>

@@ -5,6 +5,8 @@
     import ProjectDetailModal from "./ProjectDetailModal.svelte";
     import ParaKanbanColumn from "./ParaKanbanColumn.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
+    import { Activity } from "lucide-svelte";
 
     let selectedProject: Project | null = $state(null);
 
@@ -64,9 +66,28 @@
                         class="text-[10px] font-bold text-muted uppercase tracking-widest"
                         >System Health</span
                     >
-                    <span class="text-xs font-bold text-emerald-500 uppercase"
-                        >Operational</span
-                    >
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                            'stable'
+                                ? 'bg-emerald-500'
+                                : syncStore.globalStatus === 'syncing'
+                                  ? 'bg-primary animate-pulse'
+                                  : 'bg-red-500'}"
+                        ></div>
+                        <span
+                            class="text-xs font-bold {syncStore.globalStatus ===
+                            'stable'
+                                ? 'text-emerald-500'
+                                : syncStore.globalStatus === 'syncing'
+                                  ? 'text-primary'
+                                  : 'text-red-500'} uppercase"
+                        >
+                            {syncStore.globalStatus === "stable"
+                                ? "Operational"
+                                : syncStore.globalStatus.toUpperCase()}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

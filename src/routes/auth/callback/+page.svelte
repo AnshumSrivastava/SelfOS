@@ -21,7 +21,7 @@
             // No session, maybe check for hash/code or just wait for onAuthStateChange
             const {
                 data: { subscription },
-            } = supabase.auth.onAuthStateChange((event, session) => {
+            } = supabase.auth.onAuthStateChange((event: any, session: any) => {
                 if (session) {
                     subscription.unsubscribe();
                     goto(`${base}/`, { replaceState: true });

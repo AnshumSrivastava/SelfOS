@@ -1,34 +1,38 @@
 <script lang="ts">
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
-    import { journalStore } from "$lib/stores/journal.svelte";
+    import {
+        journalStore,
+        type JournalEntry,
+    } from "$lib/stores/journal.svelte";
     import { Sparkles } from "lucide-svelte";
     import { slide } from "svelte/transition";
 
     let isWriting = $state(false);
-    let selectedMood = $state<string>("neutral");
+    let selectedMood = $state<JournalEntry["mood"]>("Neutral");
     let entryText = $state("");
 
-    const moods = [
-        { id: "awesome", emoji: "🤩", label: "Awesome" },
-        { id: "happy", emoji: "😊", label: "Happy" },
-        { id: "neutral", emoji: "😐", label: "Neutral" },
-        { id: "sad", emoji: "😔", label: "Sad" },
-        { id: "stressed", emoji: "😫", label: "Stressed" },
-    ];
+    const moods: { id: JournalEntry["mood"]; emoji: string; label: string }[] =
+        [
+            { id: "Great", emoji: "🤩", label: "Great" },
+            { id: "Good", emoji: "😊", label: "Good" },
+            { id: "Neutral", emoji: "😐", label: "Neutral" },
+            { id: "Sad", emoji: "😔", label: "Sad" },
+            { id: "Angry", emoji: "😫", label: "Angry" },
+        ];
 
     function handleSave() {
         if (!entryText.trim()) return;
 
         journalStore.addEntry({
+            title: entryText.split("\n")[0].slice(0, 50) || "New Entry",
             content: entryText,
             mood: selectedMood,
-            tags: [],
             date: new Date().toISOString(),
         });
 
         entryText = "";
-        selectedMood = "neutral";
+        selectedMood = "Neutral";
         isWriting = false;
     }
 

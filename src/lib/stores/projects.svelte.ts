@@ -1,5 +1,7 @@
-import { SupabaseStore } from './supabaseStore.svelte';
+import { SupabaseStore, type StoreStatus } from './supabaseStore.svelte';
 import { auth } from './auth.svelte';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
 
 export type ScratchpadEntry = {
     id: string;
@@ -79,8 +81,27 @@ class ProjectsStore {
     private scratchpadStore = new SupabaseStore<ScratchpadEntry>('project_scratchpad');
     private resourcesStore = new SupabaseStore<ProjectResource>('project_resources');
 
+    constructor() {
+        // Register internal stores with global sync syncStore
+        syncStore.register('projects', 'Projects Core');
+        syncStore.register('project_scratchpad', 'Projects Scratchpad');
+        syncStore.register('project_resources', 'Projects Resources');
+    }
+
     get projects() { return this.projectsStore.value; }
     get loading() { return this.projectsStore.loading || this.scratchpadStore.loading || this.resourcesStore.loading; }
+
+    get status() {
+        if (this.projectsStore.status === 'saving' || this.scratchpadStore.status === 'saving' || this.resourcesStore.status === 'saving') return 'saving';
+        if (this.projectsStore.status === 'loading' || this.scratchpadStore.status === 'loading' || this.resourcesStore.status === 'loading') return 'loading';
+        if (this.projectsStore.status === 'error' || this.scratchpadStore.status === 'error' || this.resourcesStore.status === 'error') return 'error';
+        if (this.projectsStore.status === 'success' || this.scratchpadStore.status === 'success' || this.resourcesStore.status === 'success') return 'success';
+        return 'idle';
+    }
+
+    get errorMsg() {
+        return this.projectsStore.errorMsg || this.scratchpadStore.errorMsg || this.resourcesStore.errorMsg;
+    }
 
     get activeProjects() {
         return this.projectsStore.value.filter(p => p.status === 'Active' && p.type === 'project');
@@ -119,7 +140,7 @@ class ProjectsStore {
 
     async addProject(project: Partial<Project>) {
         try {
-            console.log('[ProjectsStore] Adding new project:', project.name);
+            logger.info('DATA', `Adding new project: ${project.name}`, project, 'ProjectsStore');
             const type = project.type || 'project';
             const section = DEFAULT_SECTIONS.find(s => s.type === type);
 
@@ -134,13 +155,14 @@ class ProjectsStore {
                 ...project
             } as any);
         } catch (error) {
-            console.error('[ProjectsStore] Failed to add project:', error);
+            logger.error('DATA', 'Failed to add project', error, 'ProjectsStore');
             throw error;
         }
     }
 
     async moveProject(id: string, newType: Project['type']) {
         try {
+            logger.info('DATA', `Moving project ${id} to type: ${newType}`, null, 'ProjectsStore');
             const section = DEFAULT_SECTIONS.find(s => s.type === newType);
             const updates: Partial<Project> = {
                 type: newType,
@@ -155,7 +177,7 @@ class ProjectsStore {
 
             await this.projectsStore.update(id, updates);
         } catch (error) {
-            console.error(`[ProjectsStore] Failed to move project ${id} to ${newType}:`, error);
+            logger.error('DATA', `Failed to move project ${id} to ${newType}`, error, 'ProjectsStore');
             throw error;
         }
     }
@@ -167,7 +189,7 @@ class ProjectsStore {
                 updatedAt: new Date().toISOString()
             });
         } catch (error) {
-            console.error(`[ProjectsStore] Failed to update project ${id}:`, error);
+            logger.error('DATA', `Failed to update project ${id}`, error, 'ProjectsStore');
             throw error;
         }
     }
@@ -176,7 +198,7 @@ class ProjectsStore {
         try {
             await this.projectsStore.delete(id);
         } catch (error) {
-            console.error(`[ProjectsStore] Failed to delete project ${id}:`, error);
+            logger.error('DATA', `Failed to delete project ${id}`, error, 'ProjectsStore');
             throw error;
         }
     }

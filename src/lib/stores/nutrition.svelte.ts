@@ -1,5 +1,7 @@
 import { SupabaseStore } from './supabaseStore.svelte';
 import { auth } from './auth.svelte';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
 
 export type UserProfile = {
     age: number;
@@ -39,22 +41,9 @@ class NutritionStore {
     private settingsStore = new SupabaseStore<NutritionSettings & { id: string }>('nutrition_settings', { orderBy: 'last_reset' });
 
     constructor() {
-        // Init is handled by SupabaseStore
-    }
-
-    #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
-        const timestamp = new Date().toISOString();
-        const status = level.toUpperCase();
-        const category = 'NUTRITION';
-        const prefix = `[${timestamp}] [${category}] [${status}]`;
-
-        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
-
-        if (data) {
-            logMethod(`${prefix} ${message} |`, data);
-        } else {
-            logMethod(`${prefix} ${message}`);
-        }
+        syncStore.register('nutrition_meals', 'Nutrition Log');
+        syncStore.register('nutrition_settings', 'Nutrition Engine');
+        logger.info('SYSTEM', 'Nutrition Store initialized', null, 'nutrition');
     }
 
 

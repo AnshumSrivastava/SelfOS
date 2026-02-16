@@ -4,6 +4,8 @@
     import ProjectDetailModal from "./ProjectDetailModal.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import type { Project } from "$lib/stores/projects.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
+    import { Activity } from "lucide-svelte";
 
     let selectedProject: Project | null = $state(null);
 
@@ -32,17 +34,26 @@
 <div class="page-container h-full">
     <!-- Header -->
     <div class="px-6 py-8 flex items-center justify-between shrink-0">
-        <div>
+        <div class="space-y-1">
             <h1
-                class="text-3xl font-bold text-white tracking-tight leading-none mb-1"
+                class="text-3xl font-light text-white tracking-tight leading-none mb-1"
             >
-                P.A.R.A.
+                P.A.R.A. <span class="text-primary font-bold">Registry</span>
             </h1>
-            <p
-                class="text-[10px] font-bold text-primary uppercase tracking-widest"
-            >
-                Digital Registry
-            </p>
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                    'stable'
+                        ? 'bg-emerald-500'
+                        : 'bg-primary animate-pulse'}"
+                ></div>
+                <span
+                    class="text-[10px] font-bold text-muted uppercase tracking-[0.2em]"
+                    >{syncStore.globalStatus === "stable"
+                        ? "Operational"
+                        : "Syncing..."}</span
+                >
+            </div>
         </div>
         <button
             onclick={handleAdd}

@@ -39,9 +39,17 @@
     let mobileMode = $state<"view" | "edit">("view");
 
     // Editing metadata
-    let editName = $state(liveProject.name);
-    let editIntent = $state(liveProject.intent || "");
+    let editName = $state("");
+    let editIntent = $state("");
     let isSaving = $state(false);
+
+    // Sync state with liveProject when it changes
+    $effect(() => {
+        if (!isSaving) {
+            editName = liveProject.name;
+            editIntent = liveProject.intent || "";
+        }
+    });
 
     const hasUnsavedChanges = $derived(
         editName !== liveProject.name ||
@@ -79,7 +87,9 @@
     // Show all non-task entries (notes) and completed tasks in "History"
     let history = $derived(
         [...projectsStore.getScratchpad(liveProject.id)].sort(
-            (a, b) => b.createdAt - a.createdAt,
+            (a, b) =>
+                new Date(b.createdAt || 0).getTime() -
+                new Date(a.createdAt || 0).getTime(),
         ),
     );
     let isDormant = $derived(projectsStore.isDormant(liveProject));
@@ -559,7 +569,7 @@
                                 ></div>
                                 <div class="text-[10px] text-gray-600 mb-0.5">
                                     {new Date(
-                                        entry.createdAt,
+                                        entry.createdAt || Date.now(),
                                     ).toLocaleDateString([], {
                                         month: "short",
                                         day: "numeric",

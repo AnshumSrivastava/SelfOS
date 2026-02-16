@@ -41,6 +41,18 @@ class LibraryStore {
         return this.itemsStore.loading || this.scratchpadStore.loading;
     }
 
+    get status() {
+        if (this.itemsStore.status === 'saving' || this.scratchpadStore.status === 'saving') return 'saving';
+        if (this.itemsStore.status === 'loading' || this.scratchpadStore.status === 'loading') return 'loading';
+        if (this.itemsStore.status === 'error' || this.scratchpadStore.status === 'error') return 'error';
+        if (this.itemsStore.status === 'success' || this.scratchpadStore.status === 'success') return 'success';
+        return 'idle';
+    }
+
+    get errorMsg() {
+        return this.itemsStore.errorMsg || this.scratchpadStore.errorMsg;
+    }
+
     get reading() {
         return this.books.filter(b => b.status === "Reading");
     }

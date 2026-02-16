@@ -129,46 +129,83 @@
     }
     lastTap = currentTime;
   }
+  let lastKey = $state("");
+  let lastKeyTime = $state(0);
+
   function handleKeydown(e: KeyboardEvent) {
     const target = e.target as HTMLElement;
-    // Check if user is typing in an input
     const isInput =
       target &&
       (["INPUT", "TEXTAREA"].includes(target.tagName) ||
         target.isContentEditable);
+    if (isInput) return;
 
-    if (e.key === " " && !isInput) {
+    const currentTime = Date.now();
+    const key = e.key.toLowerCase();
+
+    // Global Search
+    if (key === "/" || key === " ") {
+      if (key === " " && isInput) return;
       e.preventDefault();
       searchStore.open();
     }
 
-    if (e.key === "s" && !isInput) {
-      e.preventDefault();
-      goto(`${base}/settings`);
+    // Sequential shortcuts (g + ...)
+    if (lastKey === "g" && currentTime - lastKeyTime < 1000) {
+      const routes: Record<string, string> = {
+        d: "/",
+        t: "/tasks",
+        f: "/finance",
+        g: "/goals",
+        h: "/habits",
+        j: "/journal",
+        s: "/settings",
+        p: "/para",
+        c: "/calendar",
+      };
+
+      if (routes[key]) {
+        e.preventDefault();
+        goto(`${base}${routes[key]}`);
+        lastKey = "";
+        return;
+      }
     }
 
-    if (e.key === "Tab" && !isInput) {
+    lastKey = key;
+    lastKeyTime = currentTime;
+
+    // UI Toggles
+    if (key === "tab") {
       e.preventDefault();
       uiState.toggleChrome();
     }
 
     // Tutorial Shortcuts
-    if (e.key === "/" && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+    if (key === "/" && e.shiftKey && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       tutorialStore.showHub = true;
     }
 
-    if (tutorialEngine.isRunning && !isInput) {
-      if (e.key === "." && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+    if (tutorialEngine.isRunning) {
+      if (key === "." && e.shiftKey && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         tutorialEngine.nextStep();
       }
-      if (e.key === "," && e.shiftKey && (e.ctrlKey || e.metaKey)) {
+      if (key === "," && e.shiftKey && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         tutorialEngine.prevStep();
       }
     }
   }
+  import { runSmokeTests } from "$lib/tests/smoke";
+  import { dev } from "$app/environment";
+
+  onMount(() => {
+    if (dev) {
+      runSmokeTests();
+    }
+  });
 </script>
 
 <svelte:window onkeydown={handleKeydown} />

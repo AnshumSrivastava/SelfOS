@@ -11,6 +11,8 @@
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
     import NoteModal from "./NoteModal.svelte";
     import { confirmState } from "$lib/stores/confirm.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
 
     let selectedFilter = $state("All");
     let searchQuery = $state("");
@@ -45,10 +47,30 @@
 <NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
 <div class="page-container relative">
-    <div class="module-header">
-        <div>
-            <h1 class="text-3xl font-light text-white">Notes</h1>
-            <p class="text-muted">Second Brain & Knowledge Base.</p>
+    <div class="module-header mb-12">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-light text-white tracking-tight">
+                Notes <span class="text-primary font-bold">Library</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <p
+                    class="text-[10px] uppercase font-bold tracking-[0.3em] text-muted opacity-60"
+                >
+                    Collective Archive
+                </p>
+                <div class="h-px w-8 bg-line"></div>
+                {#if notesStore.loading}
+                    <span
+                        class="text-[9px] font-bold text-primary animate-pulse tracking-widest uppercase"
+                        >Syncing...</span
+                    >
+                {:else}
+                    <span
+                        class="text-[9px] font-bold text-emerald-400 tracking-widest uppercase"
+                        >Verified</span
+                    >
+                {/if}
+            </div>
         </div>
 
         <div class="flex gap-3">
@@ -102,65 +124,81 @@
             <span class="font-medium">Create New Note</span>
         </button>
 
-        {#each filteredNotes as note (note.id)}
-            <div class="relative group h-full">
-                <button
-                    onclick={() => openNote(note)}
-                    class="card-subtle w-full h-full flex flex-col justify-between min-h-[200px] text-left hover:-translate-y-1 transition-transform"
-                >
-                    <div class="w-full">
-                        <div class="flex justify-between items-start mb-4">
-                            <Folder
-                                size={20}
-                                class="text-primary/50 group-hover:text-primary transition-colors"
-                            />
-                            <span class="text-xs text-muted">{note.date}</span>
-                        </div>
-                        <h3
-                            class="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-2"
-                        >
-                            {note.title}
-                        </h3>
-                        <p class="text-sm text-muted mt-2 line-clamp-3">
-                            {note.content}
-                        </p>
-                    </div>
-                    <div
-                        class="pt-4 mt-4 border-t border-line/50 flex flex-wrap gap-1 w-full min-h-[24px] items-end"
+        {#if notesStore.loading}
+            {#each Array(7) as _}
+                <div class="card-subtle p-6 space-y-4">
+                    <SkeletonLoader lines={4} />
+                </div>
+            {/each}
+        {:else}
+            {#each filteredNotes as note (note.id)}
+                <div class="relative group h-full">
+                    <button
+                        onclick={() => openNote(note)}
+                        class="card-subtle w-full h-full flex flex-col justify-between min-h-[220px] text-left hover:-translate-y-1 transition-all group/card border-white/5 bg-surface/30 backdrop-blur-xl"
                     >
-                        {#if note.tags}
-                            {#each note.tags.slice(0, 3) as tag}
+                        <div class="w-full">
+                            <div class="flex justify-between items-start mb-4">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover/card:bg-primary group-hover/card:text-white transition-all"
+                                >
+                                    <FileText size={18} />
+                                </div>
                                 <span
-                                    class="text-[10px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
-                                    >#{tag}</span
+                                    class="text-[10px] font-bold tracking-widest text-muted uppercase opacity-40 group-hover/card:opacity-100 transition-opacity"
+                                    >{note.createdAt
+                                        ? new Date(
+                                              note.createdAt,
+                                          ).toLocaleDateString(undefined, {
+                                              month: "short",
+                                              day: "numeric",
+                                          })
+                                        : "Draft"}</span
                                 >
-                            {/each}
-                            {#if note.tags.length > 3}
-                                <span class="text-[10px] text-muted pl-1"
-                                    >+{note.tags.length - 3}</span
-                                >
+                            </div>
+                            <h3
+                                class="font-bold text-lg text-white group-hover/card:text-primary transition-colors line-clamp-2"
+                            >
+                                {note.title}
+                            </h3>
+                            <p
+                                class="text-xs text-muted mt-2 line-clamp-3 leading-relaxed opacity-70"
+                            >
+                                {note.content}
+                            </p>
+                        </div>
+                        <div
+                            class="pt-4 mt-6 border-t border-line/30 flex flex-wrap gap-1.5 w-full min-h-[24px] items-end"
+                        >
+                            {#if note.tags}
+                                {#each note.tags.slice(0, 3) as tag}
+                                    <span
+                                        class="text-[9px] font-bold uppercase tracking-widest text-muted bg-white/5 px-2 py-0.5 rounded-md border border-white/5"
+                                        >#{tag}</span
+                                    >
+                                {/each}
                             {/if}
-                        {/if}
-                    </div>
-                </button>
-                <button
-                    onclick={async (e) => {
-                        e.stopPropagation();
-                        if (
-                            await confirmState.confirm(
-                                "Delete Note",
-                                "Are you sure you want to delete this note?",
-                            )
-                        ) {
-                            notesStore.deleteNote(note.id);
-                        }
-                    }}
-                    class="absolute top-2 right-2 p-2 text-muted hover:text-red-400 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete Note"
-                >
-                    <Trash2 size={16} />
-                </button>
-            </div>
-        {/each}
+                        </div>
+                    </button>
+                    <button
+                        onclick={async (e) => {
+                            e.stopPropagation();
+                            if (
+                                await confirmState.confirm(
+                                    "Delete Note",
+                                    "Are you sure you want to delete this note?",
+                                )
+                            ) {
+                                notesStore.deleteNote(note.id);
+                            }
+                        }}
+                        class="absolute top-4 right-4 p-2 text-muted hover:text-red-400 bg-black/40 backdrop-blur-md rounded-xl opacity-0 group-hover:opacity-100 transition-opacity border border-white/5"
+                        title="Delete Note"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            {/each}
+        {/if}
     </div>
 </div>

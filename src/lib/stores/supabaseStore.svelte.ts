@@ -2,11 +2,16 @@ import { supabase } from '$lib/supabaseClient';
 import { auth } from './auth.svelte';
 import { generateUUID } from '$lib/utils/uuid';
 import { toasts } from './toasts.svelte';
+import { logger } from '$lib/services/logger';
+import { syncStore } from './sync.svelte';
+
+export type StoreStatus = 'idle' | 'loading' | 'saving' | 'error' | 'success';
 
 export class SupabaseStore<T extends { id: string }> {
     #value = $state<T[]>([]);
     #tableName: string;
-    #loading = $state(true);
+    #status = $state<StoreStatus>('idle');
+    #error = $state<string | null>(null);
     #orderBy?: string;
     #primaryKey: string;
 
@@ -15,24 +20,24 @@ export class SupabaseStore<T extends { id: string }> {
         this.#value = options.initialValue || [];
         this.#primaryKey = options.primaryKey || 'id';
         this.#orderBy = options.orderBy || 'created_at';
-        this.#log(`Initializing store for table: ${this.#tableName}`);
+
+        // Register with Global Sync Store
+        syncStore.register(this.#tableName, this.#tableName);
+        logger.info('DATA', `Initializing store for table: ${this.#tableName}`, null, this.#tableName);
+
         this.init();
     }
 
-    // Centralized logging helper - OCSF inspired (Category, Status, Message, Metadata)
+    // Centralized logging helper - now using global logger
     #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
-        const timestamp = new Date().toISOString();
-        const status = level.toUpperCase();
-        const category = 'DATA_STORE';
-        const prefix = `[${timestamp}] [${category}] [${status}] [${this.#tableName}]`;
+        const lvl = level.toUpperCase() as any;
+        logger[level]('DATA', message, data, this.#tableName);
+    }
 
-        const logMethod = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log;
-
-        if (data) {
-            logMethod(`${prefix} ${message} |`, data);
-        } else {
-            logMethod(`${prefix} ${message}`);
-        }
+    #setStatus(status: StoreStatus, error: string | null = null) {
+        this.#status = status;
+        this.#error = error;
+        syncStore.updateStatus(this.#tableName, status, error);
     }
 
     // Helper to map snake_case from DB to camelCase for JS
@@ -88,13 +93,13 @@ export class SupabaseStore<T extends { id: string }> {
     async fetch(force: boolean = false) {
         if (!auth.isAuthenticated) {
             this.#log('Fetch skipped: User not authenticated');
-            this.#loading = false;
+            this.#status = 'idle';
             return;
         }
 
         // Only show loading state if we have no data yet OR it's a forced refresh
         if (force || this.#value.length === 0) {
-            this.#loading = true;
+            this.#setStatus('loading');
         }
         try {
             this.#log('Fetching data...');
@@ -115,14 +120,19 @@ export class SupabaseStore<T extends { id: string }> {
             this.#log(`Fetched ${this.#value.length} items`);
         } catch (e) {
             this.#log('Unexpected error during fetch', e, 'error');
+            this.#setStatus('error', (e as Error).message);
         } finally {
-            this.#loading = false;
+            if (this.#status === 'loading') {
+                this.#setStatus('idle');
+            }
         }
     }
 
     get value() { return this.#value; }
     set value(v) { this.#value = v; }
-    get loading() { return this.#loading; }
+    get loading() { return this.#status === 'loading'; }
+    get status() { return this.#status; }
+    get errorMsg() { return this.#error; }
 
     async insert(item: Omit<T, 'id'>) {
         if (!auth.isAuthenticated) {
@@ -136,6 +146,7 @@ export class SupabaseStore<T extends { id: string }> {
         // Optimistic update
         const optimisticItem = this.toCamel({ ...item, id: tempId });
         this.#value = [optimisticItem, ...this.#value];
+        this.#setStatus('saving');
 
         try {
             const dbItem = this.toSnake({ ...item, user_id: auth.user?.id });
@@ -159,14 +170,18 @@ export class SupabaseStore<T extends { id: string }> {
                 // Replace optimistic item with actual data
                 this.#value = this.#value.map(i => i.id === tempId ? mapped : i);
                 this.#log('Insert successful, replaced temp ID with:', mapped.id);
+                this.#setStatus('success');
+                setTimeout(() => { if (this.#status === 'success') this.#setStatus('idle'); }, 2000);
                 return mapped;
             } else {
                 this.#log('Insert returned no data (unexpected)', null, 'warn');
                 this.#value = previousValue; // Rollback just in case
+                this.#setStatus('idle');
             }
         } catch (e) {
             this.#log('Unexpected error during insert', e, 'error');
             this.#value = previousValue; // Rollback
+            this.#setStatus('error', (e as Error).message);
             throw e;
         }
     }
@@ -191,6 +206,7 @@ export class SupabaseStore<T extends { id: string }> {
                 i === index ? { ...item, ...updates } : item
             );
         }
+        this.#setStatus('saving');
 
         try {
             this.#log(`Updating item ${id}...`, updates);
@@ -210,6 +226,8 @@ export class SupabaseStore<T extends { id: string }> {
                 throw error;
             }
             this.#log(`Update successful for ${id}`);
+            this.#setStatus('success');
+            setTimeout(() => { if (this.#status === 'success') this.#setStatus('idle'); }, 2000);
         } catch (e) {
             this.#log(`Unexpected error during update of ${id}`, e, 'error');
             // Ensure rollback if not already handled
@@ -218,6 +236,7 @@ export class SupabaseStore<T extends { id: string }> {
                     i === index ? (previousValue as T) : item
                 );
             }
+            this.#setStatus('error', (e as Error).message);
             throw e;
         }
     }
@@ -236,6 +255,7 @@ export class SupabaseStore<T extends { id: string }> {
         // Optimistic update
         const previousValue = [...this.#value];
         this.#value = this.#value.filter(i => i.id !== id);
+        this.#setStatus('saving');
 
         try {
             this.#log(`Deleting item ${id}...`);
@@ -251,9 +271,12 @@ export class SupabaseStore<T extends { id: string }> {
                 throw error;
             }
             this.#log(`Delete successful for ${id}`);
+            this.#setStatus('success');
+            setTimeout(() => { if (this.#status === 'success') this.#setStatus('idle'); }, 2000);
         } catch (e) {
             this.#log(`Unexpected error during delete of ${id}`, e, 'error');
             this.#value = previousValue;
+            this.#setStatus('error', (e as Error).message);
             throw e;
         }
     }
@@ -265,6 +288,7 @@ export class SupabaseStore<T extends { id: string }> {
         }
 
         try {
+            this.#setStatus('saving');
             this.#log('Upserting single record...', updates);
             const { data, error } = await supabase
                 .from(this.#tableName)
@@ -281,10 +305,13 @@ export class SupabaseStore<T extends { id: string }> {
                 const mapped = this.toCamel(data);
                 this.#value = [mapped];
                 this.#log('Upsert successful', mapped.id);
+                this.#setStatus('success');
+                setTimeout(() => { if (this.#status === 'success') this.#setStatus('idle'); }, 2000);
                 return mapped;
             }
         } catch (e) {
             this.#log('Unexpected error during upsert', e, 'error');
+            this.#setStatus('error', (e as Error).message);
             throw e;
         }
     }
@@ -292,6 +319,7 @@ export class SupabaseStore<T extends { id: string }> {
     #handleError(operation: string, error: any) {
         const message = error.message || "Unknown database error";
         this.#log(`Error during ${operation} on ${this.#tableName}`, error, 'error');
+        this.#setStatus('error', message);
 
         // Show user-facing toast for critical failures
         if (operation !== 'fetch') {

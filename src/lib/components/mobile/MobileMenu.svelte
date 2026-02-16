@@ -22,6 +22,7 @@
     import { base } from "$app/paths";
     import { settings } from "$lib/stores/settings.svelte";
     import { goto } from "$app/navigation";
+    import SyncIndicator from "$lib/components/ui/SyncIndicator.svelte";
 
     let { isOpen = $bindable(false) } = $props();
 
@@ -195,24 +196,36 @@
         onclick={() => (isOpen = false)}
     >
         <div
-            class="absolute bottom-0 left-0 right-0 bg-background border-t border-line rounded-t-[2.5rem] flex flex-col max-h-[90dvh] shadow-2xl overflow-hidden"
-            transition:fly={{ y: "100%", duration: 400, opacity: 1 }}
+            class="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur-2xl border-t border-white/5 rounded-t-[32px] flex flex-col max-h-[90dvh] shadow-[0_-20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+            transition:fly={{
+                y: "100%",
+                duration: 500,
+                easing: (t) => t * (2 - t),
+            }}
             onclick={(e) => e.stopPropagation()}
         >
             <!-- Drag Handle / Header -->
-            <div class="pt-3 pb-6 flex flex-col items-center gap-3">
-                <div class="w-12 h-1.5 bg-line/50 rounded-full"></div>
-                <div class="w-full px-8 flex items-center justify-between">
-                    <span class="text-xl font-bold tracking-tight text-white"
-                        >System Menu</span
-                    >
+            <div class="pt-4 pb-8 flex flex-col items-center gap-4">
+                <div class="w-12 h-1 bg-white/10 rounded-full"></div>
+                <div class="w-full px-10 flex items-center justify-between">
+                    <div>
+                        <span
+                            class="text-2xl font-light tracking-tight text-white"
+                            >System</span
+                        >
+                        <span
+                            class="text-2xl font-bold tracking-tight text-primary"
+                            >.</span
+                        >
+                    </div>
+
                     <button
                         onclick={() => (isEditing = !isEditing)}
-                        class="text-[10px] px-4 py-2 rounded-full font-bold uppercase tracking-widest transition-all {isEditing
+                        class="text-[9px] px-5 py-2.5 rounded-full font-bold uppercase tracking-[0.2em] transition-all {isEditing
                             ? 'bg-primary text-black'
-                            : 'bg-surface text-muted'}"
+                            : 'bg-white/5 text-muted hover:text-text'}"
                     >
-                        {isEditing ? "Done" : "Customize"}
+                        {isEditing ? "Complete" : "Optimize"}
                     </button>
                 </div>
             </div>
@@ -221,12 +234,16 @@
                 class="flex-1 overflow-y-auto px-8 pb-12 space-y-10 scrollbar-hide"
             >
                 {#if pinnedLinks.length > 0 && !isEditing}
-                    <div in:slide class="space-y-4">
-                        <h3
-                            class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
-                        >
-                            Pinned Rituals
-                        </h3>
+                    <div in:slide class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <h3
+                                class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
+                            >
+                                Strategic Operations
+                            </h3>
+                            <div class="flex-1 h-px bg-white/5"></div>
+                        </div>
+
                         <div class="grid grid-cols-4 gap-4">
                             {#each pinnedLinks as link}
                                 <a
@@ -235,15 +252,15 @@
                                     onclick={() => {
                                         isOpen = false;
                                     }}
-                                    class="flex flex-col items-center gap-2 group"
+                                    class="flex flex-col items-center gap-3 group"
                                 >
                                     <div
-                                        class="w-14 h-14 rounded-2xl {link.bg} {link.color} flex items-center justify-center group-active:scale-90 transition-all shadow-lg active:shadow-none bg-surface border border-line"
+                                        class="w-16 h-16 rounded-[22px] {link.bg} {link.color} flex items-center justify-center group-active:scale-95 transition-all shadow-xl bg-white/5 border border-white/10"
                                     >
-                                        <link.icon size={24} />
+                                        <link.icon size={22} />
                                     </div>
                                     <span
-                                        class="text-[9px] font-bold text-muted truncate w-full text-center uppercase tracking-wide"
+                                        class="text-[9px] font-bold text-muted truncate w-full text-center uppercase tracking-widest"
                                         >{link.name}</span
                                     >
                                 </a>
@@ -253,15 +270,17 @@
                 {/if}
 
                 {#each categories as category}
-                    <div class="space-y-4">
-                        <h3
-                            class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted flex items-center gap-3"
-                        >
-                            {category.name}
-                            <div class="flex-1 h-px bg-line/30"></div>
-                        </h3>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-3">
+                            <h3
+                                class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted italic opacity-50"
+                            >
+                                {category.name}
+                            </h3>
+                            <div class="flex-1 h-px bg-white/5"></div>
+                        </div>
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-[var(--space-2)]">
                             {#each category.links.filter( (l) => isFeatureEnabled(l.key), ) as link}
                                 {@const isActive =
                                     link.href === `${base}/`
@@ -275,21 +294,19 @@
                                 {#if isEditing}
                                     <button
                                         onclick={() => togglePin(link.key)}
-                                        class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
-                                        {isActive
-                                            ? 'ring-1 ring-primary/50 bg-primary/5'
-                                            : ''}
-                                        {isPinned
+                                        class="relative flex items-center gap-4 p-4 rounded-2xl border bg-white/3 active:scale-[0.96] transition-all group overflow-hidden {isActive
+                                            ? 'border-primary/50'
+                                            : 'border-white/5'} {isPinned
                                             ? 'ring-2 ring-primary bg-primary/10'
                                             : ''}"
                                     >
                                         <div
                                             class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
                                         >
-                                            <link.icon size={20} />
+                                            <link.icon size={18} />
                                         </div>
                                         <span
-                                            class="text-xs font-bold text-white line-clamp-1 text-left flex-1"
+                                            class="text-xs font-medium text-text line-clamp-1 text-left flex-1"
                                             >{link.name}</span
                                         >
 
@@ -297,11 +314,11 @@
                                             <div
                                                 class="w-5 h-5 rounded-full border-2 {isPinned
                                                     ? 'bg-primary border-primary'
-                                                    : 'border-line'} flex items-center justify-center transition-all"
+                                                    : 'border-white/10'} flex items-center justify-center transition-all shadow-inner"
                                             >
                                                 {#if isPinned}
                                                     <div
-                                                        class="w-2 h-2 bg-black rounded-full"
+                                                        class="w-1.5 h-1.5 bg-black rounded-full"
                                                     ></div>
                                                 {/if}
                                             </div>
@@ -312,18 +329,17 @@
                                         href={link.href}
                                         data-sveltekit-preload-hover
                                         onclick={() => (isOpen = false)}
-                                        class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
-                                        {isActive
-                                            ? 'ring-1 ring-primary/50 bg-primary/5'
-                                            : ''}"
+                                        class="relative flex items-center gap-4 p-4 rounded-2xl border bg-white/2 active:scale-[0.88] transition-all group overflow-hidden {isActive
+                                            ? 'border-primary/40 bg-primary/5'
+                                            : 'border-white/5'}"
                                     >
                                         <div
                                             class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
                                         >
-                                            <link.icon size={20} />
+                                            <link.icon size={18} />
                                         </div>
                                         <span
-                                            class="text-xs font-bold text-white line-clamp-1"
+                                            class="text-sm font-light text-text line-clamp-1"
                                             >{link.name}</span
                                         >
                                     </a>
@@ -332,6 +348,29 @@
                         </div>
                     </div>
                 {/each}
+            </div>
+
+            <div class="px-8 pb-12 mt-auto">
+                <div
+                    class="flex items-center justify-between p-4 rounded-2xl bg-white/3 border border-white/5"
+                >
+                    <div class="flex flex-col">
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                            >Core Status</span
+                        >
+                        <SyncIndicator />
+                    </div>
+                    <div class="text-right">
+                        <span
+                            class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                            >Version</span
+                        >
+                        <p class="text-[10px] text-text font-mono mt-1">
+                            v3.2.0-initial
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

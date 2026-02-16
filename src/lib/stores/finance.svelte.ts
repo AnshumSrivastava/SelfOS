@@ -72,12 +72,48 @@ class FinanceStore {
             this.remindersStore.loading;
     }
 
+    get status() {
+        const statuses = [
+            this.transactionsStore.status,
+            this.budgetsStore.status,
+            this.goalsStore.status,
+            this.investmentsStore.status,
+            this.remindersStore.status
+        ];
+        if (statuses.includes('saving')) return 'saving';
+        if (statuses.includes('loading')) return 'loading';
+        if (statuses.includes('error')) return 'error';
+        if (statuses.includes('success')) return 'success';
+        return 'idle';
+    }
+
+    get errorMsg() {
+        return this.transactionsStore.errorMsg ||
+            this.budgetsStore.errorMsg ||
+            this.goalsStore.errorMsg ||
+            this.investmentsStore.errorMsg ||
+            this.remindersStore.errorMsg;
+    }
+
     get incomeReminders() {
         return this.reminders.filter(r => r.type === 'income' && !r.isPaid);
     }
 
     get expenseReminders() {
         return this.reminders.filter(r => r.type === 'expense' && !r.isPaid);
+    }
+
+    get totalReceivingPending() {
+        return this.incomeReminders.reduce((acc, r) => acc + r.amount, 0);
+    }
+
+    get totalBillsDue() {
+        return this.expenseReminders.reduce((acc, r) => acc + r.amount, 0);
+    }
+
+    get savingsRate() {
+        if (this.income <= 0) return 0;
+        return Math.max(0, Math.min(100, Math.round(((this.income - this.expense) / this.income) * 100)));
     }
 
     // --- Transactions ---

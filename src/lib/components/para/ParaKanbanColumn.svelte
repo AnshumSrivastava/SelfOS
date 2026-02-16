@@ -114,7 +114,7 @@
                 draggable="true"
                 ondragstart={(e) => handleDragStart(e, item.id)}
                 transition:fade={{ duration: 200 }}
-                class="group relative p-4 rounded-2xl bg-surface/40 backdrop-blur-md border border-line/50 hover:border-primary/40 transition-all cursor-pointer active:scale-[0.98] shadow-lg hover:shadow-primary/5 ring-1 ring-white/5"
+                class="group relative p-4 rounded-2xl bg-surface/30 backdrop-blur-xl border border-white/5 hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98] shadow-2xl hover:shadow-primary/5 ring-1 ring-white/5"
                 onclick={() => onOpenProject(item)}
                 onkeydown={(e) => e.key === "Enter" && onOpenProject(item)}
                 role="button"

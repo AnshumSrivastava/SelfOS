@@ -20,19 +20,17 @@
     ];
 
     function save() {
-        console.log("LogWorkoutModal: Saving workout", {
-            title,
-            duration,
-            calories,
-            type,
-            difficulty,
-        });
         if (!title || !duration) return;
+
+        // Parse duration: handle "45", "45m", etc.
+        const parsedDuration =
+            parseInt(duration.toString().replace(/[^\d]/g, "")) || 0;
+        const parsedCalories = parseInt(calories.toString()) || 0;
 
         fitnessStore.addWorkout({
             title,
-            duration,
-            calories,
+            duration: parsedDuration,
+            calories: parsedCalories,
             type,
             difficulty,
             date: new Date().toISOString(),

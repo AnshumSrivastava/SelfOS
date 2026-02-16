@@ -90,21 +90,27 @@
             data-sveltekit-preload-hover
             aria-label={link.name}
             aria-current={isActive ? "page" : undefined}
-            class="relative flex flex-col items-center justify-center flex-1 h-full gap-1.5 transition-all {isActive
+            class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all {isActive
                 ? 'text-primary'
-                : 'text-muted/40 hover:text-white'}"
+                : 'text-muted/60 hover:text-text'}"
         >
-            <link.icon
-                size={20}
-                strokeWidth={isActive ? 2.5 : 2}
-                class="transition-all duration-300 {isActive
-                    ? 'scale-110 drop-shadow-[0_0_8px_rgba(0,255,157,0.3)]'
-                    : 'opacity-60'}"
-            />
+            <div
+                class="relative p-2 rounded-2xl transition-all duration-500 {isActive
+                    ? 'bg-primary/10'
+                    : ''}"
+            >
+                <link.icon
+                    size={20}
+                    strokeWidth={isActive ? 2.5 : 2}
+                    class="transition-all duration-300 {isActive
+                        ? 'scale-110'
+                        : 'opacity-70'}"
+                />
+            </div>
             <span
-                class="text-[9px] font-bold tracking-[0.05em] uppercase transition-opacity {isActive
-                    ? 'opacity-100'
-                    : 'opacity-40'}"
+                class="text-[9px] font-bold tracking-[0.1em] uppercase transition-all duration-500 {isActive
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-40 translate-y-0.5'}"
             >
                 {link.name}
             </span>

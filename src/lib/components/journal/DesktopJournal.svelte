@@ -132,17 +132,17 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="page-container h-full">
-    <div class="module-header">
+    <div class="module-header" style="margin-bottom: var(--space-4)">
         <div>
-            <h1 class="text-3xl font-light text-white">Journal</h1>
-            <p class="text-muted">Reflect, Learn, Grow.</p>
+            <h1>Journal</h1>
+            <p class="text-sm text-muted mt-1">Reflect, Learn, Grow.</p>
         </div>
         {#if view === "list"}
             <button
                 onclick={createNewEntry}
                 class="btn btn-primary flex items-center gap-2"
             >
-                <PenTool size={18} /> New Entry
+                <PenTool size={16} /> New Entry
             </button>
         {/if}
     </div>
@@ -152,17 +152,19 @@
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Mood Stats -->
-                <div class="card-subtle bg-surface/30">
-                    <h3
-                        class="text-xs font-medium text-muted mb-4 uppercase tracking-wider flex items-center gap-2"
-                    >
-                        <Smile size={14} /> Mood Distribution
+                <div
+                    class="card-subtle flex flex-col !p-6"
+                    style="border-radius: var(--card-radius)"
+                >
+                    <h3 class="text-white mb-8 flex items-center gap-3">
+                        <div class="w-1 h-5 bg-primary rounded-full"></div>
+                        Moods
                     </h3>
-                    <div class="space-y-4">
+                    <div class="space-y-5">
                         {#each stats.moodDistribution as mood}
-                            <div class="space-y-1">
+                            <div class="space-y-2">
                                 <div
-                                    class="flex justify-between text-[10px] uppercase font-bold"
+                                    class="flex justify-between text-[10px] uppercase font-bold tracking-widest"
                                 >
                                     <span
                                         style="color: {getMoodColor(mood.name)}"
@@ -173,7 +175,7 @@
                                     >
                                 </div>
                                 <div
-                                    class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                                    class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5"
                                 >
                                     <div
                                         class="h-full transition-all duration-1000"
@@ -188,16 +190,20 @@
                 </div>
 
                 <!-- Streak stats -->
-                <div class="card-subtle">
-                    <h3
-                        class="text-xs font-medium text-muted mb-4 uppercase tracking-wider flex items-center gap-2"
-                    >
-                        <Zap size={14} class="text-primary" /> Journaling Streak
+                <div
+                    class="card-subtle !p-6"
+                    style="border-radius: var(--card-radius)"
+                >
+                    <h3 class="text-white mb-4 flex items-center gap-3">
+                        <div class="w-1 h-5 bg-primary rounded-full"></div>
+                        Consistency
                     </h3>
-                    <div class="flex items-center gap-4">
-                        <div class="text-4xl font-light text-white">12</div>
-                        <div class="text-xs text-muted">
-                            Days in a row. You're on fire!
+                    <div class="flex items-center gap-5">
+                        <div class="text-3xl font-light text-text">12</div>
+                        <div
+                            class="text-[10px] text-muted uppercase tracking-tight font-bold"
+                        >
+                            Days journaling streak. Keep reflecting.
                         </div>
                     </div>
                 </div>
@@ -224,33 +230,38 @@
                             onclick={() => editEntry(entry)}
                             onkeydown={(e) =>
                                 e.key === "Enter" && editEntry(entry)}
-                            class="card-subtle hover:border-primary/50 transition-all cursor-pointer group relative"
+                            class="card-subtle hover:!bg-white/2 transition-all cursor-pointer group relative !p-6"
+                            style="border-radius: var(--radius-subtle)"
                             role="button"
                             tabindex="0"
                         >
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-bold text-primary"
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="text-[10px] uppercase tracking-widest font-bold text-primary"
                                         >{entry.date}</span
                                     >
                                     <span class="w-1 h-1 rounded-full bg-line"
                                     ></span>
                                     <div
-                                        class="flex items-center gap-1 text-xs text-muted"
+                                        class="flex items-center gap-2 text-[10px] text-muted uppercase tracking-tight font-bold"
                                     >
                                         {#if entry.weather}
                                             {@const WeatherIcon =
                                                 weatherIcons[
                                                     entry.weather as keyof typeof weatherIcons
                                                 ]}
-                                            <WeatherIcon size={12} />
+                                            <WeatherIcon
+                                                size={12}
+                                                class="opacity-50"
+                                            />
                                             {entry.weather}
                                         {/if}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-surface border border-line text-muted"
+                                        class="flex items-center gap-2 text-[9px] px-2 py-0.5 rounded-full bg-white/3 border border-white/5 text-muted uppercase tracking-widest font-bold"
                                         style="border-color: {getMoodColor(
                                             entry.mood,
                                         )}40"
@@ -260,7 +271,7 @@
                                                 entry.mood,
                                             )}
                                             <MoodIcon
-                                                size={12}
+                                                size={10}
                                                 style="color: {getMoodColor(
                                                     entry.mood,
                                                 )}"
@@ -273,7 +284,7 @@
                                             e.stopPropagation();
                                             removeEntry(entry.id);
                                         }}
-                                        class="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-500 transition-all"
+                                        class="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-400 transition-all"
                                     >
                                         <Trash2 size={14} />
                                     </button>
@@ -281,11 +292,13 @@
                             </div>
 
                             <h3
-                                class="text-xl font-medium text-white mb-2 group-hover:text-primary transition-colors"
+                                class="text-xl font-light text-text mb-2 group-hover:text-primary transition-colors"
                             >
                                 {entry.title || "Untitled Entry"}
                             </h3>
-                            <p class="text-muted text-sm line-clamp-2">
+                            <p
+                                class="text-muted text-sm line-clamp-2 leading-relaxed opacity-70"
+                            >
                                 {entry.content}
                             </p>
                         </div>
@@ -300,78 +313,90 @@
         >
             <!-- Editor Header -->
             <div
-                class="border-b border-line bg-surface/30 backdrop-blur-md px-8 py-4 flex items-center justify-between"
+                class="border-b border-line bg-background/50 backdrop-blur-xl px-12 py-6 flex items-center justify-between"
             >
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-8">
                     <button
                         onclick={() => (view = "list")}
-                        class="p-2 hover:bg-surface rounded-full text-muted hover:text-white transition-colors"
+                        class="p-3 hover:bg-white/5 rounded-full text-muted hover:text-text transition-all"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={18} />
                     </button>
-                    <div class="h-8 w-px bg-line"></div>
-                    <div class="flex items-center gap-4">
+                    <div class="h-6 w-px bg-line"></div>
+                    <div class="flex items-center gap-6">
                         <input
                             type="date"
                             bind:value={editingEntry.date}
-                            class="bg-transparent border-none text-muted text-sm focus:outline-none focus:text-white"
+                            class="bg-transparent border-none text-muted text-xs font-bold uppercase tracking-widest focus:outline-none focus:text-primary transition-colors"
                         />
                         <select
                             bind:value={editingEntry.weather}
-                            class="bg-transparent border-none text-muted text-sm focus:outline-none focus:text-white appearance-none cursor-pointer"
+                            class="bg-transparent border-none text-muted text-xs font-bold uppercase tracking-widest focus:outline-none focus:text-primary appearance-none cursor-pointer"
                         >
                             {#each weatherOptions as w}
-                                <option value={w}>{w}</option>
+                                <option value={w} class="bg-surface">{w}</option
+                                >
                             {/each}
                         </select>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-6">
                     <!-- Mood Switcher -->
                     <div
-                        class="flex bg-surface rounded-full p-1 border border-line"
+                        class="flex bg-white/3 rounded-2xl p-1 border border-white/5"
                     >
                         {#each moods as m}
                             {@const MoodIcon = m.icon}
                             <button
                                 onclick={() => (editingEntry!.mood = m.name)}
-                                class="p-2 rounded-full transition-all {editingEntry.mood ===
+                                class="p-2.5 rounded-xl transition-all {editingEntry.mood ===
                                 m.name
-                                    ? 'bg-background shadow-lg'
+                                    ? 'bg-primary text-black shadow-lg'
                                     : 'hover:bg-white/5 opacity-40 hover:opacity-100'}"
                                 title={m.name}
                             >
-                                <MoodIcon size={18} style="color: {m.color}" />
+                                <MoodIcon
+                                    size={16}
+                                    style={editingEntry.mood === m.name
+                                        ? ""
+                                        : `color: ${m.color}`}
+                                />
                             </button>
                         {/each}
                     </div>
 
                     <button
                         onclick={saveEntry}
-                        class="btn btn-primary flex items-center gap-2"
+                        class="btn btn-primary flex items-center gap-2 px-6 h-10"
                     >
-                        <Save size={18} /> Save
+                        <Save size={16} />
+                        <span
+                            class="text-[10px] uppercase font-bold tracking-widest"
+                            >Save Entry</span
+                        >
                     </button>
                 </div>
             </div>
 
             <!-- Editor Content -->
             <div
-                class="flex-1 overflow-y-auto p-12 lg:p-24 bg-scratchpad bg-fixed"
+                class="flex-1 overflow-y-auto p-12 lg:p-32 bg-scratchpad bg-fixed"
             >
-                <div class="max-w-4xl mx-auto space-y-8">
+                <div class="max-w-3xl mx-auto space-y-12">
                     <input
                         type="text"
                         bind:value={editingEntry.title}
-                        placeholder="Give it a title..."
-                        class="w-full bg-transparent border-none text-5xl font-light text-white focus:outline-none placeholder:text-muted/20"
+                        placeholder="Untitled Reflection"
+                        class="w-full bg-transparent border-none text-6xl font-light text-text focus:outline-none placeholder:text-muted/10 tracking-tight"
                     />
-                    <div class="h-px w-24 bg-primary/30"></div>
+                    <div
+                        class="h-1 w-16 bg-primary opacity-30 rounded-full"
+                    ></div>
                     <textarea
                         bind:value={editingEntry.content}
-                        placeholder="Start typing your thoughts here..."
-                        class="w-full bg-transparent border-none text-xl font-light text-muted leading-relaxed min-h-[60vh] focus:outline-none placeholder:text-muted/10 resize-none"
+                        placeholder="Begin your dialogue with self..."
+                        class="w-full bg-transparent border-none text-xl font-light text-text/80 leading-relaxed min-h-[60vh] focus:outline-none placeholder:text-muted/5 resize-none selection:bg-primary/20"
                     ></textarea>
                 </div>
             </div>

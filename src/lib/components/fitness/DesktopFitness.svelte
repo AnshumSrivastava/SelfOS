@@ -17,6 +17,8 @@
     import { fitnessStore } from "$lib/stores/fitness.svelte";
     import LogWorkoutModal from "./LogWorkoutModal.svelte";
     import UpdateStatsModal from "./UpdateStatsModal.svelte";
+    import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import { syncStore } from "$lib/stores/sync.svelte";
 
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);
@@ -42,10 +44,37 @@
 </script>
 
 <div class="page-container h-full relative">
-    <div class="module-header mb-10">
-        <div>
-            <h1 class="text-3xl font-light text-white">Fitness & Health</h1>
-            <p class="text-muted">Train like an athlete. Recover like a pro.</p>
+    <div class="module-header mb-12">
+        <div class="space-y-1">
+            <h1 class="text-4xl font-light text-white tracking-tight">
+                Fitness <span class="text-primary font-bold">Protocol</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <p
+                    class="text-[10px] uppercase font-bold tracking-[0.3em] text-muted opacity-60"
+                >
+                    High Performance Lab
+                </p>
+                <div class="h-px w-8 bg-line"></div>
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                        'stable'
+                            ? 'bg-emerald-500'
+                            : 'bg-primary animate-pulse'}"
+                    ></div>
+                    <span
+                        class="text-[9px] font-bold {syncStore.globalStatus ===
+                        'stable'
+                            ? 'text-emerald-500'
+                            : 'text-primary'} tracking-widest uppercase"
+                    >
+                        {syncStore.globalStatus === "stable"
+                            ? "Operational"
+                            : syncStore.globalStatus.toUpperCase()}
+                    </span>
+                </div>
+            </div>
         </div>
         <div class="flex gap-3">
             <button
@@ -193,70 +222,86 @@
                 </div>
 
                 <div class="space-y-4">
-                    {#each workouts as w (w.id)}
-                        <div
-                            class="flex items-center justify-between p-4 rounded-2xl bg-surface/30 border border-line/50 hover:border-primary/50 hover:bg-surface/50 transition-all group"
-                        >
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-14 h-14 rounded-2xl bg-surface border border-line flex items-center justify-center text-primary group-hover:scale-105 transition-transform"
-                                >
-                                    <Dumbbell size={28} />
-                                </div>
-                                <div class="space-y-1">
-                                    <h4
-                                        class="font-bold text-white group-hover:text-primary transition-colors"
-                                    >
-                                        {w.title}
-                                    </h4>
+                    {#if fitnessStore.loading}
+                        {#each Array(3) as _}
+                            <div class="card-subtle p-6 space-y-4">
+                                <SkeletonLoader lines={2} />
+                            </div>
+                        {/each}
+                    {:else}
+                        {#each workouts as w (w.id)}
+                            <div
+                                class="flex items-center justify-between p-5 rounded-2xl bg-surface/30 backdrop-blur-xl border border-white/5 hover:border-primary/50 hover:bg-surface/50 transition-all group"
+                            >
+                                <div class="flex items-center gap-5">
                                     <div
-                                        class="flex gap-3 text-xs text-muted items-center"
+                                        class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-lg shadow-primary/5"
                                     >
-                                        <span class="flex items-center gap-1">
-                                            <Timer size={12} />
-                                            {w.duration}
-                                        </span>
-                                        <span
-                                            class="w-1 h-1 rounded-full bg-line"
-                                        ></span>
-                                        <span class="flex items-center gap-1">
-                                            <Activity size={12} />
-                                            {w.calories} kcal
-                                        </span>
-                                        <span
-                                            class="px-2 py-0.5 rounded-full bg-surface border border-line text-[10px] uppercase font-bold tracking-wider"
+                                        <Dumbbell size={28} />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <h4
+                                            class="font-bold text-white group-hover:text-primary transition-colors text-lg"
                                         >
-                                            {w.type}
-                                        </span>
+                                            {w.title}
+                                        </h4>
+                                        <div
+                                            class="flex gap-4 text-[10px] text-muted font-bold tracking-wider items-center uppercase"
+                                        >
+                                            <span
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <Timer
+                                                    size={12}
+                                                    class="text-primary/60"
+                                                />
+                                                {w.duration}M
+                                            </span>
+                                            <span
+                                                class="flex items-center gap-1.5"
+                                            >
+                                                <Activity
+                                                    size={12}
+                                                    class="text-primary/60"
+                                                />
+                                                {w.calories} KCAL
+                                            </span>
+                                            <span
+                                                class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[9px]"
+                                            >
+                                                {w.type}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="flex items-center gap-6">
-                                <div class="text-right">
-                                    <span class="text-xs text-muted block mb-1"
-                                        >{formatDate(w.date)}</span
+                                <div class="flex items-center gap-8">
+                                    <div class="text-right">
+                                        <span
+                                            class="text-[10px] font-bold text-muted block mb-1 uppercase tracking-widest opacity-40"
+                                            >{formatDate(w.date)}</span
+                                        >
+                                        <span
+                                            class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border
+                                            {w.difficulty === 'Hard' ||
+                                            w.difficulty === 'Extreme'
+                                                ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}"
+                                        >
+                                            {w.difficulty}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onclick={() =>
+                                            fitnessStore.removeWorkout(w.id)}
+                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                                     >
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg
-                                        {w.difficulty === 'Hard' ||
-                                        w.difficulty === 'Extreme'
-                                            ? 'bg-red-500/10 text-red-500'
-                                            : 'bg-emerald-500/10 text-emerald-500'}"
-                                    >
-                                        {w.difficulty}
-                                    </span>
+                                        <Trash2 size={18} />
+                                    </button>
                                 </div>
-                                <button
-                                    onclick={() =>
-                                        fitnessStore.removeWorkout(w.id)}
-                                    class="p-2 text-muted/30 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
                             </div>
-                        </div>
-                    {/each}
+                        {/each}
+                    {/if}
 
                     {#if workouts.length === 0}
                         <div

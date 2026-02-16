@@ -96,11 +96,10 @@
     .bg-primary {
         background-color: var(--accent-color, #3b82f6);
     }
-    .text-primary {
-        color: var(--accent-color, #3b82f6);
-    }
     .shadow-primary\/25 {
+        box-shadow:
+            0 10px 15px -3px var(--tw-shadow-color),
+            0 4px 6px -4px var(--tw-shadow-color);
         --tw-shadow-color: rgb(var(--accent-color-rgb, 59 130 246) / 0.25);
-        shadow-color: var(--tw-shadow-color);
     }
 </style>
