@@ -1,271 +1,191 @@
 <script lang="ts">
-    import {
-        PenTool,
-        Smile,
-        Cloud,
-        Sun,
-        Plus,
-        X,
-        Check,
-        Trash2,
-        ChevronLeft,
-        Frown,
-        Meh,
-        CloudRain,
-        Zap,
-        Snowflake,
-        Save,
-        ArrowLeft,
-    } from "lucide-svelte";
-    import {
-        journalStore,
-        type JournalEntry,
-    } from "$lib/stores/journal.svelte";
-    import { uiState } from "$lib/stores/ui.svelte";
+    import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import { journalStore } from "$lib/stores/journal.svelte";
+    import { Plus, Sparkles } from "lucide-svelte";
+    import { slide } from "svelte/transition";
 
-    let view = $state("list"); // 'list' or 'edit'
-    let editingEntry = $state<JournalEntry | null>(null);
-    let isNewEntry = $state(false);
-
-    $effect(() => {
-        if (view === "edit") {
-            uiState.showChrome = false;
-        } else {
-            uiState.showChrome = true;
-        }
-    });
-
-    function handleKeydown(e: KeyboardEvent) {
-        if (e.key === "Escape" && view === "edit") {
-            saveEntry();
-        }
-    }
+    let isWriting = $state(false);
+    let selectedMood = $state<string>("neutral");
+    let entryText = $state("");
 
     const moods = [
-        { name: "Angry", icon: Frown, color: "#ef4444" },
-        { name: "Sad", icon: Frown, color: "#3b82f6" },
-        { name: "Neutral", icon: Meh, color: "#94a3b8" },
-        { name: "Good", icon: Smile, color: "#10b981" },
-        { name: "Great", icon: Smile, color: "#f59e0b" },
-    ] as const;
+        { id: "awesome", emoji: "🤩", label: "Awesome" },
+        { id: "happy", emoji: "😊", label: "Happy" },
+        { id: "neutral", emoji: "😐", label: "Neutral" },
+        { id: "sad", emoji: "😔", label: "Sad" },
+        { id: "stressed", emoji: "😫", label: "Stressed" },
+    ];
 
-    const weatherIcons = {
-        Sunny: Sun,
-        Cloudy: Cloud,
-        Rainy: CloudRain,
-        Stormy: Zap,
-        Snowy: Snowflake,
-    } as const;
+    function handleSave() {
+        if (!entryText.trim()) return;
 
-    function createNewEntry() {
-        const today = new Date().toISOString().split("T")[0];
-        editingEntry = {
-            id: "",
-            title: "",
-            date: today,
-            mood: "Neutral",
-            content: "",
-            weather: "Sunny",
-        };
-        isNewEntry = true;
-        view = "edit";
+        journalStore.addEntry({
+            content: entryText,
+            mood: selectedMood,
+            tags: [],
+            date: new Date().toISOString(),
+        });
+
+        entryText = "";
+        selectedMood = "neutral";
+        isWriting = false;
     }
 
-    function editEntry(entry: JournalEntry) {
-        editingEntry = { ...entry };
-        isNewEntry = false;
-        view = "edit";
+    function formatDate(dateStr: string) {
+        return new Date(dateStr).toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+        });
     }
 
-    function saveEntry() {
-        if (!editingEntry) return;
-        if (isNewEntry) {
-            journalStore.addEntry(editingEntry);
-        } else {
-            journalStore.updateEntry(editingEntry.id, editingEntry);
-        }
-        view = "list";
-        editingEntry = null;
+    function formatTime(dateStr: string) {
+        return new Date(dateStr).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+        });
     }
-
-    function removeEntry(id: string) {
-        journalStore.removeEntry(id);
-    }
-
-    function getMoodIcon(moodName: string) {
-        return moods.find((m) => m.name === moodName)?.icon || Smile;
-    }
-
-    function getMoodColor(moodName: string) {
-        return moods.find((m) => m.name === moodName)?.color || "var(--muted)";
-    }
-
-    let EditingMoodIcon = $derived(
-        editingEntry ? getMoodIcon(editingEntry.mood) : null,
-    );
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+{#snippet headerAction()}
+    <button
+        onclick={() => (isWriting = true)}
+        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
+    >
+        <Plus size={18} strokeWidth={3} />
+    </button>
+{/snippet}
 
-<div class="page-container h-full pb-20">
-    {#if view === "list"}
-        <div class="module-header flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-3xl font-light text-white">Journal</h1>
-                <p class="text-xs text-muted">Your personal space.</p>
-            </div>
-            <button
-                onclick={createNewEntry}
-                class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
-            >
-                <Plus size={24} />
-            </button>
-        </div>
+<div class="page-container h-full relative pb-24">
+    <MobileHeader title="Journal" action={headerAction} />
 
-        <!-- Entries List -->
-        <div class="space-y-4">
-            {#if journalStore.entries.length === 0}
-                <div class="card-subtle text-center py-12 opacity-60">
-                    <PenTool size={40} class="mx-auto mb-4 text-muted/20" />
-                    <p class="text-sm">No entries yet.</p>
-                </div>
-            {:else}
-                {#each [...journalStore.entries].reverse() as entry}
-                    <!-- svelte-ignore a11y_click_events_have_key_events -->
-                    <!-- svelte-ignore a11y_no_static_element_interactions -->
-                    <div
-                        onclick={() => editEntry(entry)}
-                        class="card-subtle active:scale-[0.98] transition-all relative overflow-hidden"
-                    >
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-primary"
-                                    >{entry.date}</span
-                                >
-                                {#if entry.mood}
-                                    {@const MoodIcon = getMoodIcon(entry.mood)}
-                                    <MoodIcon
-                                        size={12}
-                                        style="color: {getMoodColor(
-                                            entry.mood,
-                                        )}"
-                                    />
-                                {/if}
-                            </div>
-                            <button
-                                onclick={(e) => {
-                                    e.stopPropagation();
-                                    removeEntry(entry.id);
-                                }}
-                                class="p-1 text-muted/40"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                        </div>
-                        <h3 class="text-white font-medium mb-1 line-clamp-1">
-                            {entry.title || "Untitled"}
-                        </h3>
-                        <p class="text-sm text-muted line-clamp-2">
-                            {entry.content}
-                        </p>
-                    </div>
-                {/each}
-            {/if}
-        </div>
-    {:else if editingEntry}
-        <!-- MOBILE SCRATCHPAD -->
+    {#if isWriting}
         <div
-            class="fixed inset-0 z-[100] bg-background flex flex-col animate-in slide-in-from-bottom duration-300"
+            class="fixed inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-300"
         >
-            <!-- Header -->
             <div
-                class="px-6 py-4 flex items-center justify-between border-b border-line bg-surface/20"
+                class="px-6 py-4 flex items-center justify-between border-b border-white/5 bg-background/80 backdrop-blur-xl sticky top-0 z-10"
             >
                 <button
-                    onclick={() => (view = "list")}
-                    class="p-2 -ml-2 text-muted"
+                    onclick={() => (isWriting = false)}
+                    class="text-muted hover:text-white"
                 >
-                    <ArrowLeft size={24} />
+                    Cancel
                 </button>
-                <div class="flex gap-4">
-                    <button
-                        onclick={() => removeEntry(editingEntry!.id)}
-                        class="p-2 text-muted hover:text-red-500"
-                    >
-                        <Trash2 size={20} />
-                    </button>
-                    <button
-                        onclick={saveEntry}
-                        class="btn btn-primary px-4 py-2 flex items-center gap-2"
-                    >
-                        <Check size={18} /> Done
-                    </button>
-                </div>
+                <h3 class="font-bold text-white">New Entry</h3>
+                <button
+                    onclick={handleSave}
+                    class="text-primary font-bold uppercase tracking-widest text-xs"
+                >
+                    Save
+                </button>
             </div>
 
-            <!-- Content -->
-            <div class="flex-1 overflow-y-auto px-6 py-8">
-                <div class="space-y-6">
-                    <div class="flex items-center justify-between">
-                        <input
-                            type="date"
-                            bind:value={editingEntry.date}
-                            class="bg-transparent border-none text-muted text-sm focus:outline-none"
-                        />
-                        <div
-                            class="flex items-center gap-2 px-3 py-1 bg-surface rounded-full border border-line"
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- Mood Selector -->
+                <div class="flex justify-between px-2">
+                    {#each moods as mood}
+                        <button
+                            onclick={() => (selectedMood = mood.id)}
+                            class="flex flex-col items-center gap-2 transition-all {selectedMood ===
+                            mood.id
+                                ? 'scale-110 opacity-100'
+                                : 'opacity-40 grayscale'}"
                         >
-                            {#if EditingMoodIcon}
-                                <EditingMoodIcon
-                                    size={14}
-                                    style="color: {getMoodColor(
-                                        editingEntry.mood,
-                                    )}"
-                                />
-                            {/if}
+                            <span class="text-3xl drop-shadow-lg"
+                                >{mood.emoji}</span
+                            >
                             <span
-                                class="text-[10px] uppercase font-bold text-muted"
-                                >{editingEntry.mood}</span
+                                class="text-[9px] font-bold uppercase tracking-widest"
+                                >{mood.label}</span
                             >
-                        </div>
-                    </div>
-
-                    <textarea
-                        bind:value={editingEntry.title}
-                        placeholder="Title..."
-                        rows="1"
-                        class="w-full bg-transparent border-none text-3xl font-light text-white focus:outline-none placeholder:text-muted/20 resize-none"
-                    ></textarea>
-
-                    <div class="h-px w-full bg-line"></div>
-
-                    <textarea
-                        bind:value={editingEntry.content}
-                        placeholder="What's on your mind?"
-                        class="w-full bg-transparent border-none text-lg font-light text-muted leading-relaxed min-h-[50vh] focus:outline-none placeholder:text-muted/10 resize-none"
-                    ></textarea>
+                        </button>
+                    {/each}
                 </div>
-            </div>
 
-            <!-- Mood Picker / Toolbar -->
-            <div class="px-6 py-4 border-t border-line bg-surface/40 pb-safe">
-                <div class="flex justify-between items-center">
-                    <div class="flex gap-4">
-                        {#each moods as m}
-                            {@const MoodIcon = m.icon}
-                            <button
-                                onclick={() => (editingEntry!.mood = m.name)}
-                                class="transition-all {editingEntry.mood ===
-                                m.name
-                                    ? 'scale-125'
-                                    : 'opacity-30'}"
-                            >
-                                <MoodIcon size={24} style="color: {m.color}" />
-                            </button>
-                        {/each}
-                    </div>
-                </div>
+                <textarea
+                    bind:value={entryText}
+                    placeholder="How are you feeling today?"
+                    class="w-full h-96 bg-transparent text-lg text-white/90 placeholder:text-muted/30 outline-none resize-none leading-relaxed font-light mt-4"
+                ></textarea>
             </div>
         </div>
     {/if}
+
+    <div class="px-6 space-y-8">
+        <!-- Daily Prompt (Concept) -->
+        <div
+            class="card-subtle p-5 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20"
+        >
+            <div class="flex items-center gap-3 mb-2">
+                <Sparkles size={16} class="text-purple-400" />
+                <span
+                    class="text-[10px] font-black text-purple-400 uppercase tracking-widest"
+                    >Daily Prompt</span
+                >
+            </div>
+            <p class="text-lg font-light text-white italic">
+                "What is one small win you had today that you're proud of?"
+            </p>
+            <button
+                onclick={() => (isWriting = true)}
+                class="mt-4 text-xs font-bold text-white hover:text-purple-400 transition-colors uppercase tracking-wider"
+            >
+                Answer →
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <h3
+                class="text-[10px] font-black text-muted uppercase tracking-[0.2em] px-1"
+            >
+                Recent Entries
+            </h3>
+
+            <div class="relative border-l border-white/10 ml-3 space-y-8 pb-4">
+                {#each journalStore.entries as entry}
+                    <div class="relative pl-8 group">
+                        <!-- Timeline Dot -->
+                        <div
+                            class="absolute -left-[5px] top-6 w-2.5 h-2.5 rounded-full bg-surface border border-white/20 group-hover:border-primary group-hover:bg-primary transition-colors"
+                        ></div>
+
+                        <div
+                            class="bg-surface/30 rounded-2xl p-5 hover:bg-surface/50 transition-colors border border-white/5"
+                        >
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <span
+                                        class="text-xs font-bold text-white block"
+                                    >
+                                        {formatDate(entry.date)}
+                                    </span>
+                                    <span
+                                        class="text-[10px] text-muted block mt-0.5"
+                                    >
+                                        {formatTime(entry.date)}
+                                    </span>
+                                </div>
+                                <span class="text-2xl" title={entry.mood}>
+                                    {moods.find((m) => m.id === entry.mood)
+                                        ?.emoji || "😐"}
+                                </span>
+                            </div>
+                            <p
+                                class="text-white/80 text-sm leading-relaxed font-light whitespace-pre-wrap"
+                            >
+                                {entry.content}
+                            </p>
+                        </div>
+                    </div>
+                {/each}
+
+                {#if journalStore.entries.length === 0}
+                    <div class="pl-8 text-muted italic text-sm opacity-50 py-4">
+                        No entries yet. Start writing!
+                    </div>
+                {/if}
+            </div>
+        </div>
+    </div>
 </div>

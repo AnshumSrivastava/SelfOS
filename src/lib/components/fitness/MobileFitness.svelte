@@ -1,15 +1,17 @@
 <script lang="ts">
+    import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import {
-        Dumbbell,
         Activity,
-        Play,
-        Timer,
-        Flame,
+        Dumbbell,
+        Trophy,
+        History,
         Plus,
-        ChevronRight,
+        TrendingUp,
+        Calendar,
         Footprints,
         Droplets,
         Moon,
+        Clock,
     } from "lucide-svelte";
     import { fitnessStore } from "$lib/stores/fitness.svelte";
     import LogWorkoutModal from "./LogWorkoutModal.svelte";
@@ -47,19 +49,20 @@
     }
 </script>
 
-<div class="page-container h-full relative">
-    <div class="module-header mb-8">
-        <h1 class="text-3xl font-light text-white">Fitness</h1>
-        <button
-            onclick={() => (isLogWorkoutOpen = true)}
-            class="w-12 h-12 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-        >
-            <Plus size={24} />
-        </button>
-    </div>
+{#snippet headerAction()}
+    <button
+        onclick={() => (isLogWorkoutOpen = true)}
+        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
+    >
+        <Plus size={18} strokeWidth={3} />
+    </button>
+{/snippet}
+
+<div class="page-container h-full relative pb-24">
+    <MobileHeader title="Fitness" action={headerAction} />
 
     {#if isLoading}
-        <div class="space-y-10">
+        <div class="px-6 space-y-10">
             <div class="grid grid-cols-2 gap-4">
                 <div
                     class="card-subtle aspect-square p-6 flex flex-col justify-between"
@@ -110,134 +113,156 @@
             </div>
         </div>
     {:else}
-        <div class="space-y-10">
-            <!-- Daily Activity Rings-style -->
-            <div class="grid grid-cols-2 gap-4">
+        <div class="px-6 space-y-8">
+            <!-- Daily Stats Grid -->
+            <div class="grid grid-cols-2 gap-3">
                 <button
                     onclick={() => (isUpdateStatsOpen = true)}
-                    class="card-subtle aspect-square flex flex-col justify-between relative overflow-hidden group active:scale-[0.98] transition-all"
+                    class="relative overflow-hidden rounded-[24px] p-5 flex flex-col justify-between aspect-square group active:scale-[0.98] transition-all bg-gradient-to-br from-surface to-background border border-white/5 shadow-xl"
                 >
                     <div
-                        class="absolute inset-0 flex items-center justify-center opacity-5 group-hover:opacity-10 transition-opacity"
+                        class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    ></div>
+
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"
                     >
-                        <Footprints size={80} />
+                        <Footprints size={20} />
                     </div>
-                    <Footprints class="text-primary relative z-10" size={24} />
-                    <div class="relative z-10">
-                        <span class="text-2xl font-bold text-white block"
-                            >{stats.todaySteps.toLocaleString()}</span
+
+                    <div>
+                        <div
+                            class="text-3xl font-light text-white tracking-tight leading-none mb-1"
                         >
+                            {(stats.todaySteps / 1000).toFixed(1)}<span
+                                class="text-lg text-muted/60">k</span
+                            >
+                        </div>
                         <span
-                            class="text-xs text-muted uppercase tracking-wider font-bold"
-                            >Steps today</span
+                            class="text-[10px] font-black text-muted/60 uppercase tracking-widest"
+                            >Steps</span
                         >
                     </div>
                 </button>
 
-                <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
                     <button
                         onclick={() => (isUpdateStatsOpen = true)}
-                        class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
+                        class="flex-1 rounded-[20px] p-4 flex items-center gap-3 active:scale-[0.98] transition-all bg-surface/40 hover:bg-surface/60 border border-white/5"
                     >
                         <div
-                            class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary"
+                            class="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400"
                         >
-                            <Droplets size={20} />
+                            <Droplets size={16} />
                         </div>
                         <div>
                             <span
-                                class="text-xs text-muted block uppercase tracking-tighter font-bold"
-                                >Water</span
-                            >
-                            <span class="text-lg font-bold text-white block"
+                                class="text-lg font-bold text-white leading-none block"
                                 >{stats.todayWater.toFixed(1)}L</span
+                            >
+                            <span
+                                class="text-[9px] font-bold text-muted/60 uppercase tracking-wider"
+                                >Water</span
                             >
                         </div>
                     </button>
+
                     <button
                         onclick={() => (isUpdateStatsOpen = true)}
-                        class="flex-1 card-subtle flex items-center gap-3 p-4 active:scale-[0.98] transition-all"
+                        class="flex-1 rounded-[20px] p-4 flex items-center gap-3 active:scale-[0.98] transition-all bg-surface/40 hover:bg-surface/60 border border-white/5"
                     >
                         <div
-                            class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"
+                            class="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"
                         >
-                            <Moon size={20} />
+                            <Moon size={16} />
                         </div>
                         <div>
                             <span
-                                class="text-xs text-muted block uppercase tracking-tighter font-bold"
-                                >Sleep</span
-                            >
-                            <span class="text-lg font-bold text-white block"
+                                class="text-lg font-bold text-white leading-none block"
                                 >{fitnessStore.latestSleep}h</span
+                            >
+                            <span
+                                class="text-[9px] font-bold text-muted/60 uppercase tracking-wider"
+                                >Sleep</span
                             >
                         </div>
                     </button>
                 </div>
             </div>
 
-            <!-- Today's Plan -->
+            <!-- Focus Workout Card -->
             <div
-                class="card-subtle bg-gradient-to-br from-primary/5 to-transparent border-primary/20"
+                class="relative overflow-hidden rounded-[24px] p-6 border border-primary/20 bg-primary/5"
             >
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-light text-white text-lg">Next Session</h3>
-                    <span
-                        class="text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-black uppercase tracking-widest"
-                        >Strength</span
-                    >
-                </div>
-                <div class="flex items-center gap-4 mb-6">
-                    <div
-                        class="w-14 h-14 rounded-2xl bg-surface border border-line flex items-center justify-center text-primary shadow-inner"
-                    >
-                        <Dumbbell size={28} />
-                    </div>
                     <div>
-                        <h4 class="font-bold text-white">
-                            Pull Day (Back & Bi)
-                        </h4>
-                        <p class="text-xs text-muted">
-                            45-60 mins • Hard Difficulty
-                        </p>
+                        <span
+                            class="text-[9px] font-black text-primary uppercase tracking-[0.2em]"
+                            >Up Next</span
+                        >
+                        <h3 class="text-xl font-bold text-white mt-1">
+                            Pull Day
+                        </h3>
+                    </div>
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-primary text-black flex items-center justify-center shadow-lg shadow-primary/20"
+                    >
+                        <Dumbbell size={24} />
                     </div>
                 </div>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="flex items-center gap-2">
+                        <Clock size={14} class="text-primary" />
+                        <span class="text-xs font-bold text-white/80">45m</span>
+                    </div>
+                    <div class="w-1 h-1 rounded-full bg-white/20"></div>
+                    <div class="flex items-center gap-2">
+                        <Activity size={14} class="text-primary" />
+                        <span class="text-xs font-bold text-white/80"
+                            >High Intensity</span
+                        >
+                    </div>
+                </div>
+
                 <button
                     class="w-full py-4 rounded-2xl bg-primary text-black font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
                 >
-                    Start Workout
+                    Start Session
                 </button>
             </div>
 
-            <!-- Recent Activity -->
-            <div class="space-y-6">
+            <!-- Recent Activity List -->
+            <div class="space-y-4">
                 <div class="flex items-center justify-between px-1">
-                    <h3 class="text-lg font-light text-white">
-                        Recent Workouts
+                    <h3
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                    >
+                        History
                     </h3>
                     <button
-                        class="text-xs text-muted font-bold uppercase tracking-wider"
-                        >All Workouts</button
+                        class="text-[10px] font-bold text-primary uppercase tracking-widest"
+                        >View All</button
                     >
                 </div>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     {#each workouts as w (w.id)}
                         <div
-                            class="card-subtle flex items-center justify-between p-4 active:bg-surface/50 transition-colors"
+                            class="group flex items-center justify-between p-3 rounded-2xl hover:bg-white/5 active:scale-[0.99] transition-all"
                         >
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-primary shadow-sm"
+                                    class="w-10 h-10 rounded-full bg-surface/50 border border-white/5 flex items-center justify-center text-primary"
                                 >
-                                    <Activity size={20} />
+                                    <Activity size={18} />
                                 </div>
                                 <div>
                                     <p class="font-bold text-white text-sm">
                                         {w.title}
                                     </p>
                                     <p
-                                        class="text-[10px] text-muted uppercase tracking-wider font-medium"
+                                        class="text-[10px] text-muted/60 font-bold uppercase tracking-wider"
                                     >
                                         {formatDate(w.date)} • {w.type}
                                     </p>
@@ -246,10 +271,6 @@
                             <div class="text-right">
                                 <span class="block text-white font-bold text-sm"
                                     >{w.calories} kcal</span
-                                >
-                                <span
-                                    class="block text-[10px] text-muted uppercase tracking-widest font-black"
-                                    >{w.duration}</span
                                 >
                             </div>
                         </div>

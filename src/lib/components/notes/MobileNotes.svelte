@@ -1,146 +1,198 @@
 <script lang="ts">
-    import { Search, Plus, Folder, Trash2 } from "lucide-svelte";
+    import {
+        Search,
+        Plus,
+        Folder,
+        Trash2,
+        ArrowLeft,
+        Share2,
+        MoreVertical,
+        FileText,
+    } from "lucide-svelte";
 
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
-    import NoteModal from "./NoteModal.svelte";
+    import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import { confirmState } from "$lib/stores/confirm.svelte";
 
-    let selectedFilter = $state("All");
     let searchQuery = $state("");
-    let isModalOpen = $state(false);
-    let currentNote = $state<Note | null>(null);
-
-    let filters = $derived(notesStore.allTags);
+    let selectedTag = $state<string | null>(null);
+    let isEditing = $state(false);
+    let currentNote = $state<Note | null>(null); // Replace 'any' with Note type
 
     let filteredNotes = $derived(
         notesStore.notes.filter((note) => {
-            const matchesFilter =
-                selectedFilter === "All" || note.tags?.includes(selectedFilter);
-
             const matchesSearch =
                 note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                note.content?.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesFilter && matchesSearch;
+                note.content.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesTag = selectedTag
+                ? note.tags.includes(selectedTag)
+                : true;
+            return matchesSearch && matchesTag;
         }),
     );
 
-    function openNewNote() {
-        currentNote = null;
-        isModalOpen = true;
-    }
+    const allTags = $derived(
+        Array.from(new Set(notesStore.notes.flatMap((n) => n.tags))),
+    );
 
     function openNote(note: Note) {
         currentNote = note;
-        isModalOpen = true;
+        isEditing = true;
+    }
+
+    function createNote() {
+        currentNote = {
+            id: crypto.randomUUID(),
+            title: "",
+            content: "",
+            tags: [],
+            updatedAt: new Date().toISOString(),
+            folder: "General",
+            isFavorite: false,
+        };
+        isEditing = true;
     }
 </script>
 
-<NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
+{#snippet headerAction()}
+    <button
+        onclick={createNote}
+        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
+    >
+        <Plus size={18} strokeWidth={3} />
+    </button>
+{/snippet}
 
-<div class="page-container relative">
-    <div class="module-header">
-        <h1 class="text-3xl font-light text-white">Notes</h1>
-        <button
-            onclick={openNewNote}
-            class="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+<div class="page-container h-full relative pb-24">
+    <MobileHeader title="Notes" action={headerAction} />
+
+    {#if isEditing && currentNote}
+        <div
+            class="fixed inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-300"
         >
-            <Plus size={24} />
-        </button>
-    </div>
-
-    <!-- Search -->
-    <div class="relative">
-        <Search
-            size={18}
-            class="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
-        />
-        <input
-            type="text"
-            bind:value={searchQuery}
-            placeholder="Search..."
-            class="input w-full pl-11"
-        />
-    </div>
-
-    <!-- Filters -->
-    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-        {#each filters as f}
-            <button
-                onclick={() => (selectedFilter = f)}
-                class="px-4 py-1.5 rounded-full border border-line text-sm font-medium whitespace-nowrap transition-all active:scale-95 {f ===
-                selectedFilter
-                    ? 'bg-white text-black border-white shadow-lg'
-                    : 'bg-surface text-muted'}"
+            <div
+                class="px-6 py-4 flex items-center justify-between border-b border-white/5 bg-background/80 backdrop-blur-xl sticky top-0 z-10"
             >
-                {f}
-            </button>
-        {/each}
-    </div>
+                <button
+                    onclick={() => (isEditing = false)}
+                    class="p-2 -ml-2 text-muted hover:text-white"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <div class="flex gap-4">
+                    <button class="text-muted hover:text-white">
+                        <Share2 size={18} />
+                    </button>
+                    <button class="text-muted hover:text-white">
+                        <MoreVertical size={18} />
+                    </button>
+                </div>
+            </div>
 
-    <!-- Note List -->
-    <div class="grid grid-cols-2 gap-3">
-        <button
-            onclick={openNewNote}
-            class="card-subtle flex flex-col items-center justify-center aspect-square text-muted border-dashed border-line active:scale-95 transition-transform"
-        >
-            <Plus size={24} />
-            <span class="text-xs mt-2">New Note</span>
-        </button>
+            <div class="flex-1 overflow-y-auto p-6">
+                <input
+                    type="text"
+                    bind:value={currentNote.title}
+                    placeholder="Title"
+                    class="w-full bg-transparent text-3xl font-bold text-white placeholder:text-muted/30 outline-none mb-4"
+                />
+                <textarea
+                    bind:value={currentNote.content}
+                    placeholder="Start typing..."
+                    class="w-full h-[calc(100vh-200px)] bg-transparent text-lg text-white/80 placeholder:text-muted/30 outline-none resize-none leading-relaxed font-light"
+                ></textarea>
+            </div>
+        </div>
+    {/if}
 
-        {#each filteredNotes as note (note.id)}
-            <div class="relative group">
+    <div class="px-6 space-y-6">
+        <!-- Search & Filter -->
+        <div class="space-y-4">
+            <div class="relative">
+                <Search
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+                    size={18}
+                />
+                <input
+                    type="text"
+                    bind:value={searchQuery}
+                    placeholder="Search notes..."
+                    class="w-full bg-surface/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:bg-surface focus:border-primary/50 outline-none transition-all placeholder:text-muted/50"
+                />
+            </div>
+
+            {#if allTags.length > 0}
+                <div
+                    class="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-6 px-6"
+                >
+                    <button
+                        onclick={() => (selectedTag = null)}
+                        class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border {selectedTag ===
+                        null
+                            ? 'bg-white text-black border-white'
+                            : 'bg-transparent text-muted border-white/10 hover:border-white/30'}"
+                    >
+                        All
+                    </button>
+                    {#each allTags as tag}
+                        <button
+                            onclick={() =>
+                                (selectedTag =
+                                    selectedTag === tag ? null : tag)}
+                            class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border {selectedTag ===
+                            tag
+                                ? 'bg-primary text-black border-primary'
+                                : 'bg-transparent text-muted border-white/10 hover:border-white/30'}"
+                        >
+                            {tag}
+                        </button>
+                    {/each}
+                </div>
+            {/if}
+        </div>
+
+        <!-- Notes Grid -->
+        <div class="grid grid-cols-2 gap-3">
+            {#each filteredNotes as note (note.id)}
                 <button
                     onclick={() => openNote(note)}
-                    class="card-subtle flex flex-col justify-between aspect-square text-left w-full h-full active:scale-95 transition-transform"
+                    class="card-subtle p-4 flex flex-col gap-3 text-left group active:scale-[0.98] transition-all h-48 relative overflow-hidden"
                 >
-                    <div class="w-full">
-                        <div class="flex justify-between items-start mb-2">
-                            <Folder size={16} class="text-muted" />
-                            <span class="text-[10px] text-muted"
-                                >{note.date}</span
-                            >
-                        </div>
-                        <h3
-                            class="font-medium text-white line-clamp-3 leading-tight"
-                        >
-                            {note.title}
-                        </h3>
-                    </div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                    ></div>
 
-                    <div class="flex flex-wrap gap-1 mt-auto w-full">
-                        {#if note.tags && note.tags.length > 0}
+                    <h3
+                        class="font-bold text-white text-base leading-tight line-clamp-2"
+                    >
+                        {note.title || "Untitled"}
+                    </h3>
+                    <p
+                        class="text-xs text-muted/60 leading-relaxed line-clamp-4 font-normal"
+                    >
+                        {note.content || "No content"}
+                    </p>
+                    <div class="mt-auto flex gap-2">
+                        {#if note.tags}
                             {#each note.tags.slice(0, 2) as tag}
                                 <span
-                                    class="text-[9px] text-muted bg-surface/50 border border-line px-1.5 py-0.5 rounded-md"
+                                    class="text-[9px] font-bold text-muted/40 uppercase tracking-wider bg-white/5 px-1.5 py-0.5 rounded"
                                     >#{tag}</span
                                 >
                             {/each}
-                            {#if note.tags.length > 2}
-                                <span class="text-[9px] text-muted px-1"
-                                    >+{note.tags.length - 2}</span
-                                >
-                            {/if}
                         {/if}
                     </div>
                 </button>
-                <button
-                    onclick={async (e) => {
-                        e.stopPropagation();
-                        if (
-                            await confirmState.confirm(
-                                "Delete Note",
-                                "Are you sure you want to delete this note?",
-                            )
-                        ) {
-                            notesStore.deleteNote(note.id);
-                        }
-                    }}
-                    class="absolute top-2 right-2 p-2 text-muted hover:text-red-400 z-10"
-                    title="Delete Note"
-                >
-                    <Trash2 size={16} />
-                </button>
+            {/each}
+        </div>
+
+        {#if filteredNotes.length === 0}
+            <div
+                class="flex flex-col items-center justify-center py-20 text-muted/40 space-y-4"
+            >
+                <FileText size={48} strokeWidth={1} />
+                <p class="text-sm font-medium">No notes found</p>
             </div>
-        {/each}
+        {/if}
     </div>
 </div>
