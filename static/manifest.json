@@ -1,14 +1,14 @@
 {
     "name": "SelfOS",
     "short_name": "SelfOS",
-    "start_url": "/",
+    "start_url": "/SelfOS/",
     "display": "standalone",
     "background_color": "#0a0a0c",
     "theme_color": "#0a0a0c",
     "description": "Premium Personal Operating System",
     "icons": [
         {
-            "src": "/logo.svg",
+            "src": "/SelfOS/logo.svg",
             "sizes": "any",
             "type": "image/svg+xml"
         }

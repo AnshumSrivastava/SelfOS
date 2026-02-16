@@ -51,7 +51,7 @@ class AuthStore {
 
     private getEmail(username: string): string {
         if (username.includes("@")) return username;
-        return `${username}@selfos.v2`;
+        return `${username}@selfos.io`;
     }
 
     async signUp(username: string, password: string, displayName: string) {
