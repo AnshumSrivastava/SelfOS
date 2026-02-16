@@ -73,6 +73,32 @@ export class SupabaseStore<T extends { id: string }> {
         return result;
     }
 
+    // Concurrency Control
+    private static requestQueue: Array<() => Promise<void>> = [];
+    private static activeRequests = 0;
+    private static MAX_CONCURRENCY = 4;
+
+    private static async processQueue() {
+        if (this.activeRequests >= this.MAX_CONCURRENCY || this.requestQueue.length === 0) return;
+
+        this.activeRequests++;
+        const task = this.requestQueue.shift();
+
+        if (task) {
+            try {
+                await task();
+            } finally {
+                this.activeRequests--;
+                this.processQueue();
+            }
+        }
+    }
+
+    private static enqueue(task: () => Promise<void>) {
+        this.requestQueue.push(task);
+        this.processQueue();
+    }
+
     async init() {
         if (typeof window === 'undefined') return;
 
@@ -80,7 +106,7 @@ export class SupabaseStore<T extends { id: string }> {
             $effect.root(() => {
                 $effect(() => {
                     if (!auth.loading) {
-                        this.#log(`Auth ready, fetching initial data...`);
+                        this.#log(`Auth ready, queueing initial fetch...`);
                         this.fetch();
                     }
                 });
@@ -101,6 +127,13 @@ export class SupabaseStore<T extends { id: string }> {
         if (force || this.#value.length === 0) {
             this.#setStatus('loading');
         }
+
+        SupabaseStore.enqueue(async () => {
+            await this.executeFetchWithRetry();
+        });
+    }
+
+    private async executeFetchWithRetry(retries = 3) {
         try {
             this.#log('Fetching data...');
             let query = supabase.from(this.#tableName).select('*');
@@ -112,19 +145,22 @@ export class SupabaseStore<T extends { id: string }> {
             const { data, error } = await query;
 
             if (error) {
+                if (retries > 0) {
+                    this.#log(`Fetch failed, retrying (${retries} left)...`, error, 'warn');
+                    await new Promise(r => setTimeout(r, 1000)); // Backoff
+                    await this.executeFetchWithRetry(retries - 1);
+                    return;
+                }
                 this.#handleError('fetch', error);
                 return;
             }
 
             this.#value = (data || []).map((item: any) => this.toCamel(item));
             this.#log(`Fetched ${this.#value.length} items`);
+            this.#setStatus('idle');
         } catch (e) {
             this.#log('Unexpected error during fetch', e, 'error');
             this.#setStatus('error', (e as Error).message);
-        } finally {
-            if (this.#status === 'loading') {
-                this.#setStatus('idle');
-            }
         }
     }
 

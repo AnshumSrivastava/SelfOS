@@ -15,6 +15,12 @@ class SyncStore {
     #registry = $state<Record<string, StoreRegistryMeta>>({});
 
     register(id: string, label: string) {
+        if (this.#registry[id]) {
+            // Store already registered, just update label to be safe
+            this.#registry[id].label = label;
+            return;
+        }
+
         this.#registry[id] = {
             id,
             tableName: id, // Internal table name usually matches ID
