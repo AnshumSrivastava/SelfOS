@@ -8,6 +8,7 @@
         Plus,
     } from "lucide-svelte";
     import { dashboardStore } from "$lib/stores/dashboard.svelte";
+    import { auth } from "$lib/stores/auth.svelte";
     import { userStore } from "$lib/stores/user.svelte";
     import { uiState } from "$lib/stores/ui.svelte";
     import { searchStore } from "$lib/stores/search.svelte";
@@ -28,6 +29,12 @@
             day: "numeric",
         }),
     );
+
+    $effect(() => {
+        if (auth.isAuthenticated) {
+            dashboardStore.fetchData();
+        }
+    });
 </script>
 
 <div class="page-container relative pb-36">

@@ -187,8 +187,14 @@
     </div>
   </div>
 {:else if !showSplash && !isAuthenticated && !isAuthRoute}
-  <!-- Content logic guides to login via effect, but we can show a placeholder or nothing -->
-  <!-- The goto() in the effect will handle the redirect -->
+  <div class="fixed inset-0 bg-background flex items-center justify-center">
+    <div class="flex flex-col items-center gap-4">
+      <div
+        class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"
+      ></div>
+      <p class="text-sm text-muted">Redirecting...</p>
+    </div>
+  </div>
 {:else if !showSplash && isAuthRoute}
   {@render children()}
 {/if}

@@ -2,6 +2,7 @@
     import { Settings2 } from "lucide-svelte";
     import { slide } from "svelte/transition";
     import { dashboardStore } from "$lib/stores/dashboard.svelte";
+    import { auth } from "$lib/stores/auth.svelte";
     import WelcomeWidget from "./WelcomeWidget.svelte";
     import HabitsWidget from "./HabitsWidget.svelte";
     import TasksWidget from "./TasksWidget.svelte";
@@ -14,6 +15,12 @@
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
 
     let showSettings = $state(false);
+
+    $effect(() => {
+        if (auth.isAuthenticated) {
+            dashboardStore.fetchData();
+        }
+    });
 </script>
 
 <div class="page-container h-full">
