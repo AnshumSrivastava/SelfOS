@@ -178,15 +178,25 @@
             : 'justify-between'}"
     >
         {#if !uiState.isCollapsed}
-            <div class="flex items-center gap-3">
+            <a
+                href={`${base}/`}
+                data-sveltekit-preload-hover
+                class="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
                 <Logo size={32} className="text-primary" />
                 <span
                     class="text-xl font-bold tracking-tight text-[var(--color-text)]"
                     >SelfOS</span
                 >
-            </div>
+            </a>
         {:else}
-            <Logo size={32} className="text-primary" />
+            <a
+                href={`${base}/`}
+                data-sveltekit-preload-hover
+                class="hover:opacity-80 transition-opacity"
+            >
+                <Logo size={32} className="text-primary" />
+            </a>
         {/if}
 
         <button

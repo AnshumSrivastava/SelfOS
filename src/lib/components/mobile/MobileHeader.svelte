@@ -4,6 +4,7 @@
     import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { fade, slide, scale } from "svelte/transition";
 
+    import { base } from "$app/paths";
     let { title = "SelfOS", action = null, showMenu = true } = $props();
 
     let showNotifications = $state(false);
@@ -19,14 +20,18 @@
 >
     <div class="flex flex-col">
         {#if title === "SelfOS"}
-            <div class="flex items-center gap-2.5" in:fade>
+            <a
+                href={`${base}/`}
+                class="flex items-center gap-2.5 active:opacity-70 transition-opacity"
+                in:fade
+            >
                 <div
                     class="w-1 h-4 bg-primary rounded-full shadow-[0_0_12px_var(--color-primary)]"
                 ></div>
                 <span class="text-base font-bold tracking-tight text-white/90"
                     >SelfOS</span
                 >
-            </div>
+            </a>
         {:else}
             <h1
                 class="text-base font-bold text-white/90 tracking-tight"

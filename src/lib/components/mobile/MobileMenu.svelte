@@ -229,15 +229,16 @@
                         </h3>
                         <div class="grid grid-cols-4 gap-4">
                             {#each pinnedLinks as link}
-                                <button
+                                <a
+                                    href={link.href}
+                                    data-sveltekit-preload-hover
                                     onclick={() => {
                                         isOpen = false;
-                                        goto(link.href);
                                     }}
                                     class="flex flex-col items-center gap-2 group"
                                 >
                                     <div
-                                        class="w-14 h-14 rounded-2xl {link.bg} {link.color} flex items-center justify-center group-active:scale-90 transition-all shadow-lg active:shadow-none"
+                                        class="w-14 h-14 rounded-2xl {link.bg} {link.color} flex items-center justify-center group-active:scale-90 transition-all shadow-lg active:shadow-none bg-surface border border-line"
                                     >
                                         <link.icon size={24} />
                                     </div>
@@ -245,7 +246,7 @@
                                         class="text-[9px] font-bold text-muted truncate w-full text-center uppercase tracking-wide"
                                         >{link.name}</span
                                     >
-                                </button>
+                                </a>
                             {/each}
                         </div>
                     </div>
@@ -271,34 +272,27 @@
                                 {@const isPinned =
                                     settings.mobileNavItems.includes(link.key)}
 
-                                <button
-                                    onclick={() => {
-                                        if (isEditing) {
-                                            togglePin(link.key);
-                                        } else {
-                                            isOpen = false;
-                                            goto(link.href);
-                                        }
-                                    }}
-                                    class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
-                                    {isActive
-                                        ? 'ring-1 ring-primary/50 bg-primary/5'
-                                        : ''}
-                                    {isEditing && isPinned
-                                        ? 'ring-2 ring-primary bg-primary/10'
-                                        : ''}"
-                                >
-                                    <div
-                                        class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
+                                {#if isEditing}
+                                    <button
+                                        onclick={() => togglePin(link.key)}
+                                        class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
+                                        {isActive
+                                            ? 'ring-1 ring-primary/50 bg-primary/5'
+                                            : ''}
+                                        {isPinned
+                                            ? 'ring-2 ring-primary bg-primary/10'
+                                            : ''}"
                                     >
-                                        <link.icon size={20} />
-                                    </div>
-                                    <span
-                                        class="text-xs font-bold text-white line-clamp-1"
-                                        >{link.name}</span
-                                    >
+                                        <div
+                                            class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
+                                        >
+                                            <link.icon size={20} />
+                                        </div>
+                                        <span
+                                            class="text-xs font-bold text-white line-clamp-1 text-left flex-1"
+                                            >{link.name}</span
+                                        >
 
-                                    {#if isEditing}
                                         <div class="ml-auto">
                                             <div
                                                 class="w-5 h-5 rounded-full border-2 {isPinned
@@ -312,8 +306,28 @@
                                                 {/if}
                                             </div>
                                         </div>
-                                    {/if}
-                                </button>
+                                    </button>
+                                {:else}
+                                    <a
+                                        href={link.href}
+                                        data-sveltekit-preload-hover
+                                        onclick={() => (isOpen = false)}
+                                        class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
+                                        {isActive
+                                            ? 'ring-1 ring-primary/50 bg-primary/5'
+                                            : ''}"
+                                    >
+                                        <div
+                                            class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
+                                        >
+                                            <link.icon size={20} />
+                                        </div>
+                                        <span
+                                            class="text-xs font-bold text-white line-clamp-1"
+                                            >{link.name}</span
+                                        >
+                                    </a>
+                                {/if}
                             {/each}
                         </div>
                     </div>
