@@ -1,7 +1,8 @@
 <script lang="ts">
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import { journalStore } from "$lib/stores/journal.svelte";
-    import { Plus, Sparkles } from "lucide-svelte";
+    import { Sparkles } from "lucide-svelte";
     import { slide } from "svelte/transition";
 
     let isWriting = $state(false);
@@ -47,17 +48,13 @@
     }
 </script>
 
-{#snippet headerAction()}
-    <button
-        onclick={() => (isWriting = true)}
-        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
-    >
-        <Plus size={18} strokeWidth={3} />
-    </button>
-{/snippet}
-
 <div class="page-container h-full relative pb-24">
-    <MobileHeader title="Journal" action={headerAction} />
+    <MobileHeader title="Journal" />
+
+    <FloatingActionButton
+        onclick={() => (isWriting = true)}
+        ariaLabel="New Entry"
+    />
 
     {#if isWriting}
         <div

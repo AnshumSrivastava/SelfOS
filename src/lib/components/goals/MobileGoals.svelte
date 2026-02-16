@@ -30,6 +30,8 @@
     import GoalHierarchyTree from "./GoalHierarchyTree.svelte";
     import { slide, fade, fly } from "svelte/transition";
     import { swipe } from "$lib/utils/swipe";
+    import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
         activeTab: "today" | "plan" | "review";
@@ -51,6 +53,8 @@
         editingGoal = goal;
         showGoalModal = true;
     }
+
+    // ... (tabs and areas definitions remain same)
 
     const tabs = [
         { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
@@ -93,43 +97,33 @@
     }
 </script>
 
+{#snippet headerAction()}
+    <button
+        onclick={() => (showFilterSheet = !showFilterSheet)}
+        class="p-2 rounded-full text-white/40 hover:text-white active:scale-95 transition-all"
+    >
+        <Filter size={18} />
+    </button>
+{/snippet}
+
 <div
     class="flex flex-col bg-background relative"
     use:swipe={{ onSwipeLeft: nextTab, onSwipeRight: prevTab }}
 >
     <!-- 1. Header Area -->
-    <header
-        class="h-14 flex-shrink-0 flex items-center justify-between px-6 sticky top-0 z-20 bg-background/40 backdrop-blur-3xl"
-    >
-        <div class="flex flex-col">
-            <span
-                class="text-[9px] font-black text-primary/60 uppercase tracking-[0.2em]"
-                >Strategy</span
-            >
-            <h1 class="text-lg font-bold text-white/90 tracking-tight">
-                {activeTab === "today"
-                    ? "Daily Focus"
-                    : activeTab === "plan"
-                      ? "Global Plan"
-                      : "Performance"}
-            </h1>
-        </div>
+    <MobileHeader
+        title={activeTab === "today"
+            ? "Daily Focus"
+            : activeTab === "plan"
+              ? "Global Plan"
+              : "Performance"}
+        action={headerAction}
+    />
 
-        <div class="flex items-center gap-2">
-            <button
-                onclick={() => (showFilterSheet = !showFilterSheet)}
-                class="p-2.5 rounded-2xl bg-white/5 text-muted/60 active:scale-95 transition-all"
-            >
-                <Filter size={18} />
-            </button>
-            <button
-                onclick={() => openGoalModal()}
-                class="p-2.5 rounded-2xl bg-primary text-black shadow-[0_8px_20px_-5px_rgba(0,255,157,0.3)] active:scale-95 transition-all"
-            >
-                <Plus size={18} strokeWidth={3} />
-            </button>
-        </div>
-    </header>
+    <FloatingActionButton
+        onclick={() => openGoalModal()}
+        ariaLabel="Add Goal"
+    />
 
     <!-- 2. Main Content -->
     <main class="flex flex-col pt-2">

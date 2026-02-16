@@ -1,9 +1,9 @@
 <script lang="ts">
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import {
         Utensils,
         GlassWater,
-        Plus,
         Search,
         Flame,
         Droplets,
@@ -21,6 +21,8 @@
     let isProfileOpen = $state(false);
     let isLogMealOpen = $state(false);
     let isLoading = $state(true);
+
+    // ... (rest of script)
 
     onMount(() => {
         const timer = setTimeout(() => {
@@ -46,17 +48,13 @@
     }
 </script>
 
-{#snippet headerAction()}
-    <button
-        onclick={() => (isLogMealOpen = true)}
-        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
-    >
-        <Plus size={18} strokeWidth={3} />
-    </button>
-{/snippet}
-
 <div class="page-container h-full relative pb-24">
-    <MobileHeader title="Nutrition" action={headerAction} />
+    <MobileHeader title="Nutrition" />
+
+    <FloatingActionButton
+        onclick={() => (isLogMealOpen = true)}
+        ariaLabel="Log Meal"
+    />
 
     {#if isLoading}
         <div class="px-6 space-y-10">

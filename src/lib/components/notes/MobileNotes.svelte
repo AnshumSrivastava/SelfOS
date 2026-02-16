@@ -1,7 +1,6 @@
 <script lang="ts">
     import {
         Search,
-        Plus,
         Folder,
         Trash2,
         ArrowLeft,
@@ -12,6 +11,7 @@
 
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import { confirmState } from "$lib/stores/confirm.svelte";
 
     let searchQuery = $state("");
@@ -54,17 +54,10 @@
     }
 </script>
 
-{#snippet headerAction()}
-    <button
-        onclick={createNote}
-        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
-    >
-        <Plus size={18} strokeWidth={3} />
-    </button>
-{/snippet}
-
 <div class="page-container h-full relative pb-24">
-    <MobileHeader title="Notes" action={headerAction} />
+    <MobileHeader title="Notes" />
+
+    <FloatingActionButton onclick={createNote} ariaLabel="New Note" />
 
     {#if isEditing && currentNote}
         <div

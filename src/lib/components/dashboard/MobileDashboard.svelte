@@ -16,8 +16,8 @@
     import MomentumSnapshot from "./MomentumSnapshot.svelte";
     import FinancialPulse from "./FinancialPulse.svelte";
     import GoalPulse from "./GoalPulse.svelte";
-    import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
-    import { fade, fly } from "svelte/transition";
+    import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
 
     let showQuickCapture = $state(false);
     let now = new Date();
@@ -31,35 +31,14 @@
 </script>
 
 <div class="page-container relative pb-36">
-    <!-- Sticky Top Navigation -->
-    <div class="sticky top-0 z-50 bg-background/40 backdrop-blur-3xl px-6 py-4">
-        <div class="flex items-center justify-between">
-            <div class="flex flex-col">
-                <span
-                    class="text-[9px] font-bold uppercase tracking-[0.15em] text-muted/60"
-                    >{formattedDate}</span
-                >
-                <h1 class="text-lg font-bold text-white/95 tracking-tight">
-                    {userStore.currentUser?.displayName?.split(" ")[0] ||
-                        "Explorer"}
-                </h1>
-            </div>
-            <div class="flex items-center gap-2">
-                <button
-                    onclick={() => searchStore.open()}
-                    class="p-2.5 rounded-2xl bg-white/5 text-muted/60 active:scale-95 transition-all"
-                >
-                    <Search size={18} />
-                </button>
-                <button
-                    onclick={() => (showQuickCapture = true)}
-                    class="p-2.5 rounded-2xl bg-primary text-black shadow-[0_8px_20px_-5px_rgba(0,255,157,0.3)] active:scale-95 transition-all"
-                >
-                    <Plus size={18} strokeWidth={3} />
-                </button>
-            </div>
-        </div>
-    </div>
+    <MobileHeader
+        title={userStore.currentUser?.displayName?.split(" ")[0] || "Explorer"}
+    />
+
+    <FloatingActionButton
+        onclick={() => (showQuickCapture = true)}
+        ariaLabel="Quick Capture"
+    />
 
     <!-- Pinned Decision (Highest Impact) -->
     {#if dashboardStore.todayDecisions.length > 0}

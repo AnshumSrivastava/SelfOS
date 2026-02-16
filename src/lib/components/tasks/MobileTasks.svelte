@@ -5,6 +5,7 @@
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
 
     let filter = $state("active");
     let isQuickCaptureOpen = $state(false);
@@ -97,13 +98,10 @@
     </div>
 
     <!-- Floating Add Button -->
-    <button
+    <FloatingActionButton
         onclick={() => (isQuickCaptureOpen = true)}
-        class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-primary text-black flex items-center justify-center shadow-2xl shadow-primary/40 active:scale-90 transition-all z-30"
-        aria-label="Add new task"
-    >
-        <Plus size={28} strokeWidth={3} />
-    </button>
+        ariaLabel="Add new task"
+    />
 </div>
 
 <QuickCapture bind:isOpen={isQuickCaptureOpen} />

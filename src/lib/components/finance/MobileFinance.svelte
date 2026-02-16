@@ -1,9 +1,9 @@
 <script lang="ts">
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
+    import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import {
         ArrowUpRight,
         ArrowDownRight,
-        Plus,
         Target,
         PiggyBank,
         Briefcase,
@@ -58,17 +58,13 @@
     }
 </script>
 
-{#snippet headerAction()}
-    <button
-        onclick={() => (showAddModal = true)}
-        class="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-[0_0_15px_rgba(0,255,157,0.3)] active:scale-95 transition-transform"
-    >
-        <Plus size={18} strokeWidth={3} />
-    </button>
-{/snippet}
-
 <div class="page-container relative pb-24">
-    <MobileHeader title="Finance" action={headerAction} />
+    <MobileHeader title="Finance" />
+
+    <FloatingActionButton
+        onclick={() => (showAddModal = true)}
+        ariaLabel="Add Transaction"
+    />
 
     {#if showAddModal}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
