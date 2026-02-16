@@ -256,7 +256,7 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-50 bg-[#0A0A0A] flex flex-col"
+        class="fixed inset-0 z-[100] bg-[#0A0A0A] flex flex-col"
         transition:fly={{ y: 20, duration: 300 }}
     >
         <!-- Minimal Header -->
@@ -299,7 +299,7 @@
         </div>
 
         <!-- Body -->
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto pb-32">
             <div class="max-w-3xl mx-auto p-6 md:p-12 space-y-6">
                 <!-- Title -->
                 <input

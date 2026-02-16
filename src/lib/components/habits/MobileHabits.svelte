@@ -138,11 +138,11 @@
 
 {#if isAdding}
     <div
-        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center sm:p-4"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center sm:p-4"
         transition:fade={{ duration: 200 }}
     >
         <div
-            class="card-subtle w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl p-8 pb-12"
+            class="card-subtle w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl p-8 pb-32"
             transition:slide={{ duration: 300, axis: "y" }}
         >
             <div class="flex justify-between items-center mb-8">

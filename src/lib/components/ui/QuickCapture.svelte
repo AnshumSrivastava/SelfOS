@@ -30,7 +30,7 @@
 {#if isOpen}
     <!-- Backdrop -->
     <div
-        class="fixed inset-0 bg-black/80 z-50 backdrop-blur-sm"
+        class="fixed inset-0 bg-black/80 z-[100] backdrop-blur-sm"
         transition:fade={{ duration: 200 }}
         onclick={() => (isOpen = false)}
         role="button"
@@ -41,7 +41,7 @@
 
     <!-- Drawer -->
     <div
-        class="fixed bottom-0 left-0 right-0 bg-[var(--color-background)] rounded-t-3xl z-50 p-6 border-t border-[var(--color-line)]/50 max-h-[85vh] overflow-y-auto shadow-2xl"
+        class="fixed bottom-0 left-0 right-0 bg-[var(--color-background)] rounded-t-3xl z-[100] p-6 pb-32 border-t border-[var(--color-line)]/50 max-h-[85vh] overflow-y-auto shadow-2xl"
         transition:fly={{ y: 200, duration: 300, easing: (t) => t * (2 - t) }}
     >
         <div class="flex items-center justify-between mb-8">
