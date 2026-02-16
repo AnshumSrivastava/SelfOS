@@ -1,12 +1,13 @@
 <script lang="ts">
     import { X, ArrowUp, Calendar, Clock, AlertCircle } from "lucide-svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
+    import { projectsStore } from "$lib/stores/projects.svelte";
     import { fade, fly } from "svelte/transition";
 
     let { isOpen = $bindable(false) } = $props();
 
     let title = $state("");
-    let tag = $state("General");
+    let selectedProjectId = $state<string | null>(null);
     let priority = $state<"low" | "medium" | "high">("medium");
     let deadline = $state("");
     let scheduled = $state("");
@@ -14,11 +15,11 @@
     async function handleSubmit() {
         if (!title.trim()) return;
 
-        await tasksStore.addBatch(title, tag, priority);
+        await tasksStore.addBatch(title, selectedProjectId, priority);
 
         // Reset form
         title = "";
-        tag = "General";
+        selectedProjectId = null;
         priority = "medium";
         deadline = "";
         scheduled = "";
@@ -87,16 +88,26 @@
                 <div
                     class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide"
                 >
-                    {#each ["General", "Work", "Personal", "Finance", "Health", "Learning"] as t}
+                    <button
+                        type="button"
+                        onclick={() => (selectedProjectId = null)}
+                        class="px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border {selectedProjectId ===
+                        null
+                            ? 'bg-[var(--color-primary)] text-black border-[var(--color-primary)]'
+                            : 'bg-[var(--theme-surface)] text-[var(--color-muted)] border-[var(--color-line)]/50'}"
+                    >
+                        Inbox
+                    </button>
+                    {#each projectsStore.projects as p}
                         <button
                             type="button"
-                            onclick={() => (tag = t)}
-                            class="px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border {tag ===
-                            t
+                            onclick={() => (selectedProjectId = p.id)}
+                            class="px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap border {selectedProjectId ===
+                            p.id
                                 ? 'bg-[var(--color-primary)] text-black border-[var(--color-primary)]'
                                 : 'bg-[var(--theme-surface)] text-[var(--color-muted)] border-[var(--color-line)]/50'}"
                         >
-                            {t}
+                            {p.name}
                         </button>
                     {/each}
                 </div>
