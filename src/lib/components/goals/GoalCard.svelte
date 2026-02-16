@@ -34,104 +34,91 @@
 </script>
 
 <div
-    class="group relative card-subtle p-4 transition-all duration-300 cursor-pointer"
+    class="group relative card-subtle p-5 transition-all duration-300 cursor-pointer overflow-hidden border-transparent hover:border-primary/20"
     onclick={() => onclick?.(goal)}
     onkeydown={(e) => e.key === "Enter" && onclick?.(goal)}
     role="button"
     tabindex="0"
 >
-    <div class="flex items-start gap-4">
+    <!-- Background Glow -->
+    <div
+        class="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 blur-[50px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+    ></div>
+
+    <div class="flex items-center gap-6 relative z-10">
         <!-- Progress Indicator -->
-        <GoalProgressRing {progress} {health} size="md" />
+        <div class="flex-shrink-0">
+            <GoalProgressRing {progress} {health} size="md" />
+        </div>
 
         <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="flex items-center gap-2 mb-1.5">
                 <span
-                    class="px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider {horizonColors[
-                        goal.horizon as keyof typeof horizonColors
-                    ]}"
+                    class="text-[9px] font-black uppercase tracking-[0.2em] text-muted"
                 >
-                    {goal.horizon}
+                    {goal.area}
                 </span>
-
-                {#if goal.priority === "high"}
-                    <Flag size={14} class="text-rose-500" />
-                {/if}
+                <div class="w-1 h-1 rounded-full bg-line"></div>
+                <span
+                    class="text-[9px] font-bold uppercase tracking-widest {goal.priority ===
+                    'high'
+                        ? 'text-rose-500'
+                        : 'text-muted/60'}"
+                >
+                    {goal.priority || "normal"}
+                </span>
             </div>
 
             <h3
-                class="text-white font-semibold truncate group-hover:text-primary transition-colors"
+                class="text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors truncate"
             >
                 {goal.title}
             </h3>
 
-            {#if goal.vision}
-                <p
-                    class="text-muted text-xs line-clamp-1 mt-1 font-serif italic"
+            {#if goal.targetDate}
+                <div
+                    class="flex items-center gap-1.5 mt-2 text-[10px] text-muted"
                 >
-                    "{goal.vision}"
-                </p>
-            {/if}
-
-            <div
-                class="flex items-center gap-4 mt-3 text-[10px] text-muted font-medium"
-            >
-                {#if goal.targetDate}
-                    <div class="flex items-center gap-1">
-                        <Calendar size={12} />
-                        <span
-                            >{new Date(
-                                goal.targetDate,
-                            ).toLocaleDateString()}</span
-                        >
-                    </div>
-                {/if}
-
-                <div class="flex items-center gap-1">
-                    <Target size={12} />
-                    <span>{goal.area}</span>
+                    <Calendar size={12} class="opacity-50" />
+                    <span class="font-medium"
+                        >Targets {new Date(goal.targetDate).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric", year: "numeric" },
+                        )}</span
+                    >
                 </div>
-            </div>
+            {/if}
         </div>
 
-        <div class="flex flex-col gap-2">
-            <button
-                class="p-2 text-muted/50 hover:text-white transition-colors"
-                onclick={(e) => {
-                    e.stopPropagation();
-                    onclick?.(goal);
-                }}
-            >
-                <ChevronRight size={20} />
-            </button>
-
+        <div class="flex items-center gap-3">
             {#if onFocus}
                 <button
-                    class="p-2 text-muted/50 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                    class="p-2.5 rounded-xl bg-surface border border-line text-muted hover:text-primary hover:border-primary/50 transition-all opacity-0 group-hover:opacity-100"
                     onclick={(e) => {
                         e.stopPropagation();
                         onFocus(goal.id);
                     }}
                     title="Focus on this mission"
                 >
-                    <Zap size={18} />
+                    <Zap size={16} />
                 </button>
             {/if}
+
+            <ChevronRight
+                size={20}
+                class="text-muted/30 group-hover:text-primary group-hover:translate-x-1 transition-all"
+            />
         </div>
     </div>
 
-    <!-- Health Label (Conditional) -->
+    <!-- Minimal Health Indicator -->
     {#if health !== "on-track"}
-        <div class="absolute -top-1 -right-1">
+        <div class="absolute top-0 left-0">
             <div
-                class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface border border-line text-[9px] font-bold {health ===
-                'stalled'
-                    ? 'text-rose-500'
-                    : 'text-amber-500'}"
-            >
-                <AlertCircle size={10} />
-                {health.toUpperCase()}
-            </div>
+                class="w-1.5 h-full {health === 'stalled'
+                    ? 'bg-rose-500'
+                    : 'bg-amber-500'} opacity-50"
+            ></div>
         </div>
     {/if}
 </div>

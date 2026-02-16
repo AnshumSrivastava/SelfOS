@@ -44,19 +44,25 @@
     }
 </script>
 
-<div class="space-y-4 {depth > 0 ? 'ml-8 border-l border-line pl-6 mt-4' : ''}">
+<div
+    class="space-y-4 {depth > 0
+        ? 'ml-8 border-l border-line/30 pl-6 mt-4'
+        : ''}"
+>
     {#each goals as goal (goal.id)}
         <div class="relative">
             <!-- Connector Line for Nesting -->
             {#if depth > 0}
-                <div class="absolute -left-6 top-8 w-6 h-[1px] bg-line"></div>
+                <div
+                    class="absolute -left-6 top-8 w-6 h-[1px] bg-line/30"
+                ></div>
             {/if}
 
             <div class="flex items-start gap-2">
                 {#if goalsStore.getGoalChildren(goal.id).length > 0}
                     <button
                         onclick={() => toggle(goal.id)}
-                        class="mt-4 p-1 rounded-md hover:bg-surface text-muted transition-colors"
+                        class="mt-4 p-1 rounded-md hover:bg-surface text-muted/50 hover:text-white transition-colors"
                     >
                         {#if expanded[goal.id]}
                             <ChevronDown size={16} />

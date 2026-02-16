@@ -79,22 +79,20 @@
     }
 </script>
 
-<div class="flex-1 overflow-y-auto p-6 space-y-10 custom-scrollbar">
-    <!-- 1. Top Recommended Action (The North Star) -->
-    {#if topAction}
-        <section class="relative" in:fade>
-            <div
-                class="bg-primary/5 border border-primary/20 rounded-[2rem] p-8 md:p-12 backdrop-blur-xl overflow-hidden group"
-            >
-                <!-- Abstract visual element -->
+<div class="flex-1 overflow-y-auto custom-scrollbar bg-background">
+    <div class="max-w-5xl mx-auto p-12 space-y-16">
+        <!-- 1. THE NORTH STAR (Recommended MOVE) -->
+        {#if topAction}
+            <section class="relative group" in:fade>
+                <!-- Cinematic Backdrop -->
                 <div
-                    class="absolute -right-20 -top-20 w-80 h-80 bg-primary/10 blur-[100px] rounded-full group-hover:bg-primary/20 transition-all duration-700"
+                    class="absolute inset-0 bg-primary/5 rounded-[3rem] border border-primary/10 transition-all duration-700 group-hover:bg-primary/10 group-hover:border-primary/20"
                 ></div>
 
                 <div
-                    class="flex flex-col md:flex-row items-center gap-10 relative"
+                    class="relative p-12 md:p-16 flex flex-col md:flex-row items-center gap-16"
                 >
-                    <div class="flex-shrink-0 relative">
+                    <div class="flex-shrink-0 relative scale-125 md:scale-150">
                         <GoalProgressRing
                             progress={goalsStore.getGoalProgress(
                                 topAction.goal.id,
@@ -105,178 +103,211 @@
                         <div
                             class="absolute inset-0 flex items-center justify-center"
                         >
-                            <Zap size={32} class="text-primary animate-pulse" />
+                            <Zap
+                                size={40}
+                                class="text-primary animate-pulse blur-[1px]"
+                            />
                         </div>
                     </div>
 
-                    <div class="flex-1 text-center md:text-left space-y-4">
-                        <div
-                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.2em]"
-                        >
-                            Next High-Impact MOVE
+                    <div class="flex-1 text-center md:text-left space-y-6">
+                        <div class="flex flex-col gap-2">
+                            <div
+                                class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.3em] w-fit mx-auto md:mx-0"
+                            >
+                                Strategic Focus
+                            </div>
+                            <h2
+                                class="text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.1]"
+                            >
+                                {topAction.task.title}
+                            </h2>
                         </div>
 
-                        <h2
-                            class="text-2xl md:text-4xl font-bold text-white tracking-tight leading-tight"
-                        >
-                            {topAction.task.title}
-                        </h2>
-
                         <div
-                            class="flex flex-wrap items-center justify-center md:justify-start gap-4"
+                            class="flex flex-wrap items-center justify-center md:justify-start gap-6"
                         >
-                            <span
-                                class="text-muted text-sm flex items-center gap-2"
-                            >
-                                <Archive size={14} />
-                                {topAction.goal.title}
-                            </span>
-                            {#if topAction.task.deadline}
-                                <span
-                                    class="bg-red-500/10 text-red-500 text-[10px] font-bold px-3 py-1 rounded-full border border-red-500/20 uppercase tracking-widest"
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-surface flex items-center justify-center border border-line"
                                 >
-                                    DUE SOON
-                                </span>
+                                    <Archive size={14} class="text-muted" />
+                                </div>
+                                <div
+                                    class="flex flex-col items-start leading-tight"
+                                >
+                                    <span
+                                        class="text-[9px] font-black text-muted uppercase tracking-widest"
+                                        >Target Objective</span
+                                    >
+                                    <span
+                                        class="text-sm font-bold text-white/80"
+                                        >{topAction.goal.title}</span
+                                    >
+                                </div>
+                            </div>
+
+                            {#if topAction.task.deadline}
+                                <div
+                                    class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20"
+                                >
+                                    <span
+                                        class="text-[10px] font-black text-rose-500 uppercase tracking-widest"
+                                        >Deadline: {new Date(
+                                            topAction.task.deadline,
+                                        ).toLocaleDateString()}</span
+                                    >
+                                </div>
                             {/if}
                         </div>
 
                         <div
-                            class="pt-6 flex flex-wrap items-center justify-center md:justify-start gap-4"
+                            class="pt-8 flex flex-wrap items-center justify-center md:justify-start gap-6"
                         >
                             <button
                                 onclick={() => completeTask(topAction.task.id)}
-                                class="btn-primary px-8 py-3 rounded-2xl flex items-center gap-3 group/btn"
+                                class="h-16 px-10 bg-primary text-black rounded-2xl flex items-center gap-4 group/btn shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                             >
-                                <span class="font-bold">EXECUTE NOW</span>
+                                <span
+                                    class="text-sm font-black uppercase tracking-[0.2em]"
+                                    >Execute Mission</span
+                                >
                                 <ArrowRight
-                                    size={18}
-                                    class="group-hover/btn:translate-x-1 transition-transform"
+                                    size={20}
+                                    class="group-hover/btn:translate-x-2 transition-transform"
                                 />
                             </button>
                             <button
-                                class="px-6 py-3 border border-line hover:border-white/20 rounded-2xl text-muted text-sm font-bold transition-all"
+                                class="h-16 px-8 border border-line hover:border-white/20 rounded-2xl text-muted text-xs font-black uppercase tracking-widest transition-all"
                             >
-                                Log Progress...
+                                Adjust Strategy
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    {/if}
+            </section>
+        {/if}
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <!-- 2. The Action Queue (Center Stream) -->
-        <div class="lg:col-span-8 space-y-6">
-            <div class="flex items-center justify-between px-2">
-                <h3
-                    class="text-xs font-black text-muted uppercase tracking-[0.2em] flex items-center gap-2"
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+            <!-- 2. Action Queue (Minimal List) -->
+            <div class="lg:col-span-7 space-y-8">
+                <div
+                    class="flex items-center justify-between border-b border-line pb-4"
                 >
-                    <Clock size={14} /> action queue
-                </h3>
-            </div>
-
-            <div class="space-y-3">
-                {#each remainingQueue as item (item.task.id)}
-                    <div
-                        class="bg-surface/30 border border-line/50 hover:border-line p-4 rounded-2xl flex items-center gap-4 transition-all group"
-                        in:fly={{ y: 20, delay: 100 }}
+                    <h3
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.3em] flex items-center gap-3"
                     >
-                        <button
-                            onclick={() => completeTask(item.task.id)}
-                            class="w-10 h-10 rounded-xl border border-line group-hover:border-primary flex items-center justify-center text-muted group-hover:text-primary transition-all active:scale-90"
-                        >
-                            <CheckCircle size={20} />
-                        </button>
+                        <Clock size={16} /> Sequence of Operations
+                    </h3>
+                    <span
+                        class="text-[10px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full"
+                        >{actionQueue.length} Pending</span
+                    >
+                </div>
 
-                        <div class="flex-1 min-w-0">
-                            <p
-                                class="text-[10px] font-bold text-muted uppercase tracking-wider mb-1 truncate"
+                <div class="space-y-4">
+                    {#each remainingQueue as item (item.task.id)}
+                        <div
+                            class="group bg-surface/20 hover:bg-surface/40 border border-transparent hover:border-line/50 p-5 rounded-[1.5rem] flex items-center gap-6 transition-all"
+                        >
+                            <button
+                                onclick={() => completeTask(item.task.id)}
+                                class="w-12 h-12 rounded-2xl bg-surface border border-line group-hover:border-primary flex items-center justify-center text-muted group-hover:text-primary transition-all active:scale-90"
                             >
-                                {item.goal.title}
-                            </p>
-                            <p
-                                class="text-sm font-medium text-white group-hover:text-primary transition-colors truncate"
+                                <CheckCircle size={22} />
+                            </button>
+
+                            <div class="flex-1 min-w-0">
+                                <span
+                                    class="text-[9px] font-black text-muted uppercase tracking-widest block mb-1"
+                                >
+                                    {item.goal.title}
+                                </span>
+                                <p
+                                    class="text-base font-bold text-white truncate group-hover:text-primary transition-colors"
+                                >
+                                    {item.task.title}
+                                </p>
+                            </div>
+
+                            <button
+                                class="opacity-0 group-hover:opacity-100 p-3 text-muted hover:text-white transition-all"
                             >
-                                {item.task.title}
+                                <Play size={18} />
+                            </button>
+                        </div>
+                    {/each}
+
+                    {#if actionQueue.length <= 1}
+                        <div
+                            class="py-20 text-center border-2 border-dashed border-line/30 rounded-[2rem]"
+                        >
+                            <p class="text-muted text-sm font-medium italic">
+                                Operational status clear. Strategic objectives
+                                maintained.
                             </p>
                         </div>
-
-                        {#if item.task.deadline}
-                            <div
-                                class="text-[10px] font-mono text-muted-foreground bg-surface px-2 py-1 rounded border border-line"
-                            >
-                                {new Date(
-                                    item.task.deadline,
-                                ).toLocaleDateString()}
-                            </div>
-                        {/if}
-
-                        <button
-                            class="opacity-0 group-hover:opacity-100 p-2 text-muted hover:text-white transition-opacity"
-                        >
-                            <Play size={16} />
-                        </button>
-                    </div>
-                {/each}
-
-                {#if actionQueue.length <= 1}
-                    <div
-                        class="py-12 text-center bg-surface/10 rounded-3xl border border-dashed border-line"
-                    >
-                        <p class="text-muted text-sm italic">
-                            Queue cleared. Great work on your evolution.
-                        </p>
-                    </div>
-                {/if}
+                    {/if}
+                </div>
             </div>
-        </div>
 
-        <!-- 3. Risk & Health Monitor (Right Sidebar) -->
-        <div class="lg:col-span-4 space-y-8">
-            <div class="space-y-6">
-                <h3
-                    class="text-xs font-black text-muted uppercase tracking-[0.2em] flex items-center gap-2 px-2"
+            <!-- 3. Health Monitor -->
+            <div class="lg:col-span-5 space-y-8">
+                <div
+                    class="flex items-center justify-between border-b border-line pb-4"
                 >
-                    <AlertTriangle size={14} /> Attention Required
-                </h3>
+                    <h3
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.3em] flex items-center gap-3"
+                    >
+                        <AlertTriangle size={16} /> Health Protocol
+                    </h3>
+                </div>
 
                 <div class="space-y-4">
                     {#each stalledGoals as goal (goal.id)}
                         <div
-                            class="card-subtle p-4 border-l-2 border-red-500/50 bg-red-500/5"
+                            class="bg-rose-500/5 border border-rose-500/10 p-6 rounded-[1.5rem] space-y-4"
                         >
-                            <p
-                                class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1"
+                            <div class="flex items-center justify-between">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-rose-500/10 text-[9px] font-black text-rose-500 uppercase tracking-widest"
+                                    >Critical Drift</span
+                                >
+                                <span class="text-[10px] font-medium text-muted"
+                                    >14+ Days Stalled</span
+                                >
+                            </div>
+                            <h4
+                                class="text-lg font-bold text-white leading-tight"
                             >
-                                Stalled
-                            </p>
-                            <h4 class="text-sm font-bold text-white mb-2">
                                 {goal.title}
                             </h4>
-                            <p class="text-xs text-muted leading-relaxed mb-4">
-                                No progress logged in over 14 days. This
-                                initiative is at risk of drift.
-                            </p>
                             <button
-                                class="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                                class="w-full py-3 bg-surface border border-line rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-primary/50 transition-all"
                             >
-                                Define Next Step →
+                                Define New Pulse →
                             </button>
                         </div>
                     {/each}
 
                     {#if stalledGoals.length === 0}
                         <div
-                            class="p-8 text-center bg-emerald-500/5 border border-emerald-500/10 rounded-2xl"
+                            class="bg-emerald-500/5 border border-emerald-500/10 p-8 rounded-[1.5rem] text-center"
                         >
-                            <p
-                                class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2"
+                            <div
+                                class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4"
                             >
-                                System Optimized
-                            </p>
+                                <CheckCircle
+                                    size={24}
+                                    class="text-emerald-500"
+                                />
+                            </div>
+                            <h4 class="text-white font-bold mb-2">
+                                Systems Nominal
+                            </h4>
                             <p class="text-xs text-muted">
-                                All active missions are maintaining momentum.
+                                All strategic initiatives are within operational
+                                parameters.
                             </p>
                         </div>
                     {/if}

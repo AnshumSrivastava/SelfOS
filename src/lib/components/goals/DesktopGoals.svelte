@@ -72,201 +72,198 @@
     ];
 </script>
 
-<div class="h-full flex overflow-hidden">
-    <!-- 1. LEFT PANE: Navigator -->
-    {#if leftPaneOpen}
-        <aside
-            class="w-80 flex-shrink-0 border-r border-line bg-surface/10 flex flex-col overflow-hidden"
-            in:slide={{ axis: "x" }}
-        >
+<div class="h-full flex flex-col overflow-hidden bg-background">
+    <!-- 1. UNIFIED HEADER -->
+    <header
+        class="h-20 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-md z-20"
+    >
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-3">
+                <div class="p-2 rounded-xl bg-primary/10 text-primary">
+                    <Target size={24} />
+                </div>
+                <h1 class="text-xl font-bold text-white tracking-tight">
+                    Vision
+                </h1>
+            </div>
+
+            <!-- Main Tabs -->
             <div
-                class="p-6 border-b border-line flex items-center justify-between"
+                class="flex bg-surface/50 p-1.5 rounded-2xl border border-line shadow-inner"
             >
-                <span
-                    class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
-                    >Goal Navigator</span
-                >
-                <button
-                    onclick={() => (leftPaneOpen = false)}
-                    class="text-muted hover:text-white"
-                >
-                    <PanelLeftClose size={16} />
-                </button>
+                {#each tabs as tab}
+                    <button
+                        onclick={() => onTabChange(tab.id as any)}
+                        class="px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 {activeTab ===
+                        tab.id
+                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
+                            : 'text-muted hover:text-white'}"
+                    >
+                        <tab.icon size={14} />
+                        {tab.label}
+                    </button>
+                {/each}
             </div>
+        </div>
 
-            <div class="p-4 space-y-4">
-                <div class="relative">
-                    <Search
-                        size={14}
-                        class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Search vision..."
-                        class="w-full bg-surface/50 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-muted/50 outline-none focus:border-primary/50"
-                    />
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    {#each tabs as tab}
-                        <button
-                            onclick={() => onTabChange(tab.id as any)}
-                            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {activeTab ===
-                            tab.id
-                                ? 'bg-primary/10 text-primary border border-primary/20'
-                                : 'text-muted hover:bg-surface border border-transparent'}"
-                        >
-                            <tab.icon
-                                size={18}
-                                class={activeTab === tab.id ? tab.color : ""}
-                            />
-                            <span
-                                class="font-bold text-xs uppercase tracking-widest"
-                                >{tab.label}</span
-                            >
-                        </button>
-                    {/each}
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
-                <GoalHierarchyTree
-                    horizon={filters.horizon}
-                    onGoalClick={(g) => (ux.selectedGoalId = g.id)}
+        <div class="flex items-center gap-4">
+            <div class="relative group hidden lg:block">
+                <Search
+                    size={14}
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary transition-colors"
+                />
+                <input
+                    type="text"
+                    placeholder="Search vision..."
+                    class="w-64 bg-surface/30 border border-line rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-muted/50 outline-none focus:border-primary/50 focus:bg-surface/50 transition-all"
                 />
             </div>
 
-            <div class="p-4 border-t border-line">
-                <button
-                    onclick={() => openGoalModal()}
-                    class="w-full flex items-center justify-center gap-2 py-3 bg-primary text-black rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-primary/10"
-                >
-                    <Plus size={18} />
-                    New Goal
-                </button>
-            </div>
-        </aside>
-    {:else}
-        <div class="p-4 border-r border-line flex flex-col bg-surface/10">
+            <div class="h-8 w-px bg-line mx-2"></div>
+
             <button
-                onclick={() => (leftPaneOpen = true)}
-                class="text-muted hover:text-white mb-4"
+                onclick={() => openGoalModal()}
+                class="flex items-center gap-2 px-6 py-2.5 bg-primary text-black rounded-xl font-bold active:scale-95 transition-all shadow-lg shadow-primary/10"
             >
-                <PanelLeftOpen size={18} />
+                <Plus size={18} />
+                <span class="text-xs uppercase tracking-widest">New Goal</span>
+            </button>
+
+            <button
+                onclick={() => (rightPaneOpen = !rightPaneOpen)}
+                class="p-2.5 rounded-xl border border-line text-muted hover:text-white hover:bg-surface transition-all"
+                title={rightPaneOpen ? "Close Context" : "Open Context"}
+            >
+                {#if rightPaneOpen}
+                    <PanelRightClose size={18} />
+                {:else}
+                    <PanelRightOpen size={18} />
+                {/if}
             </button>
         </div>
-    {/if}
+    </header>
 
-    <!-- 2. CENTER PANE: Work Area -->
-    <main
-        class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative"
-    >
-        <header
-            class="h-16 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-background/50 backdrop-blur-md z-10"
+    <div class="flex-1 flex overflow-hidden">
+        <!-- 2. MAIN WORKSPACE -->
+        <main
+            class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative"
         >
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-white capitalize">
-                    {activeTab}
-                </h1>
-                {#if activeTab === "plan"}
-                    <div
-                        class="flex bg-surface p-1 rounded-xl border border-line ml-4 shadow-inner"
-                    >
+            <!-- Sub-navigation for Plan view -->
+            {#if activeTab === "plan"}
+                <div
+                    class="h-14 flex-shrink-0 border-b border-line/30 flex items-center justify-between px-8 bg-surface/5"
+                >
+                    <GoalsFilters bind:filters />
+
+                    <div class="flex items-center gap-2">
                         <button
-                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
                             'tree'
-                                ? 'bg-primary text-black'
-                                : 'text-muted'}"
-                            onclick={() => (planViewMode = "tree")}>Tree</button
+                                ? 'text-primary'
+                                : ''}"
+                            onclick={() => (planViewMode = "tree")}
+                            title="Tree View"
                         >
+                            <Network size={18} />
+                        </button>
                         <button
-                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
                             'board'
-                                ? 'bg-primary text-black'
-                                : 'text-muted'}"
+                                ? 'text-primary'
+                                : ''}"
                             onclick={() => (planViewMode = "board")}
-                            >Board</button
+                            title="Board View"
                         >
+                            <Columns size={18} />
+                        </button>
                         <button
-                            class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all {planViewMode ===
+                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all {planViewMode ===
                             'roadmap'
-                                ? 'bg-primary text-black'
-                                : 'text-muted'}"
+                                ? 'text-primary'
+                                : ''}"
                             onclick={() => (planViewMode = "roadmap")}
-                            >Roadmap</button
+                            title="Roadmap View"
                         >
+                            <Map size={18} />
+                        </button>
+                        <div class="w-px h-4 bg-line mx-1"></div>
+                        <button
+                            onclick={() => (planViewMode = "importer")}
+                            class="p-2 rounded-lg text-muted hover:text-white hover:bg-surface transition-all"
+                            title="Import"
+                        >
+                            <Upload size={18} />
+                        </button>
+                    </div>
+                </div>
+            {:else if activeTab === "today"}
+                <div
+                    class="h-14 flex-shrink-0 border-b border-line/30 flex items-center px-8 bg-surface/5"
+                >
+                    <span
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                        >Prioritized Strategic Operations</span
+                    >
+                </div>
+            {/if}
+
+            <div class="flex-1 overflow-hidden flex flex-col">
+                {#if activeTab === "today"}
+                    <GoalsTodayView />
+                {:else if activeTab === "plan"}
+                    <div class="flex-1 overflow-auto custom-scrollbar">
+                        {#if planViewMode === "tree"}
+                            <div class="p-8 max-w-5xl mx-auto">
+                                <GoalHierarchyTree
+                                    horizon={filters.horizon}
+                                    onGoalClick={(g) =>
+                                        (ux.selectedGoalId = g.id)}
+                                />
+                            </div>
+                        {:else if planViewMode === "board"}
+                            <div class="h-full p-8">
+                                <GoalBoard
+                                    activeArea={filters.area}
+                                    focusedGoalId={ux.selectedGoalId}
+                                    onOpenModal={openGoalModal}
+                                />
+                            </div>
+                        {:else if planViewMode === "roadmap"}
+                            <div class="p-8">
+                                <GoalRoadmap />
+                            </div>
+                        {:else if planViewMode === "importer"}
+                            <div class="p-8 max-w-2xl mx-auto">
+                                <PlaylistImporter
+                                    onComplete={(id) => {
+                                        ux.selectedGoalId = id;
+                                        planViewMode = "tree";
+                                    }}
+                                />
+                            </div>
+                        {/if}
+                    </div>
+                {:else if activeTab === "review"}
+                    <div class="flex-1 overflow-auto custom-scrollbar p-8">
+                        <GoalsReviewView {filters} />
                     </div>
                 {/if}
             </div>
+        </main>
 
-            <div class="flex items-center gap-4">
-                {#if activeTab === "plan"}
-                    <button
-                        onclick={() => (planViewMode = "importer")}
-                        class="flex items-center gap-2 px-4 py-2 border border-line rounded-xl text-xs font-bold text-muted hover:text-white hover:bg-surface transition-all"
-                    >
-                        <Upload size={14} />
-                        Import
-                    </button>
-                {/if}
-                <button
-                    onclick={() => (rightPaneOpen = !rightPaneOpen)}
-                    class="text-muted hover:text-white ml-2"
-                >
-                    {#if rightPaneOpen}
-                        <PanelRightClose size={18} />
-                    {:else}
-                        <PanelRightOpen size={18} />
-                    {/if}
-                </button>
-            </div>
-        </header>
-
-        <!-- Filters Section -->
-        <GoalsFilters bind:filters />
-
-        <div class="flex-1 overflow-hidden flex flex-col">
-            {#if activeTab === "today"}
-                <GoalsTodayView />
-            {:else if activeTab === "plan"}
-                <div class="flex-1 overflow-auto p-8 custom-scrollbar">
-                    {#if planViewMode === "tree"}
-                        <GoalHierarchyTree
-                            horizon={filters.horizon}
-                            onGoalClick={(g) => (ux.selectedGoalId = g.id)}
-                        />
-                    {:else if planViewMode === "board"}
-                        <GoalBoard
-                            activeArea={filters.area}
-                            focusedGoalId={ux.selectedGoalId}
-                            onOpenModal={openGoalModal}
-                        />
-                    {:else if planViewMode === "roadmap"}
-                        <GoalRoadmap />
-                    {:else if planViewMode === "importer"}
-                        <PlaylistImporter
-                            onComplete={(id) => {
-                                ux.selectedGoalId = id;
-                                planViewMode = "tree";
-                            }}
-                        />
-                    {/if}
-                </div>
-            {:else if activeTab === "review"}
-                <GoalsReviewView {filters} />
-            {/if}
-        </div>
-    </main>
-
-    <!-- 3. RIGHT PANE: Context Panel -->
-    {#if rightPaneOpen}
-        <aside class="w-96 flex-shrink-0" in:slide={{ axis: "x" }}>
-            <GoalContextPanel
-                goalId={ux.selectedGoalId}
-                onEdit={openGoalModal}
-            />
-        </aside>
-    {/if}
+        <!-- 3. CONTEXT PANEL -->
+        {#if rightPaneOpen}
+            <aside
+                class="w-96 flex-shrink-0 border-l border-line bg-surface/5"
+                in:slide={{ axis: "x" }}
+            >
+                <GoalContextPanel
+                    goalId={ux.selectedGoalId}
+                    onEdit={openGoalModal}
+                />
+            </aside>
+        {/if}
+    </div>
 </div>
 
 <GoalModal
