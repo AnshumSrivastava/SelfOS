@@ -67,26 +67,47 @@ class DashboardStore {
         this.error = null;
 
         try {
-            console.log('[DashboardStore] Fetching data...');
-            const [decisions, risks, alerts, steps] = await Promise.all([
+            console.log('[DashboardStore] START: Fetching data from Supabase views...');
+
+            // 10-second timeout to avoid hanging UI
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Dashboard data request timed out (10s)")), 10000);
+            });
+
+            const mainFetchPromise = Promise.all([
                 supabase.from('v_today_decisions').select('*').order('score', { ascending: false }),
                 supabase.from('v_momentum_risks').select('*').order('streak', { ascending: false }),
-                supabase.from('v_finance_due_alerts').select('*').order('due_date', { ascending: true }),
+                supabase.from('v_finance_due_alerts').select('*').order('amount', { ascending: false }),
                 supabase.from('v_goal_next_steps').select('*')
             ]);
 
-            if (decisions.error) throw decisions.error;
-            if (risks.error) throw risks.error;
-            if (alerts.error) throw alerts.error;
-            if (steps.error) throw steps.error;
+            const [decisions, risks, alerts, steps] = await Promise.race([
+                mainFetchPromise,
+                timeoutPromise
+            ]) as any[];
+
+            // Log individual results for better debugging
+            console.log('[DashboardStore] Results received:', {
+                decisions: decisions?.data?.length || 0,
+                risks: risks?.data?.length || 0,
+                alerts: alerts?.data?.length || 0,
+                steps: steps?.data?.length || 0
+            });
+
+            if (decisions.error) throw new Error(`Today Decisions Error: ${decisions.error.message}`);
+            if (risks.error) throw new Error(`Momentum Risks Error: ${risks.error.message}`);
+            if (alerts.error) throw new Error(`Finance Alerts Error: ${alerts.error.message}`);
+            if (steps.error) throw new Error(`Goal Steps Error: ${steps.error.message}`);
 
             this.todayDecisions = decisions.data || [];
             this.momentumRisks = risks.data || [];
             this.financeAlerts = alerts.data || [];
             this.goalNextSteps = steps.data || [];
+
+            console.log('[DashboardStore] SUCCESS: All data successfully loaded.');
         } catch (e: any) {
-            console.error('Failed to fetch dashboard data:', e);
-            this.error = e.message || 'Unknown error occurred';
+            console.error('[DashboardStore] CRITICAL FAILURE:', e);
+            this.error = e.message || 'Unknown error occurred during focus initialization';
         } finally {
             this.loading = false;
         }

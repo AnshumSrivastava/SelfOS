@@ -19,6 +19,7 @@
     import GoalPulse from "./GoalPulse.svelte";
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
+    import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
 
     let showQuickCapture = $state(false);
     let now = new Date();
@@ -46,6 +47,28 @@
         onclick={() => (showQuickCapture = true)}
         ariaLabel="Quick Capture"
     />
+
+    {#if dashboardStore.error}
+        <div
+            class="mx-6 mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400"
+        >
+            <div class="flex items-center gap-3 mb-2">
+                <div
+                    class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
+                ></div>
+                <p class="text-xs font-bold uppercase tracking-widest">
+                    System Error
+                </p>
+            </div>
+            <p class="text-sm mb-3">{dashboardStore.error}</p>
+            <button
+                onclick={() => dashboardStore.fetchData()}
+                class="w-full py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+                Re-initialize Dashboard
+            </button>
+        </div>
+    {/if}
 
     <!-- Pinned Decision (Highest Impact) -->
     {#if dashboardStore.todayDecisions.length > 0}

@@ -65,7 +65,15 @@
 
   // Redirect logic
   $effect(() => {
+    console.log("[Layout] State:", {
+      authLoading: auth.loading,
+      isAuthenticated,
+      isAuthRoute,
+      showSplash,
+    });
+
     if (!auth.loading && !isAuthenticated && !isAuthRoute) {
+      console.log("[Layout] Redirecting to login");
       goto(`${base}/login`);
     }
     if (!auth.loading && isAuthenticated && isAuthRoute) {
