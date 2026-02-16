@@ -134,4 +134,9 @@
             opacity: 0.85;
         }
     }
+    @media (min-width: 768px) {
+        .content {
+            transform: scale(2.4);
+        }
+    }
 </style>

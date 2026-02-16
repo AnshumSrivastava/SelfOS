@@ -42,7 +42,10 @@
 
   // Use auth store state
   let isAuthenticated = $derived(auth.isAuthenticated || devBypass);
-  let isLoading = $derived(auth.loading);
+
+  // Combine auth loading with local minimum-duration loading
+  let localLoading = $state(true);
+  let isLoading = $derived(auth.loading || localLoading);
 
   // Tutorial auto-prompt logic
   $effect(() => {
@@ -159,7 +162,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isLoading}
-  <LoadingScreen bind:isLoading />
+  <LoadingScreen bind:isLoading={localLoading} />
 {:else if isAuthRoute}
   <!-- Auth pages (login/signup) - no layout, no guards -->
   {@render children()}
