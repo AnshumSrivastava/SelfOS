@@ -43,9 +43,12 @@
   // Use auth store state
   let isAuthenticated = $derived(auth.isAuthenticated || devBypass);
 
-  // Combine auth loading with local minimum-duration loading
+  // Local loading state managed by the LoadingScreen component
   let localLoading = $state(true);
-  let isLoading = $derived(auth.loading || localLoading);
+
+  // The app is "loading" if either auth is crucial and pending, OR the splash screen is still running
+  // We pass (!auth.loading) to LoadingScreen to tell it when it *can* finish
+  let showSplash = $derived(localLoading);
 
   // Tutorial auto-prompt logic
   $effect(() => {
@@ -161,16 +164,15 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#if isLoading}
+{#if showSplash}
   <LoadingScreen
     bind:isLoading={localLoading}
     dependenciesLoaded={!auth.loading}
   />
-{:else if isAuthRoute}
-  <!-- Auth pages (login/signup) - no layout, no guards -->
-  {@render children()}
-{:else if isAuthenticated}
-  <!-- Main app with smooth tab transition -->
+{/if}
+
+{#if !showSplash && isAuthenticated}
+  <!-- Main app content -->
   <div>
     <div class="md:hidden">
       <MobileLayout>
@@ -184,9 +186,11 @@
       </DesktopLayout>
     </div>
   </div>
-{:else}
-  <!-- Redirecting to login -->
-  <LoadingScreen isLoading={true} />
+{:else if !showSplash && !isAuthenticated && !isAuthRoute}
+  <!-- Content logic guides to login via effect, but we can show a placeholder or nothing -->
+  <!-- The goto() in the effect will handle the redirect -->
+{:else if !showSplash && isAuthRoute}
+  {@render children()}
 {/if}
 
 {#if focusStore.zenMode && !focusStore.sessionComplete}

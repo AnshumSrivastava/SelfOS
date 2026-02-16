@@ -32,11 +32,29 @@ class AuthStore {
             this.#loading = false;
             return;
         }
-        const { data: { session } } = await supabase.auth.getSession();
-        this.#session = session;
-        this.#user = session?.user ?? null;
-        this.#loading = false;
 
+        try {
+            // Create a timeout promise -> 5 seconds
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Auth initialization timed out')), 5000)
+            );
+
+            // Race supabase.auth.getSession against the timeout
+            const sessionPromise = supabase.auth.getSession();
+
+            const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+            this.#session = session;
+            this.#user = session?.user ?? null;
+        } catch (error) {
+            console.warn("[AuthStore] Initialization failed or timed out:", error);
+            this.#session = null;
+            this.#user = null;
+        } finally {
+            this.#loading = false;
+        }
+
+        // Set up listener for future changes
         supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
             this.#session = session;
             this.#user = session?.user ?? null;
