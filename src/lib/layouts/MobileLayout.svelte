@@ -7,21 +7,19 @@
 </script>
 
 <div
-    class="flex flex-col h-[100dvh] bg-black text-white font-sans overflow-hidden"
+    class="relative flex flex-col h-[100dvh] w-full bg-background text-foreground font-sans overflow-hidden"
 >
     {#if uiState.showChrome}
-        <!-- Top Padding/Header space -->
+        <!-- Top Padding/Header space is handled by the content spacing or the header itself now -->
     {/if}
 
     <main
-        class="flex-1 px-4 overflow-y-auto scrollbar-hide relative z-0 {uiState.showChrome
-            ? 'pt-4 pb-24'
-            : 'py-2'}"
-        style="padding-top: calc({uiState.showChrome
-            ? '1rem'
-            : '0.5rem'} + env(safe-area-inset-top)); padding-bottom: calc({uiState.showChrome
-            ? '6rem'
-            : '0.5rem'} + env(safe-area-inset-bottom));"
+        class="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-hide relative z-0 {uiState.showChrome
+            ? 'pb-24'
+            : ''}"
+        style="padding-bottom: calc({uiState.showChrome
+            ? '5rem'
+            : '0px'} + env(safe-area-inset-bottom));"
     >
         {@render children()}
     </main>

@@ -15,11 +15,13 @@
         Zap,
         Settings,
         Calendar,
+        HelpCircle,
     } from "lucide-svelte";
     import { fade, fly } from "svelte/transition";
     import { page } from "$app/stores";
     import { base } from "$app/paths";
     import { settings } from "$lib/stores/settings.svelte";
+    import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { goto } from "$app/navigation";
 
     let { isOpen = $bindable(false) } = $props();
@@ -196,12 +198,24 @@
                     {isEditing ? "Done" : "Customize Nav"}
                 </button>
             </div>
-            <button
-                onclick={() => (isOpen = false)}
-                class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all font-bold"
-            >
-                <X size={20} />
-            </button>
+            <div class="flex items-center gap-3">
+                <button
+                    class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all font-bold"
+                    onclick={() => {
+                        isOpen = false;
+                        tutorialStore.showHub = true;
+                    }}
+                    aria-label="Help & Tutorial"
+                >
+                    <HelpCircle size={20} />
+                </button>
+                <button
+                    onclick={() => (isOpen = false)}
+                    class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all font-bold"
+                >
+                    <X size={20} />
+                </button>
+            </div>
         </div>
 
         {#if isEditing}

@@ -15,13 +15,15 @@
 </script>
 
 <header
-    class="h-16 flex items-center justify-between px-6 sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-line"
+    class="h-14 flex items-center justify-between px-6 sticky top-0 z-40 bg-background/60 backdrop-blur-2xl border-b border-white/5"
 >
     <div class="flex flex-col">
         {#if title === "SelfOS"}
             <div class="flex items-center gap-2" in:fade>
-                <div class="w-1.5 h-6 bg-primary rounded-full"></div>
-                <span class="text-xl font-bold tracking-tight text-white"
+                <div
+                    class="w-1.5 h-5 bg-white rounded-full shadow-[0_0_10px_white]"
+                ></div>
+                <span class="text-lg font-bold tracking-tight text-white"
                     >SelfOS</span
                 >
             </div>
@@ -32,36 +34,31 @@
         {/if}
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1">
         {#if action}
             {@render action()}
         {/if}
 
         <button
             onclick={() => searchStore.open()}
-            class="p-2.5 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all"
+            class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
             aria-label="Open Search"
         >
-            <Search size={18} />
+            <Search size={20} />
         </button>
 
         <button
             onclick={() => (showNotifications = !showNotifications)}
-            class="p-2.5 rounded-xl bg-surface/50 border border-line/50 text-muted active:scale-95 transition-all relative"
+            class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:scale-95 transition-all relative"
             aria-label="Notifications"
         >
-            <Bell size={18} />
+            <Bell size={20} />
             {#if !tutorialStore.state.hasEverOpenedHub}
                 <span
-                    class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse"
+                    class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_var(--color-primary)]"
                 ></span>
             {/if}
         </button>
-
-        {#if showMenu}
-            <!-- Note: The main layout handles the menu visibility but we can trigger it here if needed -->
-            <!-- For now, we'll keep it consistent with the existing nav triggering the menu -->
-        {/if}
     </div>
 </header>
 
