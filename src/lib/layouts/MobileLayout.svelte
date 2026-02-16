@@ -14,12 +14,12 @@
     {/if}
 
     <main
-        class="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-hide relative z-0 {uiState.showChrome
+        class="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-hide relative z-0 touch-pan-y {uiState.showChrome
             ? 'pb-24'
             : ''}"
         style="padding-bottom: calc({uiState.showChrome
             ? '5rem'
-            : '0px'} + env(safe-area-inset-bottom));"
+            : '0px'} + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch;"
     >
         {@render children()}
     </main>

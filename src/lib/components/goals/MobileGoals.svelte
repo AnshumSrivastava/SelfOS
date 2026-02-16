@@ -29,6 +29,7 @@
     import GoalsReviewView from "./GoalsReviewView.svelte";
     import GoalHierarchyTree from "./GoalHierarchyTree.svelte";
     import { slide, fade, fly } from "svelte/transition";
+    import { swipe } from "$lib/utils/swipe";
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
         activeTab: "today" | "plan" | "review";
@@ -73,7 +74,6 @@
         { id: "Health", name: "Health", icon: Target, color: "text-red-500" },
     ];
 
-    // Filtered goals for Plan tab
     const goalsByArea = $derived(
         goalsStore.goals.filter(
             (g) =>
@@ -81,9 +81,22 @@
                 (filters.area === "All" || g.area === filters.area),
         ),
     );
+
+    function nextTab() {
+        if (activeTab === "today") onTabChange("plan");
+        else if (activeTab === "plan") onTabChange("review");
+    }
+
+    function prevTab() {
+        if (activeTab === "review") onTabChange("plan");
+        else if (activeTab === "plan") onTabChange("today");
+    }
 </script>
 
-<div class="h-full flex flex-col bg-background overflow-hidden relative">
+<div
+    class="h-full flex flex-col bg-background overflow-hidden relative"
+    use:swipe={{ onSwipeLeft: nextTab, onSwipeRight: prevTab }}
+>
     <!-- 1. Header Area -->
     <header
         class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line bg-background/80 backdrop-blur-xl z-20"
@@ -184,7 +197,7 @@
             </div>
         {:else if activeTab === "review"}
             <div class="flex-1 overflow-y-auto" in:fade>
-                <GoalsReviewView {filters} isMobile={true} />
+                <GoalsReviewView {filters} />
             </div>
         {/if}
     </main>
@@ -259,7 +272,8 @@
         </div>
     {/if}
 
-    <!-- 5. Global Filter Sheet -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     {#if showFilterSheet}
         <div
             class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"

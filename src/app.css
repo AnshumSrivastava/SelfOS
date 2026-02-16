@@ -131,6 +131,13 @@
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+
+    /* App-like behavior on mobile */
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
   }
 
   /* Force headers to inherit color unless explicitly overridden */
