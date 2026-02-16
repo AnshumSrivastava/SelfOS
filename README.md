@@ -17,6 +17,7 @@ SelfOS isn't just a productivity app; it's a philosophy of intentional living.
 * **Aesthetics**: High-end glassmorphism and motion-rich design for a calm digital environment.
 * **Efficiency**: Navigate your entire OS via global keyboard shortcuts.
 * **Modularity**: Choose the modules that fit your life using the built-in Feature Flags.
+* **📱 Mobile-First**: A premium, app-like experience with floating navigation, haptic-ready transitions, and slide-up system menus.
 
 ---
 
@@ -69,7 +70,8 @@ SelfOS leverages modern web primitives to ensure performance and reliability.
 
 ### Prerequisites
 
-- Node.js (v18+)
+* Node.js (v18+)
+
 * npm / pnpm / yarn
 
 ### Launching SelfOS
@@ -109,6 +111,7 @@ SelfOS leverages modern web primitives to ensure performance and reliability.
 src/
 ├── lib/
 │   ├── components/   # Atomic UI components & Feature modules
+│   │   ├── mobile/   # Specialized Mobile UI (Header, Nav, Menu)
 │   ├── stores/       # Svelte 5 Stores (LocalStore + Supabase sync)
 │   ├── tutorial/     # Interactive onboarding engine
 │   └── utils/        # Date formatting, math, and helpers

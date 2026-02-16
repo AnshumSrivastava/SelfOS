@@ -9,6 +9,8 @@ SelfOS follows a **Local-First** approach. All user data is stored within the br
 ### High-Level Layers
 
 1. **UI Layer (Svelte Components)**: Modular components built with Svelte 5.
+   - **Device Layouts**: The system detects screen size at the root and dynamically renders either `MobileLayout` or `DesktopLayout`.
+   - **Shared Components**: Core logic components are shared, while visual presentation is optimized for each platform (e.g., `MobileNav` vs `Sidebar`).
 2. **State Layer (Custom Stores)**: Svelte 5 Runes-based stores that manage reactive state.
 3. **Persistence Layer (LocalStore Wrapper)**: A thin abstraction over LocalStorage that handles JSON serialization and initial defaults.
 4. **Utilities Layer**: Pure functions for date manipulation, formatting, and data parsing.
