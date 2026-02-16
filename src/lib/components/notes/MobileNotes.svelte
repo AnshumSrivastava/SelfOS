@@ -13,6 +13,7 @@
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
     import { confirmState } from "$lib/stores/confirm.svelte";
+    import { generateUUID } from "$lib/utils/uuid";
 
     let searchQuery = $state("");
     let selectedTag = $state<string | null>(null);
@@ -42,7 +43,7 @@
 
     function createNote() {
         currentNote = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             title: "",
             content: "",
             tags: [],

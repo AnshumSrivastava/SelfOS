@@ -1,5 +1,7 @@
 import { supabase } from '$lib/supabaseClient';
 import { auth } from './auth.svelte';
+import { generateUUID } from '$lib/utils/uuid';
+import { toasts } from './toasts.svelte';
 
 export class SupabaseStore<T extends { id: string }> {
     #value = $state<T[]>([]);
@@ -125,7 +127,7 @@ export class SupabaseStore<T extends { id: string }> {
             return;
         }
 
-        const tempId = `temp-${crypto.randomUUID()}`;
+        const tempId = `temp-${generateUUID()}`;
         const previousValue = [...this.#value];
 
         // Optimistic update
@@ -285,7 +287,14 @@ export class SupabaseStore<T extends { id: string }> {
     }
 
     #handleError(operation: string, error: any) {
+        const message = error.message || "Unknown database error";
         this.#log(`Error during ${operation} on ${this.#tableName}`, error, 'error');
+
+        // Show user-facing toast for critical failures
+        if (operation !== 'fetch') {
+            toasts.error(`${this.#tableName.replace('_', ' ')} ${operation} failed: ${message}`);
+        }
+
         if (error.code === '42P01') {
             this.#log(`HINT: Table "${this.#tableName}" does not exist. Did you run the latest supabase_schema.sql?`, null, 'error');
         } else if (error.code === '23503') {

@@ -13,6 +13,7 @@
   import { auth } from "$lib/stores/auth.svelte";
   import SearchModal from "$lib/components/ui/SearchModal.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
+  import ToastContainer from "$lib/components/ui/ToastContainer.svelte";
   import LoadingScreen from "$lib/components/ui/LoadingScreen.svelte";
   import { tutorialStore } from "$lib/stores/tutorial.svelte";
   import { tutorialEngine } from "$lib/tutorial/engine";
@@ -288,3 +289,4 @@
 {/if}
 
 <TutorialProgressPill />
+<ToastContainer />

@@ -1,6 +1,7 @@
 import { SupabaseStore } from './supabaseStore.svelte';
 import { supabase } from '$lib/supabaseClient';
 import { auth } from './auth.svelte';
+import { generateUUID } from '$lib/utils/uuid';
 
 export type Habit = {
     id: string;
@@ -145,7 +146,7 @@ class HabitsStore {
             }
         } else {
             // Optimistic Add
-            const tempId = `temp-${crypto.randomUUID()}`;
+            const tempId = `temp-${generateUUID()}`;
             const optimisticCheckin: HabitCheckin = {
                 id: tempId,
                 habit_id: id,
