@@ -31,6 +31,11 @@
     }
 
     let fire: StreakFire;
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        habitsStore.init();
+    });
 </script>
 
 {#snippet headerAction()}

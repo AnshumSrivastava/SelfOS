@@ -24,6 +24,11 @@
         type JournalEntry,
     } from "$lib/stores/journal.svelte";
     import { uiState } from "$lib/stores/ui.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        journalStore.init();
+    });
 
     let view = $state("list"); // 'list' or 'edit'
     let editingEntry = $state<JournalEntry | null>(null);

@@ -10,6 +10,11 @@
         X,
     } from "lucide-svelte";
     import { financeStore } from "$lib/stores/finance.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        financeStore.init();
+    });
 
     function formatCurrency(amount: number) {
         return new Intl.NumberFormat("en-IN", {

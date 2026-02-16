@@ -19,6 +19,11 @@
     import UpdateStatsModal from "./UpdateStatsModal.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        fitnessStore.init();
+    });
 
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);

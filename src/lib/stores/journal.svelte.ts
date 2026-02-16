@@ -13,6 +13,10 @@ export type JournalEntry = {
 class JournalStore {
     private store = new SupabaseStore<JournalEntry>('journal_entries');
 
+    async init() {
+        await this.store.init();
+    }
+
     get entries() {
         return this.store.value;
     }

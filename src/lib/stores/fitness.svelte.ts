@@ -44,6 +44,16 @@ class FitnessStore {
     private goalsStore = new SupabaseStore<FitnessStats & { id: string }>('fitness_stats', { orderBy: 'updated_at' });
     private dailyStore = new SupabaseStore<DailyMetrics & { id: string }>('fitness_daily_metrics', { orderBy: 'date' });
 
+    async init() {
+        await Promise.all([
+            this.workoutsStore.init(),
+            this.weightStore.init(),
+            this.sleepStore.init(),
+            this.goalsStore.init(),
+            this.dailyStore.init()
+        ]);
+    }
+
     constructor() {
         syncStore.register('fitness_workouts', 'Workouts');
         syncStore.register('fitness_weight_logs', 'Weight History');

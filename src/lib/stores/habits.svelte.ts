@@ -44,19 +44,22 @@ class HabitsStore {
 
     constructor() {
         syncStore.register('habit_checkins', 'habit_checkins');
+    }
+
+    async init() {
+        await this.store.init();
         if (typeof window !== 'undefined') {
-            $effect.root(() => {
-                $effect(() => {
-                    if (!auth.loading) {
-                        if (auth.isAuthenticated) {
-                            this.#log(`Auth ready, fetching initial checkins...`);
+            if (auth.loading) {
+                $effect.root(() => {
+                    $effect(() => {
+                        if (!auth.loading && auth.isAuthenticated) {
                             this.fetchCheckins();
-                        } else {
-                            this.checkinsLoading = false;
                         }
-                    }
+                    });
                 });
-            });
+            } else if (auth.isAuthenticated) {
+                this.fetchCheckins();
+            }
         }
     }
 

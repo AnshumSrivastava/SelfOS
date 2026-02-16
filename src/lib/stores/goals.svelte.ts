@@ -38,6 +38,13 @@ class GoalsStore {
     private goalsStore = new SupabaseStore<Goal>('goals');
     private logsStore = new SupabaseStore<GoalLog>('goal_logs');
 
+    async init() {
+        await Promise.all([
+            this.goalsStore.init(),
+            this.logsStore.init()
+        ]);
+    }
+
     get goals() { return this.goalsStore.value; }
     get logs() { return this.logsStore.value; }
     get loading() { return this.goalsStore.loading || this.logsStore.loading; }

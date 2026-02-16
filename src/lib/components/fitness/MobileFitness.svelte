@@ -21,6 +21,10 @@
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
 
+    onMount(() => {
+        fitnessStore.init();
+    });
+
     let isLogWorkoutOpen = $state(false);
     let isUpdateStatsOpen = $state(false);
     let isLoading = $derived(fitnessStore.loading);

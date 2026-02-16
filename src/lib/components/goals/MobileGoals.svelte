@@ -32,6 +32,11 @@
     import { swipe } from "$lib/utils/swipe";
     import MobileHeader from "$lib/components/mobile/MobileHeader.svelte";
     import FloatingActionButton from "$lib/components/mobile/FloatingActionButton.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        goalsStore.init();
+    });
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
         activeTab: "today" | "plan" | "review";

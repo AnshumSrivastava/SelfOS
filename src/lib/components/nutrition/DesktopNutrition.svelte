@@ -17,6 +17,11 @@
     import MealPlanModal from "./MealPlanModal.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        nutritionStore.init();
+    });
 
     let isProfileOpen = $state(false);
     let isLogMealOpen = $state(false);

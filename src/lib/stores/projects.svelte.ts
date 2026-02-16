@@ -81,6 +81,14 @@ class ProjectsStore {
     private scratchpadStore = new SupabaseStore<ScratchpadEntry>('project_scratchpad');
     private resourcesStore = new SupabaseStore<ProjectResource>('project_resources');
 
+    async init() {
+        await Promise.all([
+            this.projectsStore.init(),
+            this.scratchpadStore.init(),
+            this.resourcesStore.init()
+        ]);
+    }
+
     constructor() {
         // Register internal stores with global sync syncStore
         syncStore.register('projects', 'Projects Core');

@@ -7,6 +7,11 @@
     } from "$lib/stores/journal.svelte";
     import { Sparkles } from "lucide-svelte";
     import { slide } from "svelte/transition";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        journalStore.init();
+    });
 
     let isWriting = $state(false);
     let selectedMood = $state<JournalEntry["mood"]>("Neutral");

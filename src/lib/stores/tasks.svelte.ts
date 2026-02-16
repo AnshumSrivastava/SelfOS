@@ -18,6 +18,10 @@ export type Task = {
 class TasksStore {
     private store = new SupabaseStore<Task>("tasks");
 
+    async init() {
+        await this.store.init();
+    }
+
     #log(message: string, data?: any, level: 'info' | 'error' | 'warn' = 'info') {
         const timestamp = new Date().toISOString();
         const status = level.toUpperCase();

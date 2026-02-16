@@ -19,6 +19,10 @@
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
 
+    onMount(() => {
+        nutritionStore.init();
+    });
+
     let isProfileOpen = $state(false);
     let isLogMealOpen = $state(false);
     let isLoading = $derived(nutritionStore.loading);

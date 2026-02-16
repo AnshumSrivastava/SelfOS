@@ -19,6 +19,11 @@
     import { settings } from "$lib/stores/settings.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import HistoryGrid from "./HistoryGrid.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        habitsStore.init();
+    });
 
     const isMinimal = $derived(settings.theme === "minimal");
 
@@ -321,7 +326,7 @@
             >
                 <h3 class="text-white mb-8 flex items-center gap-3">
                     <div class="w-1 h-5 bg-primary rounded-full"></div>
-                     Performance
+                    Performance
                 </h3>
 
                 <div class="grid grid-cols-2 gap-[var(--space-2)]">

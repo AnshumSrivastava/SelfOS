@@ -59,6 +59,16 @@ class FinanceStore {
     private investmentsStore = new SupabaseStore<Investment>('finance_investments');
     private remindersStore = new SupabaseStore<Reminder>('finance_reminders');
 
+    async init() {
+        await Promise.all([
+            this.transactionsStore.init(),
+            this.budgetsStore.init(),
+            this.goalsStore.init(),
+            this.investmentsStore.init(),
+            this.remindersStore.init()
+        ]);
+    }
+
     get transactions() { return this.transactionsStore.value; }
     get budgets() { return this.budgetsStore.value; }
     get goals() { return this.goalsStore.value; }

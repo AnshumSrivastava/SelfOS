@@ -16,6 +16,10 @@ export type Note = {
 class NotesStore {
     private store = new SupabaseStore<Note>('notes');
 
+    async init() {
+        await this.store.init();
+    }
+
     constructor() {
         syncStore.register('notes', 'Knowledge Notes');
     }

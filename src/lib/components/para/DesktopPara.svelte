@@ -1,12 +1,11 @@
 <script lang="ts">
     import { projectsStore } from "$lib/stores/projects.svelte";
-    import { uiState } from "$lib/stores/ui.svelte";
+    import { onMount } from "svelte";
     import type { Project } from "$lib/stores/projects.svelte";
     import ProjectDetailModal from "./ProjectDetailModal.svelte";
     import ParaKanbanColumn from "./ParaKanbanColumn.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
-    import { Activity } from "lucide-svelte";
 
     let selectedProject: Project | null = $state(null);
 

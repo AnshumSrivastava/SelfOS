@@ -51,9 +51,26 @@
   // We pass (!auth.loading) to LoadingScreen to tell it when it *can* finish
   let showSplash = $derived(localLoading);
 
+  // Session storage check for splash
+  onMount(() => {
+    const hasBooted = sessionStorage.getItem("selfos_booted");
+    if (hasBooted) {
+      localLoading = false;
+    } else {
+      // First boot, wait for loading screen
+      if (!auth.loading && isAuthenticated) {
+        sessionStorage.setItem("selfos_booted", "1");
+      }
+    }
+  });
+
   // Tutorial auto-prompt logic
   $effect(() => {
     if (!auth.loading && isAuthenticated) {
+      if (localLoading) {
+        sessionStorage.setItem("selfos_booted", "1");
+      }
+
       const status = tutorialStore.currentPlatformStatus;
       if (!status.firstPromptSeen && !tutorialEngine.isRunning) {
         // Small delay to ensure everything else is loaded

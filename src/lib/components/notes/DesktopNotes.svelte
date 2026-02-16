@@ -13,10 +13,19 @@
     import { confirmState } from "$lib/stores/confirm.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
+    import { onMount } from "svelte";
 
     let selectedFilter = $state("All");
     let searchQuery = $state("");
     let isModalOpen = $state(false);
+    let selectedNoteId = $state<string | null>(null);
+    let isEditing = $state(false);
+
+    let isLoading = $derived(notesStore.loading);
+
+    onMount(() => {
+        notesStore.init();
+    });
     let currentNote = $state<Note | null>(null);
 
     let filters = $derived(notesStore.allTags);

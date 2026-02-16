@@ -1,6 +1,11 @@
 <script lang="ts">
     import StatCard from "$lib/components/ui/StatCard.svelte";
     import { financeStore } from "$lib/stores/finance.svelte";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        financeStore.init();
+    });
     import {
         Wallet,
         TrendingUp,

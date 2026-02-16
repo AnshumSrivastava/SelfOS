@@ -16,11 +16,19 @@
         Loader2,
         Check,
     } from "lucide-svelte";
+    import { onMount } from "svelte";
     import { tasksStore } from "$lib/stores/tasks.svelte";
     import { projectsStore } from "$lib/stores/projects.svelte";
     import { fade, slide } from "svelte/transition";
     import TaskCard from "./QuestCard.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+
+    let isLoading = $derived(tasksStore.loading);
+    let tasks = $derived(tasksStore.tasks);
+
+    onMount(() => {
+        tasksStore.init();
+    });
 
     let filter = $state("all");
     let isAdding = $state(false);

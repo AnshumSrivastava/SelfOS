@@ -40,6 +40,13 @@ class NutritionStore {
     private mealsStore = new SupabaseStore<Meal>('nutrition_meals');
     private settingsStore = new SupabaseStore<NutritionSettings & { id: string }>('nutrition_settings', { orderBy: 'last_reset' });
 
+    async init() {
+        await Promise.all([
+            this.mealsStore.init(),
+            this.settingsStore.init()
+        ]);
+    }
+
     constructor() {
         syncStore.register('nutrition_meals', 'Nutrition Log');
         syncStore.register('nutrition_settings', 'Nutrition Engine');

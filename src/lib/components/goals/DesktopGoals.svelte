@@ -33,6 +33,11 @@
     import GoalsReviewView from "./GoalsReviewView.svelte";
     import GoalContextPanel from "./GoalContextPanel.svelte";
     import { fade, slide } from "svelte/transition";
+    import { onMount } from "svelte";
+
+    onMount(() => {
+        goalsStore.init();
+    });
 
     let { activeTab, onTabChange, filters, selectedGoalId } = $props<{
         activeTab: "today" | "plan" | "review";
