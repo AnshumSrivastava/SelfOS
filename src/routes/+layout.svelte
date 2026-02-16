@@ -162,7 +162,10 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isLoading}
-  <LoadingScreen bind:isLoading={localLoading} />
+  <LoadingScreen
+    bind:isLoading={localLoading}
+    dependenciesLoaded={!auth.loading}
+  />
 {:else if isAuthRoute}
   <!-- Auth pages (login/signup) - no layout, no guards -->
   {@render children()}

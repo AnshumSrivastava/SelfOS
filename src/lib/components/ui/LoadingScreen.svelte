@@ -1,142 +1,123 @@
 <script lang="ts">
-    import { fade } from "svelte/transition";
+    import { fade, fly } from "svelte/transition";
     import { cubicOut } from "svelte/easing";
-    import { onMount } from "svelte";
     import Logo from "./Logo.svelte";
-    import { settings } from "$lib/stores/settings.svelte";
 
-    let { isLoading = $bindable(true) } = $props();
+    let { isLoading = $bindable(true), dependenciesLoaded = false } = $props<{
+        isLoading: boolean;
+        dependenciesLoaded: boolean;
+    }>();
 
-    let statusIndex = $state(0);
-    const statuses = ["Initializing...", "Ready"];
+    let statusText = $state("INITIALIZING");
+    let progress = $state(0);
+
+    // Minimum display time to prevent flickering
+    let minTimeElapsed = $state(false);
 
     $effect(() => {
         if (isLoading) {
-            const timer = setTimeout(() => {
-                statusIndex = 1;
-                const exitTimer = setTimeout(() => {
-                    isLoading = false;
-                }, 800);
-                return () => clearTimeout(exitTimer);
-            }, 1200);
-            return () => clearTimeout(timer);
+            // Start progress animation
+            const progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 5;
+                }
+            }, 100);
+
+            // Enforce minimum time
+            const minTimer = setTimeout(() => {
+                minTimeElapsed = true;
+            }, 1500);
+
+            return () => {
+                clearInterval(progressInterval);
+                clearTimeout(minTimer);
+            };
         }
     });
 
-    let colors = $derived.by(() => {
-        // Pure luminance contrast only
-        if (settings.theme === "light") {
-            return {
-                bg: "#FFFFFF",
-                logo: "#0A0A0A",
-                text: "#222222",
-                secondary: "#666666",
-            };
-        } else {
-            return {
-                bg: "#0A0A0A",
-                logo: "#FFFFFF",
-                text: "#EDEDED",
-                secondary: "#8A8A8A",
-            };
+    // Watch for completion conditions
+    $effect(() => {
+        if (minTimeElapsed && dependenciesLoaded && isLoading) {
+            progress = 100;
+            statusText = "READY";
+
+            // Short delay to show 100% and Ready state
+            const finishTimer = setTimeout(() => {
+                isLoading = false;
+            }, 500);
+
+            return () => clearTimeout(finishTimer);
         }
     });
 </script>
 
 {#if isLoading}
     <div
-        class="loading-screen"
-        style="background-color: {colors.bg};"
-        transition:fade={{ duration: 400, easing: cubicOut }}
+        class="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center p-8 cursor-wait"
+        transition:fade={{ duration: 800, easing: cubicOut }}
     >
-        <div class="content">
-            <div class="logo-container" style="color: {colors.logo};">
-                <Logo size={120} />
+        <div
+            class="flex flex-col items-center gap-12 md:scale-[2.4] transition-transform duration-500"
+        >
+            <!-- Logo with Pulse -->
+            <div class="relative">
+                <div
+                    class="absolute inset-0 bg-white/5 blur-3xl rounded-full animate-pulse-slow"
+                ></div>
+                <div
+                    class="relative text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                >
+                    <Logo size={80} />
+                </div>
             </div>
 
-            <div class="brand">
-                <h1 class="title" style="color: {colors.text};">SelfOS</h1>
-                <p class="status" style="color: {colors.secondary};">
-                    {statuses[statusIndex]}
-                </p>
+            <!-- Typography & Status -->
+            <div class="flex flex-col items-center gap-6">
+                <h1
+                    class="text-3xl font-light text-white tracking-[0.3em] uppercase"
+                >
+                    SelfOS
+                </h1>
+
+                <div class="flex flex-col items-center gap-3 w-48">
+                    <!-- Progress Bar -->
+                    <div
+                        class="w-full h-[2px] bg-white/10 rounded-full overflow-hidden"
+                    >
+                        <div
+                            class="h-full bg-white transition-all duration-300 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                            style="width: {progress}%"
+                        ></div>
+                    </div>
+
+                    <div
+                        class="h-4 overflow-hidden relative w-full flex justify-center"
+                    >
+                        {#key statusText}
+                            <span
+                                class="text-[10px] font-bold text-white/50 uppercase tracking-[0.3em] absolute"
+                                in:fly={{ y: 10, duration: 300, delay: 150 }}
+                                out:fly={{ y: -10, duration: 300 }}
+                            >
+                                {statusText}
+                            </span>
+                        {/key}
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- Footer / Version -->
+        <div
+            class="absolute bottom-12 text-[10px] font-mono text-white/20 tracking-widest uppercase"
+        >
+            v2.0 // System Active
         </div>
     </div>
 {/if}
 
 <style>
-    .loading-screen {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-        transition: background-color 0.3s ease;
-    }
-
-    .content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .logo-container {
-        margin-bottom: 32px; /* Increased from 24px */
-        animation: fadeIn 0.3s ease-out forwards;
-    }
-
-    .brand {
-        display: flex;
-        flex-direction: column;
-        gap: 16px; /* Increased from 12px */
-    }
-
-    .title {
-        font-family: "Roboto", sans-serif;
-        font-size: 2.5rem; /* Increased from 1.5rem */
-        font-weight: 500;
-        letter-spacing: 0.04em;
-        line-height: 1.2;
-        margin: 0;
-        text-transform: uppercase;
-    }
-
-    .status {
-        font-family: "Roboto", sans-serif;
-        font-size: 1.125rem; /* Increased from 0.875rem */
-        font-weight: 400;
-        letter-spacing: 0.02em;
-        line-height: 1.3;
-        margin: 0;
-        opacity: 1;
-        animation: breathe 2.4s ease-in-out infinite;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    @keyframes breathe {
-        0%,
-        100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.85;
-        }
-    }
-    @media (min-width: 768px) {
-        .content {
-            transform: scale(2.4);
-        }
+    :global(body) {
+        background-color: #000; /* Prevent flash of white during load */
     }
 </style>
