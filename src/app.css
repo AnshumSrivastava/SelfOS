@@ -132,12 +132,10 @@
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
 
-    /* App-like behavior on mobile */
-    height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
-    position: fixed;
+    /* Allow native mobile browser behaviors */
+    min-height: 100dvh;
     width: 100%;
+    margin: 0;
   }
 
   /* Force headers to inherit color unless explicitly overridden */

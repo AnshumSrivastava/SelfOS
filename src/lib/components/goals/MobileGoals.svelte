@@ -94,12 +94,12 @@
 </script>
 
 <div
-    class="h-full flex flex-col bg-background overflow-hidden relative"
+    class="flex flex-col bg-background relative"
     use:swipe={{ onSwipeLeft: nextTab, onSwipeRight: prevTab }}
 >
     <!-- 1. Header Area -->
     <header
-        class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line bg-background/80 backdrop-blur-xl z-20"
+        class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line bg-background/80 backdrop-blur-xl sticky top-0 z-20"
     >
         <div class="flex flex-col">
             <span
@@ -132,13 +132,13 @@
     </header>
 
     <!-- 2. Main Content -->
-    <main class="flex-1 overflow-hidden flex flex-col pt-2">
+    <main class="flex flex-col pt-2">
         {#if activeTab === "today"}
-            <div class="flex-1 overflow-y-auto" in:fade>
+            <div in:fade>
                 <GoalsTodayView isMobile={true} />
             </div>
         {:else if activeTab === "plan"}
-            <div class="flex-1 overflow-y-auto p-4 space-y-6" in:fade>
+            <div class="p-4 space-y-6" in:fade>
                 <!-- Area Chips -->
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     {#each ["All", "Professional", "Personal", "Health", "Family", "Fun"] as area}
@@ -196,7 +196,7 @@
                 </div>
             </div>
         {:else if activeTab === "review"}
-            <div class="flex-1 overflow-y-auto" in:fade>
+            <div in:fade>
                 <GoalsReviewView {filters} />
             </div>
         {/if}
