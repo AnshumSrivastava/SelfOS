@@ -17,11 +17,10 @@
         Calendar,
         HelpCircle,
     } from "lucide-svelte";
-    import { fade, fly } from "svelte/transition";
+    import { fade, fly, slide } from "svelte/transition";
     import { page } from "$app/stores";
     import { base } from "$app/paths";
     import { settings } from "$lib/stores/settings.svelte";
-    import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { goto } from "$app/navigation";
 
     let { isOpen = $bindable(false) } = $props();
@@ -42,8 +41,8 @@
                     name: "Tasks",
                     icon: CheckSquare,
                     href: `${base}/tasks`,
-                    color: "text-[var(--color-primary)]",
-                    bg: "bg-[var(--color-primary)]/10",
+                    color: "text-primary",
+                    bg: "bg-primary/10",
                     key: "tasks",
                 },
                 {
@@ -73,7 +72,7 @@
             ],
         },
         {
-            name: "Growth & Knowledge",
+            name: "PARA / Knowledge",
             links: [
                 {
                     name: "Projects",
@@ -148,8 +147,8 @@
                     name: "Settings",
                     icon: Settings,
                     href: `${base}/settings`,
-                    color: "text-[var(--color-muted)]",
-                    bg: "bg-[var(--color-line)]/50",
+                    color: "text-muted",
+                    bg: "bg-line/50",
                     key: "settings",
                 },
             ],
@@ -157,6 +156,18 @@
     ];
 
     let isEditing = $state(false);
+
+    const pinnedLinks = $derived.by(() => {
+        const pinned: any[] = [];
+        categories.forEach((cat) => {
+            cat.links.forEach((link) => {
+                if (settings.mobileNavItems.includes(link.key)) {
+                    pinned.push(link);
+                }
+            });
+        });
+        return pinned;
+    });
 
     function togglePin(key: string) {
         if (settings.mobileNavItems.includes(key)) {
@@ -176,126 +187,148 @@
 </script>
 
 {#if isOpen}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="fixed inset-0 z-[60] flex flex-col bg-[var(--color-background)]"
+        class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
         transition:fade={{ duration: 200 }}
+        onclick={() => (isOpen = false)}
     >
-        <!-- Header -->
         <div
-            class="flex items-center justify-between px-6 py-6 border-b border-[var(--color-line)]/50"
+            class="absolute bottom-0 left-0 right-0 bg-background border-t border-line rounded-t-[2.5rem] flex flex-col max-h-[90dvh] shadow-2xl overflow-hidden"
+            transition:fly={{ y: "100%", duration: 400, opacity: 1 }}
+            onclick={(e) => e.stopPropagation()}
         >
-            <div class="flex items-center gap-4">
-                <span
-                    class="text-xl font-bold tracking-tight text-[var(--color-text)]"
-                    >Menu</span
-                >
-                <button
-                    onclick={() => (isEditing = !isEditing)}
-                    class="text-[10px] px-3 py-1 rounded-full bg-[var(--color-line)] text-[var(--color-muted)] font-bold uppercase tracking-widest transition-all {isEditing
-                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 ring-1 ring-[var(--color-primary)]/20 shadow-[0_0_12px_var(--color-primary)]/10'
-                        : ''}"
-                >
-                    {isEditing ? "Done" : "Customize Nav"}
-                </button>
-            </div>
-            <div class="flex items-center gap-3">
-                <button
-                    class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all font-bold"
-                    onclick={() => {
-                        isOpen = false;
-                        tutorialStore.showHub = true;
-                    }}
-                    aria-label="Help & Tutorial"
-                >
-                    <HelpCircle size={20} />
-                </button>
-                <button
-                    onclick={() => (isOpen = false)}
-                    class="w-10 h-10 rounded-full bg-[var(--color-line)]/30 text-[var(--color-text)] flex items-center justify-center hover:bg-[var(--color-line)]/50 active:scale-90 transition-all font-bold"
-                >
-                    <X size={20} />
-                </button>
-            </div>
-        </div>
-
-        {#if isEditing}
-            <div
-                class="px-6 py-3 bg-[var(--color-primary)]/5 border-b border-[var(--color-primary)]/10"
-            >
-                <p
-                    class="text-[10px] text-[var(--color-primary)]/70 text-center font-bold uppercase tracking-widest"
-                >
-                    Select up to 4 items to pin to the bottom bar ({settings
-                        .mobileNavItems.length}/4)
-                </p>
-            </div>
-        {/if}
-
-        <!-- Menu Container -->
-        <div class="flex-1 overflow-y-auto px-6 py-8 pb-32 space-y-10">
-            {#each categories as category}
-                <div class="space-y-4">
-                    <h3
-                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted flex items-center gap-3"
+            <!-- Drag Handle / Header -->
+            <div class="pt-3 pb-6 flex flex-col items-center gap-3">
+                <div class="w-12 h-1.5 bg-line/50 rounded-full"></div>
+                <div class="w-full px-8 flex items-center justify-between">
+                    <span class="text-xl font-bold tracking-tight text-white"
+                        >System Menu</span
                     >
-                        {category.name}
-                        <div class="flex-1 h-px bg-line/30"></div>
-                    </h3>
+                    <button
+                        onclick={() => (isEditing = !isEditing)}
+                        class="text-[10px] px-4 py-2 rounded-full font-bold uppercase tracking-widest transition-all {isEditing
+                            ? 'bg-primary text-black'
+                            : 'bg-surface text-muted'}"
+                    >
+                        {isEditing ? "Done" : "Customize"}
+                    </button>
+                </div>
+            </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        {#each category.links.filter( (l) => isFeatureEnabled(l.key), ) as link}
-                            {@const isActive =
-                                link.href === `${base}/`
-                                    ? $page.url.pathname === link.href
-                                    : $page.url.pathname.startsWith(link.href)}
-                            {@const isPinned = settings.mobileNavItems.includes(
-                                link.key,
-                            )}
-
-                            <button
-                                onclick={() => {
-                                    if (isEditing) {
-                                        togglePin(link.key);
-                                    } else {
+            <div
+                class="flex-1 overflow-y-auto px-8 pb-12 space-y-10 scrollbar-hide"
+            >
+                {#if pinnedLinks.length > 0 && !isEditing}
+                    <div in:slide class="space-y-4">
+                        <h3
+                            class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
+                        >
+                            Pinned Rituals
+                        </h3>
+                        <div class="grid grid-cols-4 gap-4">
+                            {#each pinnedLinks as link}
+                                <button
+                                    onclick={() => {
                                         isOpen = false;
                                         goto(link.href);
-                                    }
-                                }}
-                                class="relative flex items-center gap-4 p-4 rounded-2xl border border-[var(--color-line)]/50 bg-[var(--theme-surface)]/50 active:scale-[0.96] transition-all cursor-pointer backdrop-blur-sm group
-                                {isActive
-                                    ? 'ring-1 ring-[var(--color-primary)]/50 bg-[var(--color-primary)]/5 border-transparent'
-                                    : ''}
-                                {isEditing && isPinned
-                                    ? 'ring-2 ring-[var(--color-primary)] bg-[var(--color-primary)]/5 border-transparent'
-                                    : ''}
-                                {isEditing && !isPinned
-                                    ? 'opacity-40 grayscale-[0.5]'
-                                    : ''}"
-                            >
-                                {#if isEditing && isPinned}
+                                    }}
+                                    class="flex flex-col items-center gap-2 group"
+                                >
                                     <div
-                                        class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[var(--color-primary)] border-2 border-[var(--color-background)] shadow-[0_0_8px_var(--color-primary)]"
-                                    ></div>
-                                {/if}
-
-                                <div
-                                    class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
-                                >
-                                    <link.icon
-                                        size={20}
-                                        strokeWidth={isActive ? 2.5 : 2}
-                                    />
-                                </div>
-                                <span
-                                    class="text-xs font-bold tracking-tight text-[var(--color-text)]"
-                                >
-                                    {link.name}
-                                </span>
-                            </button>
-                        {/each}
+                                        class="w-14 h-14 rounded-2xl {link.bg} {link.color} flex items-center justify-center group-active:scale-90 transition-all shadow-lg active:shadow-none"
+                                    >
+                                        <link.icon size={24} />
+                                    </div>
+                                    <span
+                                        class="text-[9px] font-bold text-muted truncate w-full text-center uppercase tracking-wide"
+                                        >{link.name}</span
+                                    >
+                                </button>
+                            {/each}
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/if}
+
+                {#each categories as category}
+                    <div class="space-y-4">
+                        <h3
+                            class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted flex items-center gap-3"
+                        >
+                            {category.name}
+                            <div class="flex-1 h-px bg-line/30"></div>
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            {#each category.links.filter( (l) => isFeatureEnabled(l.key), ) as link}
+                                {@const isActive =
+                                    link.href === `${base}/`
+                                        ? $page.url.pathname === link.href
+                                        : $page.url.pathname.startsWith(
+                                              link.href,
+                                          )}
+                                {@const isPinned =
+                                    settings.mobileNavItems.includes(link.key)}
+
+                                <button
+                                    onclick={() => {
+                                        if (isEditing) {
+                                            togglePin(link.key);
+                                        } else {
+                                            isOpen = false;
+                                            goto(link.href);
+                                        }
+                                    }}
+                                    class="relative flex items-center gap-4 p-4 rounded-2xl border border-line bg-surface/30 active:scale-[0.96] transition-all group overflow-hidden
+                                    {isActive
+                                        ? 'ring-1 ring-primary/50 bg-primary/5'
+                                        : ''}
+                                    {isEditing && isPinned
+                                        ? 'ring-2 ring-primary bg-primary/10'
+                                        : ''}"
+                                >
+                                    <div
+                                        class="w-10 h-10 rounded-xl {link.bg} {link.color} flex items-center justify-center transition-all group-active:scale-90"
+                                    >
+                                        <link.icon size={20} />
+                                    </div>
+                                    <span
+                                        class="text-xs font-bold text-white line-clamp-1"
+                                        >{link.name}</span
+                                    >
+
+                                    {#if isEditing}
+                                        <div class="ml-auto">
+                                            <div
+                                                class="w-5 h-5 rounded-full border-2 {isPinned
+                                                    ? 'bg-primary border-primary'
+                                                    : 'border-line'} flex items-center justify-center transition-all"
+                                            >
+                                                {#if isPinned}
+                                                    <div
+                                                        class="w-2 h-2 bg-black rounded-full"
+                                                    ></div>
+                                                {/if}
+                                            </div>
+                                        </div>
+                                    {/if}
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                {/each}
+            </div>
         </div>
     </div>
 {/if}
+
+<style>
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>

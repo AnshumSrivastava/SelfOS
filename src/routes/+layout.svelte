@@ -33,13 +33,20 @@
       $page.url.pathname.startsWith(`${base}/auth/callback`),
   );
 
+  // Dev bypass for easier QA
+  const isDev = import.meta.env.DEV;
+  const devBypass =
+    isDev &&
+    (import.meta.env.VITE_DEV_BYPASS === "true" ||
+      !!localStorage.getItem("dev-bypass"));
+
   // Use auth store state
-  let isAuthenticated = $derived(auth.isAuthenticated);
+  let isAuthenticated = $derived(auth.isAuthenticated || devBypass);
   let isLoading = $derived(auth.loading);
 
   // Tutorial auto-prompt logic
   $effect(() => {
-    if (!auth.loading && auth.isAuthenticated) {
+    if (!auth.loading && isAuthenticated) {
       const status = tutorialStore.currentPlatformStatus;
       if (!status.firstPromptSeen && !tutorialEngine.isRunning) {
         // Small delay to ensure everything else is loaded
@@ -52,10 +59,10 @@
 
   // Redirect logic
   $effect(() => {
-    if (!auth.loading && !auth.isAuthenticated && !isAuthRoute) {
+    if (!auth.loading && !isAuthenticated && !isAuthRoute) {
       goto(`${base}/login`);
     }
-    if (!auth.loading && auth.isAuthenticated && isAuthRoute) {
+    if (!auth.loading && isAuthenticated && isAuthRoute) {
       // Don't redirect if we're on the callback page, it handles itself
       if (!$page.url.pathname.includes("/auth/callback")) {
         goto(`${base}/`);

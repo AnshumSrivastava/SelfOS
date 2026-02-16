@@ -21,7 +21,7 @@
     } from "lucide-svelte";
     import { tutorialStore } from "$lib/stores/tutorial.svelte";
     import { settings } from "$lib/stores/settings.svelte";
-    import { fade } from "svelte/transition";
+    import { fade, scale } from "svelte/transition";
     import MobileMenu from "./MobileMenu.svelte";
 
     let isMenuOpen = $state(false);
@@ -78,52 +78,64 @@
 </script>
 
 <nav
-    class="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pt-2 pointer-events-none flex justify-center"
+    class="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t border-line flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] h-[calc(4.5rem+env(safe-area-inset-bottom))]"
 >
-    <div
-        class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] px-6 py-4 flex items-center gap-8 shadow-2xl shadow-black/50 pointer-events-auto"
-    >
-        {#each activeLinks as link}
-            {@const isActive =
-                link.href === `${base}/`
-                    ? $page.url.pathname === link.href
-                    : $page.url.pathname.startsWith(link.href)}
-            <a
-                href={link.href}
-                data-sveltekit-preload-hover
-                aria-label={link.name}
-                class="relative flex flex-col items-center justify-center transition-all {isActive
-                    ? 'text-white scale-110'
-                    : 'text-white/40 hover:text-white/70'}"
-            >
-                <link.icon
-                    size={26}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    class="transition-all drop-shadow-lg"
-                />
-                {#if isActive}
-                    <div
-                        class="absolute -bottom-2 w-1 h-1 bg-white rounded-full"
-                        in:fade
-                    ></div>
-                {/if}
-            </a>
-        {/each}
-
-        <div class="w-px h-6 bg-white/10"></div>
-
-        <button
-            onclick={() => (isMenuOpen = true)}
-            ontouchstart={handleTouchStart}
-            ontouchend={handleTouchEnd}
-            aria-label="Menu and Help (Long press for Help)"
-            class="flex flex-col items-center justify-center transition-all {isMenuOpen
-                ? 'text-white scale-110'
-                : 'text-white/40 hover:text-white/70'}"
+    {#each activeLinks as link}
+        {@const isActive =
+            link.href === `${base}/`
+                ? $page.url.pathname === link.href
+                : $page.url.pathname.startsWith(link.href)}
+        <a
+            href={link.href}
+            data-sveltekit-preload-hover
+            aria-label={link.name}
+            aria-current={isActive ? "page" : undefined}
+            class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all {isActive
+                ? 'text-primary'
+                : 'text-muted hover:text-white'}"
         >
-            <Menu size={26} strokeWidth={2} />
-        </button>
-    </div>
+            {#if isActive}
+                <div
+                    class="absolute -top-[1px] left-1/2 -translate-x-1/2 w-12 h-[2px] bg-primary rounded-full shadow-[0_0_8px_var(--color-primary)]"
+                    transition:scale={{ duration: 300 }}
+                ></div>
+            {/if}
+            <link.icon
+                size={22}
+                strokeWidth={isActive ? 2.5 : 2}
+                class="transition-transform duration-300 {isActive
+                    ? 'scale-110'
+                    : ''}"
+            />
+            <span
+                class="text-[10px] font-bold tracking-tight uppercase {isActive
+                    ? 'opacity-100'
+                    : 'opacity-40'}"
+            >
+                {link.name}
+            </span>
+        </a>
+    {/each}
+
+    <!-- Menu / Help Toggle -->
+    <button
+        onclick={() => (isMenuOpen = true)}
+        ontouchstart={handleTouchStart}
+        ontouchend={handleTouchEnd}
+        aria-label="Menu and Help (Long press for Help)"
+        class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 transition-all {isMenuOpen
+            ? 'text-primary'
+            : 'text-muted hover:text-white'}"
+    >
+        <Menu size={22} strokeWidth={isMenuOpen ? 2.5 : 2} />
+        <span
+            class="text-[10px] font-bold tracking-tight uppercase {isMenuOpen
+                ? 'opacity-100'
+                : 'opacity-40'}"
+        >
+            Menu
+        </span>
+    </button>
 </nav>
 
 <MobileMenu bind:isOpen={isMenuOpen} />
