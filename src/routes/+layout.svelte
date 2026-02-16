@@ -171,7 +171,7 @@
   {@render children()}
 {:else if isAuthenticated}
   <!-- Main app with smooth tab transition -->
-  <div class="transition-opacity duration-300 ease-in-out animate-fade-in">
+  <div>
     <div class="md:hidden">
       <MobileLayout>
         {@render children()}

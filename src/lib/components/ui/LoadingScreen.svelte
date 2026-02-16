@@ -28,9 +28,18 @@
                 minTimeElapsed = true;
             }, 1500);
 
+            // Failsafe: Force entry after 8 seconds if auth hangs
+            const failsafeTimer = setTimeout(() => {
+                console.warn("Loading screen failsafe triggered");
+                progress = 100;
+                statusText = "READY";
+                isLoading = false;
+            }, 8000);
+
             return () => {
                 clearInterval(progressInterval);
                 clearTimeout(minTimer);
+                clearTimeout(failsafeTimer);
             };
         }
     });
@@ -54,7 +63,7 @@
 {#if isLoading}
     <div
         class="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center p-8 cursor-wait"
-        transition:fade={{ duration: 800, easing: cubicOut }}
+        transition:fade={{ duration: 500, easing: cubicOut }}
     >
         <div
             class="flex flex-col items-center gap-12 md:scale-[2.4] transition-transform duration-500"
@@ -62,11 +71,9 @@
             <!-- Logo with Pulse -->
             <div class="relative">
                 <div
-                    class="absolute inset-0 bg-white/5 blur-3xl rounded-full animate-pulse-slow"
+                    class="absolute inset-0 bg-white/5 blur-xl rounded-full animate-pulse-slow"
                 ></div>
-                <div
-                    class="relative text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                >
+                <div class="relative text-white">
                     <Logo size={80} />
                 </div>
             </div>
@@ -85,7 +92,7 @@
                         class="w-full h-[2px] bg-white/10 rounded-full overflow-hidden"
                     >
                         <div
-                            class="h-full bg-white transition-all duration-300 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                            class="h-full bg-white transition-all duration-300 ease-out"
                             style="width: {progress}%"
                         ></div>
                     </div>
