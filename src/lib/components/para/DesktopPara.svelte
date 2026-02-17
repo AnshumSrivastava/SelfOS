@@ -40,39 +40,12 @@
 
 <div class="h-full flex flex-col overflow-hidden">
     <PageHeader
-        title="P.A.R.A. Registry"
-        subtitle="Strategic metadata management."
+        title="Projects & Areas"
+        subtitle="Organize your resources and archives."
         icon={FolderKanban}
     >
         <div class="flex items-center gap-6">
-            <div class="flex flex-col items-end">
-                <span
-                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest"
-                    >System Health</span
-                >
-                <div class="flex items-center gap-2">
-                    <div
-                        class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
-                        'stable'
-                            ? 'bg-theme-success'
-                            : syncStore.globalStatus === 'syncing'
-                              ? 'bg-theme-primary animate-pulse'
-                              : 'bg-theme-danger'}"
-                    ></div>
-                    <span
-                        class="text-xs font-bold {syncStore.globalStatus ===
-                        'stable'
-                            ? 'text-theme-success'
-                            : syncStore.globalStatus === 'syncing'
-                              ? 'text-theme-primary'
-                              : 'text-theme-danger'} uppercase"
-                    >
-                        {syncStore.globalStatus === "stable"
-                            ? "Operational"
-                            : syncStore.globalStatus.toUpperCase()}
-                    </span>
-                </div>
-            </div>
+            <!-- Header actions if any -->
         </div>
     </PageHeader>
 

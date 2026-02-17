@@ -76,11 +76,11 @@
     --theme-surface-strong: #1a1a20;
     --theme-surface-glass: rgba(17, 17, 20, 0.7);
 
-    /* Brand/Accent */
+    /* Brand/Accent - Muted & Minimal */
     --theme-primary: #00ff9d;
-    --theme-primary-soft: rgba(0, 255, 157, 0.1);
+    --theme-primary-soft: rgba(0, 255, 157, 0.05);
     --theme-secondary: #00bcd4;
-    --theme-secondary-soft: rgba(0, 188, 212, 0.1);
+    --theme-secondary-soft: rgba(0, 188, 212, 0.05);
 
     /* Text Hierarchy */
     --theme-text: #f0f0f2;
@@ -159,20 +159,19 @@
   .card {
     padding: var(--space-4) 0;
     border-bottom: 1px solid var(--theme-line-soft);
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
   }
 
   .card:last-child {
     border-bottom: none;
   }
 
-  /* Card with subtle background */
+  /* Card with subtle background - Flat */
   .card-subtle {
     background: var(--theme-surface);
     border-radius: var(--card-radius);
     padding: var(--space-4);
     border: 1px solid var(--theme-line);
-    transition: all 0.2s ease;
   }
 
   .card-subtle:hover {
@@ -217,8 +216,6 @@
 
   .btn-primary:hover {
     opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px -5px var(--theme-primary-soft);
   }
 
   .btn-ghost {
@@ -256,7 +253,6 @@
   .input:focus {
     outline: none;
     border-color: var(--theme-primary);
-    box-shadow: 0 0 0 2px var(--theme-primary-soft);
   }
 
   /* Subtle Divider */

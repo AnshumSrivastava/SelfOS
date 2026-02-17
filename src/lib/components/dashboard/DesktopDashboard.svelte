@@ -9,9 +9,6 @@
     import TodayDecisions from "./TodayDecisions.svelte";
     import NowNextLater from "./NowNextLater.svelte";
     import CalendarSnapshot from "./CalendarSnapshot.svelte";
-    import MomentumSnapshot from "./MomentumSnapshot.svelte";
-    import FinancialPulse from "./FinancialPulse.svelte";
-    import GoalPulse from "./GoalPulse.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
     import PageHeader from "$lib/components/ui/PageHeader.svelte";
 
@@ -154,31 +151,6 @@
                         </h2>
                     </div>
                     <CalendarSnapshot />
-                </section>
-
-                <section class="space-y-4">
-                    <div class="flex items-center gap-2 px-1">
-                        <h2
-                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
-                        >
-                            Momentum
-                        </h2>
-                    </div>
-                    <MomentumSnapshot />
-                </section>
-
-                <section class="space-y-4">
-                    <div class="flex items-center gap-2 px-1">
-                        <h2
-                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
-                        >
-                            Strategic Pulse
-                        </h2>
-                    </div>
-                    <div class="space-y-6">
-                        <GoalPulse />
-                        <FinancialPulse />
-                    </div>
                 </section>
             </div>
         </div>

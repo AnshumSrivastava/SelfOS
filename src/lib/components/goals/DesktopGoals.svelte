@@ -85,7 +85,11 @@
 
 <div class="h-full flex flex-col overflow-hidden bg-background">
     <!-- 1. UNIFIED HEADER -->
-    <PageHeader title="Vision" subtitle="Strategic Operations" icon={Target}>
+    <PageHeader
+        title="Goals"
+        subtitle="Manage your long-term objectives."
+        icon={Target}
+    >
         <div class="flex items-center gap-6">
             <!-- Tabs -->
             <div
@@ -145,7 +149,7 @@
                     <GoalsFilters bind:filters />
 
                     <div class="flex items-center gap-1">
-                        {#each [{ id: "tree", icon: Network, title: "Network" }, { id: "board", icon: Columns, title: "Board" }, { id: "roadmap", icon: Map, title: "Map" }] as mode}
+                        {#each [{ id: "tree", icon: Network, title: "Tree" }, { id: "board", icon: Columns, title: "Board" }, { id: "roadmap", icon: Map, title: "Roadmap" }] as mode}
                             <button
                                 class="p-2 rounded-xl text-theme-text-muted hover:text-theme-text-strong hover:bg-theme-surface transition-all {planViewMode ===
                                 mode.id
@@ -176,7 +180,7 @@
                 >
                     <span
                         class="text-[10px] font-bold text-theme-text-muted uppercase tracking-[0.2em]"
-                        >Prioritized Strategic Operations</span
+                        >Today's Priorities</span
                     >
                 </div>
             {/if}

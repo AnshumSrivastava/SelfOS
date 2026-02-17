@@ -107,7 +107,7 @@
                 <h3
                     class="text-[10px] font-black text-theme-text-muted uppercase tracking-[0.2em] flex items-center gap-2"
                 >
-                    <Activity size={14} /> Health pulse
+                    <Activity size={14} /> Status
                 </h3>
 
                 {#if health === "stalled"}
@@ -120,13 +120,12 @@
                         />
                         <div>
                             <p class="text-xs font-bold text-theme-danger mb-1">
-                                GOAL IS STALLED
+                                STALLED
                             </p>
                             <p
                                 class="text-[10px] text-theme-text-muted leading-relaxed"
                             >
-                                No activity detected for 14 days. Define a small
-                                next step to break the inertia.
+                                No activity detected for 14 days.
                             </p>
                         </div>
                     </div>
@@ -139,13 +138,12 @@
                             <p
                                 class="text-xs font-bold text-theme-warning mb-1"
                             >
-                                ATTENTION NEEDED
+                                AT RISK
                             </p>
                             <p
                                 class="text-[10px] text-theme-text-muted leading-relaxed"
                             >
-                                Velocity is dropping. Check your weekly
-                                milestones.
+                                Velocity is dropping.
                             </p>
                         </div>
                     </div>
@@ -161,13 +159,12 @@
                             <p
                                 class="text-xs font-bold text-theme-success mb-1"
                             >
-                                OPTIMAL MOMENTUM
+                                ON TRACK
                             </p>
                             <p
                                 class="text-[10px] text-theme-text-muted leading-relaxed"
                             >
-                                Strategy is aligned with execution. Stay the
-                                course.
+                                Strategy is aligned with execution.
                             </p>
                         </div>
                     </div>
@@ -238,7 +235,7 @@
                     </div>
                     <span
                         class="text-xs font-bold text-theme-text-muted group-hover:text-theme-text-strong transition-colors"
-                        >Goal Journal</span
+                        >Notes</span
                     >
                 </div>
                 <ChevronRight
