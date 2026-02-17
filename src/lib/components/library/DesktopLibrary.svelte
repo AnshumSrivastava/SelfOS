@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Plus, Zap } from "lucide-svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import { libraryStore } from "$lib/stores/library.svelte";
     import BookCard from "./BookCard.svelte";
     import AddBookModal from "./AddBookModal.svelte";
@@ -37,26 +38,23 @@
 </script>
 
 <div class="page-container space-y-8 pb-12">
-    <div class="module-header">
-        <div>
-            <h1 class="text-3xl font-light text-white">Bookshelf</h1>
-            <p class="text-muted">Quick capture. Continuous reflection.</p>
-        </div>
-        <div class="flex gap-3">
-            <button
-                class="btn btn-outline flex items-center gap-2"
-                onclick={() => (isQuickThoughtOpen = true)}
-            >
-                <Zap size={18} /> Quick Thought
-            </button>
-            <button
-                class="btn btn-primary flex items-center gap-2"
-                onclick={() => (isAddModalOpen = true)}
-            >
-                <Plus size={18} /> Add Book
-            </button>
-        </div>
-    </div>
+    <PageHeader
+        title="Bookshelf"
+        subtitle="Quick capture. Continuous reflection."
+    >
+        <button
+            class="btn btn-outline flex items-center gap-2"
+            onclick={() => (isQuickThoughtOpen = true)}
+        >
+            <Zap size={18} /> Quick Thought
+        </button>
+        <button
+            class="btn btn-primary flex items-center gap-2"
+            onclick={() => (isAddModalOpen = true)}
+        >
+            <Plus size={18} /> Add Book
+        </button>
+    </PageHeader>
 
     <!-- Filters -->
     <div class="space-y-4">

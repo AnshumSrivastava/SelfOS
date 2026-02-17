@@ -133,7 +133,7 @@
                                     <button
                                         onclick={() =>
                                             nutritionStore.removeMeal(meal.id)}
-                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                     >
                                         <Trash2 size={18} />
                                     </button>

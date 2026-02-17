@@ -10,6 +10,8 @@
         Trash2,
         Check,
     } from "lucide-svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
+    import Modal from "$lib/components/ui/Modal.svelte";
     import {
         calendarStore,
         type CalendarEvent,
@@ -113,40 +115,37 @@
 </script>
 
 <div class="page-container h-full">
-    <div class="module-header">
-        <div>
-            <h1 class="text-3xl font-light text-white">Calendar & Schedule</h1>
-            <p class="text-muted">Manage your time effectively.</p>
-        </div>
-        <div class="flex gap-3">
-            <div class="bg-surface p-1 rounded-lg border border-line flex">
-                <button
-                    onclick={() => toggleView("month")}
-                    class="px-4 py-1.5 rounded-md text-sm font-medium transition-all {view ===
-                    'month'
-                        ? 'bg-white text-black shadow-sm'
-                        : 'text-muted hover:text-white'}"
-                >
-                    Month
-                </button>
-                <button
-                    onclick={() => toggleView("day")}
-                    class="px-4 py-1.5 rounded-md text-sm font-medium transition-all {view ===
-                    'day'
-                        ? 'bg-white text-black shadow-sm'
-                        : 'text-muted hover:text-white'}"
-                >
-                    Day
-                </button>
-            </div>
+    <PageHeader
+        title="Calendar & Schedule"
+        subtitle="Manage your time effectively."
+    >
+        <div class="bg-surface p-1 rounded-lg border border-line flex">
             <button
-                onclick={() => (showAddModal = true)}
-                class="btn btn-primary flex items-center gap-2"
+                onclick={() => toggleView("month")}
+                class="px-4 py-1.5 rounded-md text-sm font-medium transition-all {view ===
+                'month'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-muted hover:text-white'}"
             >
-                <Plus size={18} /> New Event
+                Month
+            </button>
+            <button
+                onclick={() => toggleView("day")}
+                class="px-4 py-1.5 rounded-md text-sm font-medium transition-all {view ===
+                'day'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-muted hover:text-white'}"
+            >
+                Day
             </button>
         </div>
-    </div>
+        <button
+            onclick={() => (showAddModal = true)}
+            class="btn btn-primary flex items-center gap-2"
+        >
+            <Plus size={18} /> New Event
+        </button>
+    </PageHeader>
 
     {#if view === "month"}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -407,146 +406,121 @@
     {/if}
 </div>
 
-{#if showAddModal}
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div
-            class="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            onclick={() => (showAddModal = false)}
-        ></div>
-
-        <div
-            class="relative w-full max-w-md bg-surface border border-line rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200"
-        >
-            <div
-                class="p-6 border-b border-line flex justify-between items-center"
+<Modal bind:isOpen={showAddModal} title="New Calendar Event">
+    <div class="space-y-4">
+        <div class="space-y-2">
+            <label
+                for="title"
+                class="text-xs font-bold text-muted uppercase tracking-wider"
+                >Title</label
             >
-                <h3 class="text-xl font-bold text-white">New Calendar Event</h3>
-                <button
-                    onclick={() => (showAddModal = false)}
-                    class="text-muted hover:text-white transition-colors"
+            <input
+                type="text"
+                id="title"
+                bind:value={newEvent.title}
+                placeholder="Project deadline, Gym session..."
+                class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+            />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label
+                    for="date"
+                    class="text-xs font-bold text-muted uppercase tracking-wider"
+                    >Date</label
                 >
-                    <X size={20} />
-                </button>
+                <input
+                    type="date"
+                    id="date"
+                    bind:value={newEvent.date}
+                    class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                />
             </div>
-
-            <div class="p-6 space-y-4">
-                <div class="space-y-2">
-                    <label
-                        for="title"
-                        class="text-xs font-bold text-muted uppercase tracking-wider"
-                        >Title</label
-                    >
-                    <input
-                        type="text"
-                        id="title"
-                        bind:value={newEvent.title}
-                        placeholder="Project deadline, Gym session..."
-                        class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                    />
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label
-                            for="date"
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >Date</label
-                        >
-                        <input
-                            type="date"
-                            id="date"
-                            bind:value={newEvent.date}
-                            class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                        />
-                    </div>
-                    <div class="space-y-2">
-                        <label
-                            for="type"
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >Type</label
-                        >
-                        <select
-                            id="type"
-                            bind:value={newEvent.type}
-                            class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none"
-                        >
-                            <option value="event">Event</option>
-                            <option value="meeting">Meeting</option>
-                            <option value="reminder">Reminder</option>
-                            <option value="task">Task</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label
-                            for="start"
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >Start Time</label
-                        >
-                        <input
-                            type="time"
-                            id="start"
-                            bind:value={newEvent.startTime}
-                            class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                        />
-                    </div>
-                    <div class="space-y-2">
-                        <label
-                            for="end"
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >End Time</label
-                        >
-                        <input
-                            type="time"
-                            id="end"
-                            bind:value={newEvent.endTime}
-                            class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
-                        />
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <span
-                        class="text-xs font-bold text-muted uppercase tracking-wider block"
-                        >Color Accent</span
-                    >
-                    <div class="flex gap-3">
-                        {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}
-                            <button
-                                onclick={() => (newEvent.color = color)}
-                                class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 {newEvent.color ===
-                                color
-                                    ? 'border-white'
-                                    : 'border-transparent'}"
-                                style="background-color: {color}"
-                                aria-label="Select color {color}"
-                            ></button>
-                        {/each}
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-6 bg-surface/50 border-t border-line flex gap-3">
-                <button
-                    onclick={() => (showAddModal = false)}
-                    class="flex-1 py-3 rounded-xl border border-line text-white font-medium hover:bg-surface transition-colors"
+            <div class="space-y-2">
+                <label
+                    for="type"
+                    class="text-xs font-bold text-muted uppercase tracking-wider"
+                    >Type</label
                 >
-                    Cancel
-                </button>
-                <button
-                    onclick={addEvent}
-                    class="flex-1 py-3 rounded-xl bg-primary text-black font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2"
+                <select
+                    id="type"
+                    bind:value={newEvent.type}
+                    class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none"
                 >
-                    <Check size={18} /> Save Event
-                </button>
+                    <option value="event">Event</option>
+                    <option value="meeting">Meeting</option>
+                    <option value="reminder">Reminder</option>
+                    <option value="task">Task</option>
+                </select>
             </div>
         </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <label
+                    for="start"
+                    class="text-xs font-bold text-muted uppercase tracking-wider"
+                    >Start Time</label
+                >
+                <input
+                    type="time"
+                    id="start"
+                    bind:value={newEvent.startTime}
+                    class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                />
+            </div>
+            <div class="space-y-2">
+                <label
+                    for="end"
+                    class="text-xs font-bold text-muted uppercase tracking-wider"
+                    >End Time</label
+                >
+                <input
+                    type="time"
+                    id="end"
+                    bind:value={newEvent.endTime}
+                    class="w-full bg-background border border-line rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                />
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <span
+                class="text-xs font-bold text-muted uppercase tracking-wider block"
+                >Color Accent</span
+            >
+            <div class="flex gap-3">
+                {#each ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"] as color}
+                    <button
+                        onclick={() => (newEvent.color = color)}
+                        class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 {newEvent.color ===
+                        color
+                            ? 'border-white'
+                            : 'border-transparent'}"
+                        style="background-color: {color}"
+                        aria-label="Select color {color}"
+                    ></button>
+                {/each}
+            </div>
+        </div>
+
+        <div class="pt-4 flex gap-3">
+            <button
+                onclick={() => (showAddModal = false)}
+                class="flex-1 py-3 rounded-xl border border-line text-white font-medium hover:bg-surface transition-colors"
+            >
+                Cancel
+            </button>
+            <button
+                onclick={addEvent}
+                class="flex-1 py-3 rounded-xl bg-primary text-black font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2"
+            >
+                <Check size={18} /> Save Event
+            </button>
+        </div>
     </div>
-{/if}
+</Modal>
 
 <style>
     .custom-scrollbar::-webkit-scrollbar {

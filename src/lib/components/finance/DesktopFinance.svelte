@@ -27,6 +27,7 @@
         Check,
     } from "lucide-svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import Modal from "$lib/components/ui/Modal.svelte";
 
     function formatCurrency(amount: number) {
         return new Intl.NumberFormat("en-IN", {
@@ -121,256 +122,194 @@
     }
 </script>
 
-{#if showBudgetModal}
-    <div
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-        role="button"
-        tabindex="0"
-        onclick={() => (showBudgetModal = false)}
-        onkeydown={(e) => {
-            if (e.key === "Escape") showBudgetModal = false;
-        }}
-    >
-        <div
-            class="card-subtle w-full max-w-md shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            tabindex="-1"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
-        >
-            <h3 class="text-xl font-bold mb-6 text-white">Add Budget</h3>
-            <div class="space-y-4">
-                <div>
-                    <label
-                        for="budget-category"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Category</label
-                    >
-                    <input
-                        id="budget-category"
-                        type="text"
-                        bind:value={newBudget.category}
-                        placeholder="e.g. Dining Out"
-                        class="input w-full"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="budget-amount"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Amount</label
-                    >
-                    <input
-                        id="budget-amount"
-                        type="number"
-                        bind:value={newBudget.amount}
-                        placeholder="e.g. 5000"
-                        class="input w-full"
-                    />
-                </div>
+<Modal bind:isOpen={showBudgetModal} title="Add Budget">
+    <div class="space-y-4">
+        <div>
+            <label
+                for="budget-category"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Category</label
+            >
+            <input
+                id="budget-category"
+                type="text"
+                bind:value={newBudget.category}
+                placeholder="e.g. Dining Out"
+                class="input w-full"
+            />
+        </div>
+        <div>
+            <label
+                for="budget-amount"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Amount</label
+            >
+            <input
+                id="budget-amount"
+                type="number"
+                bind:value={newBudget.amount}
+                placeholder="e.g. 5000"
+                class="input w-full"
+            />
+        </div>
 
-                <div class="flex gap-3 pt-6">
-                    <button
-                        class="btn btn-ghost flex-1"
-                        onclick={() => (showBudgetModal = false)}>Cancel</button
-                    >
-                    <button
-                        class="btn btn-primary flex-1"
-                        onclick={handleAddBudget}>Save Budget</button
-                    >
-                </div>
-            </div>
+        <div class="flex gap-3 pt-6">
+            <button
+                class="btn btn-ghost flex-1"
+                onclick={() => (showBudgetModal = false)}>Cancel</button
+            >
+            <button class="btn btn-primary flex-1" onclick={handleAddBudget}
+                >Save Budget</button
+            >
         </div>
     </div>
-{/if}
+</Modal>
 
-{#if showGoalModal}
-    <div
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-        role="button"
-        tabindex="0"
-        onclick={() => (showGoalModal = false)}
-        onkeydown={(e) => {
-            if (e.key === "Escape") showGoalModal = false;
-        }}
-    >
-        <div
-            class="card-subtle w-full max-w-md shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            tabindex="-1"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
-        >
-            <h3 class="text-xl font-bold mb-6 text-white">Add Savings Goal</h3>
-            <div class="space-y-4">
-                <div>
-                    <label
-                        for="goal-name"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Goal Name</label
-                    >
-                    <input
-                        id="goal-name"
-                        type="text"
-                        bind:value={newGoal.name}
-                        placeholder="e.g. New Laptop"
-                        class="input w-full"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="goal-amount"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Target Amount</label
-                    >
-                    <input
-                        id="goal-amount"
-                        type="number"
-                        bind:value={newGoal.targetAmount}
-                        placeholder="e.g. 50000"
-                        class="input w-full"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="goal-deadline"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Deadline (Optional)</label
-                    >
-                    <input
-                        id="goal-deadline"
-                        type="date"
-                        bind:value={newGoal.deadline}
-                        class="input w-full"
-                    />
-                </div>
+<Modal bind:isOpen={showGoalModal} title="Add Savings Goal">
+    <div class="space-y-4">
+        <div>
+            <label
+                for="goal-name"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Goal Name</label
+            >
+            <input
+                id="goal-name"
+                type="text"
+                bind:value={newGoal.name}
+                placeholder="e.g. New Laptop"
+                class="input w-full"
+            />
+        </div>
+        <div>
+            <label
+                for="goal-amount"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Target Amount</label
+            >
+            <input
+                id="goal-amount"
+                type="number"
+                bind:value={newGoal.targetAmount}
+                placeholder="e.g. 50000"
+                class="input w-full"
+            />
+        </div>
+        <div>
+            <label
+                for="goal-deadline"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Deadline (Optional)</label
+            >
+            <input
+                id="goal-deadline"
+                type="date"
+                bind:value={newGoal.deadline}
+                class="input w-full"
+            />
+        </div>
 
-                <div class="flex gap-3 pt-6">
-                    <button
-                        class="btn btn-ghost flex-1"
-                        onclick={() => (showGoalModal = false)}>Cancel</button
-                    >
-                    <button
-                        class="btn btn-primary flex-1"
-                        onclick={handleAddGoal}>Save Goal</button
-                    >
-                </div>
-            </div>
+        <div class="flex gap-3 pt-6">
+            <button
+                class="btn btn-ghost flex-1"
+                onclick={() => (showGoalModal = false)}>Cancel</button
+            >
+            <button class="btn btn-primary flex-1" onclick={handleAddGoal}
+                >Save Goal</button
+            >
         </div>
     </div>
-{/if}
+</Modal>
 
-{#if showAddModal}
-    <div
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-        role="button"
-        tabindex="0"
-        onclick={() => (showAddModal = false)}
-        onkeydown={(e) => {
-            if (e.key === "Escape") showAddModal = false;
-        }}
-    >
-        <div
-            class="card-subtle w-full max-w-md shadow-2xl"
-            role="dialog"
-            aria-modal="true"
-            tabindex="-1"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
-        >
-            <h3 class="text-xl font-bold mb-6 text-white">Add Transaction</h3>
-            <div class="space-y-4">
-                <div>
-                    <span
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                    >
-                        Type
-                    </span>
-                    <div class="flex gap-2 p-1 bg-background/40 rounded-lg">
-                        <button
-                            class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
-                            'income'
-                                ? 'bg-emerald-500 text-black shadow-lg'
-                                : 'text-muted hover:text-white'}"
-                            onclick={() => (newTransaction.type = "income")}
-                            >Income</button
-                        >
-                        <button
-                            class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
-                            'expense'
-                                ? 'bg-red-500 text-black shadow-lg'
-                                : 'text-muted hover:text-white'}"
-                            onclick={() => (newTransaction.type = "expense")}
-                            >Expense</button
-                        >
-                    </div>
-                </div>
-                <div>
-                    <label
-                        for="transaction-title"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Details</label
-                    >
-                    <input
-                        id="transaction-title"
-                        type="text"
-                        bind:value={newTransaction.title}
-                        placeholder="Title (e.g. Groceries)"
-                        class="input w-full mb-3"
-                    />
-                    <input
-                        type="number"
-                        bind:value={newTransaction.amount}
-                        placeholder="Amount (e.g. 500)"
-                        class="input w-full"
-                        aria-label="Transaction Amount"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="transaction-category"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Category</label
-                    >
-                    <input
-                        id="transaction-category"
-                        type="text"
-                        bind:value={newTransaction.category}
-                        placeholder="General"
-                        class="input w-full"
-                    />
-                </div>
-                <div>
-                    <label
-                        for="transaction-tags"
-                        class="text-xs text-muted block mb-2 uppercase tracking-wider"
-                        >Tags</label
-                    >
-                    <input
-                        id="transaction-tags"
-                        type="text"
-                        bind:value={newTransaction.tags}
-                        placeholder="comma, separated"
-                        class="input w-full"
-                    />
-                </div>
-
-                <div class="flex gap-3 pt-6">
-                    <button
-                        class="btn btn-ghost flex-1"
-                        onclick={() => (showAddModal = false)}>Cancel</button
-                    >
-                    <button
-                        class="btn btn-primary flex-1"
-                        onclick={handleAddTransaction}>Save Transaction</button
-                    >
-                </div>
+<Modal bind:isOpen={showAddModal} title="Add Transaction">
+    <div class="space-y-4">
+        <div>
+            <span
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+            >
+                Type
+            </span>
+            <div class="flex gap-2 p-1 bg-background/40 rounded-lg">
+                <button
+                    class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
+                    'income'
+                        ? 'bg-emerald-500 text-black shadow-lg'
+                        : 'text-muted hover:text-white'}"
+                    onclick={() => (newTransaction.type = "income")}
+                    >Income</button
+                >
+                <button
+                    class="flex-1 py-2 rounded-md font-medium text-sm transition-all {newTransaction.type ===
+                    'expense'
+                        ? 'bg-red-500 text-black shadow-lg'
+                        : 'text-muted hover:text-white'}"
+                    onclick={() => (newTransaction.type = "expense")}
+                    >Expense</button
+                >
             </div>
         </div>
+        <div>
+            <label
+                for="transaction-title"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Details</label
+            >
+            <input
+                id="transaction-title"
+                type="text"
+                bind:value={newTransaction.title}
+                placeholder="Title (e.g. Groceries)"
+                class="input w-full mb-3"
+            />
+            <input
+                type="number"
+                bind:value={newTransaction.amount}
+                placeholder="Amount (e.g. 500)"
+                class="input w-full"
+                aria-label="Transaction Amount"
+            />
+        </div>
+        <div>
+            <label
+                for="transaction-category"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Category</label
+            >
+            <input
+                id="transaction-category"
+                type="text"
+                bind:value={newTransaction.category}
+                placeholder="General"
+                class="input w-full"
+            />
+        </div>
+        <div>
+            <label
+                for="transaction-tags"
+                class="text-xs text-muted block mb-2 uppercase tracking-wider"
+                >Tags</label
+            >
+            <input
+                id="transaction-tags"
+                type="text"
+                bind:value={newTransaction.tags}
+                placeholder="comma, separated"
+                class="input w-full"
+            />
+        </div>
+
+        <div class="flex gap-3 pt-6">
+            <button
+                class="btn btn-ghost flex-1"
+                onclick={() => (showAddModal = false)}>Cancel</button
+            >
+            <button
+                class="btn btn-primary flex-1"
+                onclick={handleAddTransaction}>Save Transaction</button
+            >
+        </div>
     </div>
-{/if}
+</Modal>
 
 <div class="page-container relative h-full flex flex-col">
     <!-- ... (modals) -->
@@ -641,7 +580,7 @@
                                             : "-"}{formatCurrency(t.amount)}
                                     </span>
                                     <button
-                                        class="opacity-0 group-hover:opacity-100 text-muted hover:text-red-400 transition-colors p-1"
+                                        class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-muted hover:text-red-400 transition-colors p-1"
                                         onclick={() =>
                                             financeStore.removeTransaction(
                                                 t.id,
@@ -704,7 +643,7 @@
                                             )}</span
                                         >
                                         <button
-                                            class="text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all ml-2"
+                                            class="text-muted hover:text-red-400 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all ml-2"
                                             onclick={() =>
                                                 financeStore.removeBudget(
                                                     budget.id,
@@ -778,7 +717,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <button
-                                    class="text-gray-600 hover:text-red-400 transition-colors"
+                                    class="text-gray-600 hover:text-red-400 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                     onclick={() =>
                                         financeStore.removeGoal(goal.id)}
                                 >

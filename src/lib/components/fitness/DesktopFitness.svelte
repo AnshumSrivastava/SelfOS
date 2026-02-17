@@ -53,7 +53,6 @@
     <PageHeader title="Fitness" subtitle="High Performance Lab">
         <button
             onclick={() => {
-                console.log("DesktopFitness: Opening UpdateStatsModal");
                 isUpdateStatsOpen = true;
             }}
             class="btn btn-ghost border-line flex items-center gap-2"
@@ -62,7 +61,6 @@
         </button>
         <button
             onclick={() => {
-                console.log("DesktopFitness: Opening LogWorkoutModal");
                 isLogWorkoutOpen = true;
             }}
             class="btn btn-primary flex items-center gap-2"
@@ -267,7 +265,7 @@
                                     <button
                                         onclick={() =>
                                             fitnessStore.removeWorkout(w.id)}
-                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                        class="p-2 text-muted/20 hover:text-red-500 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                     >
                                         <Trash2 size={18} />
                                     </button>

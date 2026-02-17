@@ -4,7 +4,9 @@
         Pause,
         RotateCcw,
         Volume2,
+        VolumeX,
         Maximize,
+        Minimize,
         Pencil,
         Check,
         Target,
@@ -16,17 +18,23 @@
     import { focusStore } from "$lib/stores/focus.svelte";
     import { tasksStore, type Task } from "$lib/stores/tasks.svelte";
     import { fade, slide } from "svelte/transition";
+    import { onMount, onDestroy } from "svelte";
 
     const timeLeft = $derived(focusStore.timeLeft);
     const isRunning = $derived(focusStore.isRunning);
     const formattedTime = $derived(focusStore.formattedTime);
     const mode = $derived(focusStore.mode);
     const sessionComplete = $derived(focusStore.sessionComplete);
+    const zenMode = $derived(focusStore.zenMode);
 
     let isEditing = $state(false);
     let editMinutes = $state(25);
     let selectedTaskId = $state<string | null>(null);
     let showTaskSelector = $state(true);
+    let isSoundEnabled = $state(false);
+    let audioContext: AudioContext | null = null;
+    let noiseNode: AudioBufferSourceNode | null = null;
+    let gainNode: GainNode | null = null;
 
     const selectedTask = $derived(
         tasksStore.tasks.find((t) => t.id === selectedTaskId),
@@ -43,15 +51,21 @@
         isEditing = false;
     }
 
-    let sessionSubject = $state("");
-
     $effect(() => {
         if (sessionComplete) {
-            // Auto-open log modal or similar?
-            // For now, let's just log if a task was selected
             if (selectedTask) {
                 focusStore.logSession(selectedTask.title);
             }
+            if (isSoundEnabled) toggleSound(); // Stop sound on complete
+        }
+    });
+
+    $effect(() => {
+        if (!isRunning && isSoundEnabled) {
+            // Optional: Pause sound when timer pauses?
+            // For now, let's keep it manual or simple.
+            // Actually, people usually want silence when paused.
+            toggleSound();
         }
     });
 
@@ -62,20 +76,86 @@
             selectedTaskId = taskId;
         }
     }
+
+    // --- Sound Generation (Brown Noise) ---
+    function initAudio() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext ||
+                (window as any).webkitAudioContext)();
+        }
+    }
+
+    function createBrownNoise() {
+        if (!audioContext) return;
+        const bufferSize = audioContext.sampleRate * 2; // 2 seconds buffer
+        const buffer = audioContext.createBuffer(
+            1,
+            bufferSize,
+            audioContext.sampleRate,
+        );
+        const data = buffer.getChannelData(0);
+
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            data[i] = (lastOut + 0.02 * white) / 1.02;
+            lastOut = data[i];
+            data[i] *= 3.5; // Compensate for gain loss
+        }
+
+        noiseNode = audioContext.createBufferSource();
+        noiseNode.buffer = buffer;
+        noiseNode.loop = true;
+
+        gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.05; // Low volume
+
+        noiseNode.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        noiseNode.start();
+    }
+
+    function toggleSound() {
+        initAudio();
+        if (isSoundEnabled) {
+            // Stop sound
+            if (noiseNode) {
+                noiseNode.stop();
+                noiseNode.disconnect();
+                noiseNode = null;
+            }
+            isSoundEnabled = false;
+        } else {
+            // Start sound
+            createBrownNoise();
+            isSoundEnabled = true;
+        }
+    }
+
+    onDestroy(() => {
+        if (noiseNode) noiseNode.stop();
+        if (audioContext) audioContext.close();
+    });
 </script>
 
-<PageHeader title="Focus" subtitle="Deep work and flow state manager.">
-    <button
-        class="btn btn-ghost"
-        onclick={() => (showTaskSelector = !showTaskSelector)}
-    >
-        {showTaskSelector ? "Hide Tasks" : "Show Tasks"}
-    </button>
-</PageHeader>
+{#if !zenMode}
+    <PageHeader title="Focus" subtitle="Deep work and flow state manager.">
+        <button
+            class="btn btn-ghost"
+            onclick={() => (showTaskSelector = !showTaskSelector)}
+        >
+            {showTaskSelector ? "Hide Tasks" : "Show Tasks"}
+        </button>
+    </PageHeader>
+{/if}
 
-<div class="flex h-[calc(100vh-80px)] relative overflow-hidden">
+<div
+    class="flex relative overflow-hidden transition-all duration-500 {zenMode
+        ? 'fixed inset-0 z-50 bg-background h-screen w-screen'
+        : 'h-[calc(100vh-80px)]'}"
+>
     <!-- Task Selector Sidebar -->
-    {#if showTaskSelector}
+    {#if showTaskSelector && !zenMode}
         <div
             class="w-80 border-r border-theme-line bg-theme-surface/30 backdrop-blur-xl p-6 flex flex-col"
             transition:slide={{ axis: "x", duration: 300 }}
@@ -132,7 +212,7 @@
     {/if}
 
     <div class="flex-1 flex flex-col items-center justify-center relative">
-        {#if !showTaskSelector}
+        {#if !showTaskSelector && !zenMode}
             <button
                 onclick={() => (showTaskSelector = true)}
                 class="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-theme-surface border border-theme-line rounded-full text-theme-text-muted hover:text-theme-text-strong transition-all shadow-lg"
@@ -140,6 +220,16 @@
                 aria-label="Show task selector"
             >
                 <ChevronRight size={20} />
+            </button>
+        {/if}
+
+        {#if zenMode}
+            <button
+                onclick={() => focusStore.toggleZenMode()}
+                class="absolute top-6 right-6 p-2 bg-theme-surface/50 hover:bg-theme-surface border border-theme-line/50 rounded-full text-theme-text-muted hover:text-theme-text-strong transition-all opacity-0 hover:opacity-100"
+                aria-label="Exit Zen Mode"
+            >
+                <Minimize size={24} />
             </button>
         {/if}
 
@@ -187,15 +277,17 @@
                 role="button"
                 tabindex="0"
             >
-                <h2
-                    class="text-theme-text-muted tracking-widest uppercase font-medium mb-2"
-                >
-                    {focusStore.mode === "shortBreak"
-                        ? "Short Break"
-                        : focusStore.mode === "longBreak"
-                          ? "Long Break"
-                          : "Deep Work Session"}
-                </h2>
+                {#if !zenMode}
+                    <h2
+                        class="text-theme-text-muted tracking-widest uppercase font-medium mb-2"
+                    >
+                        {focusStore.mode === "shortBreak"
+                            ? "Short Break"
+                            : focusStore.mode === "longBreak"
+                              ? "Long Break"
+                              : "Deep Work Session"}
+                    </h2>
+                {/if}
 
                 {#if isEditing}
                     <div class="flex items-center justify-center gap-4">
@@ -228,7 +320,7 @@
                         >
                             {focusStore.formattedTime}
                         </span>
-                        {#if !focusStore.isRunning}
+                        {#if !focusStore.isRunning && !zenMode}
                             <div
                                 class="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
@@ -265,42 +357,65 @@
                 </button>
 
                 <button
-                    class="p-4 rounded-full bg-theme-surface border border-theme-line hover:border-theme-text-muted hover:bg-theme-surface-subtle transition-all text-theme-text-strong"
+                    class="p-4 rounded-full bg-theme-surface border border-theme-line hover:border-theme-text-muted hover:bg-theme-surface-subtle transition-all {isSoundEnabled
+                        ? 'text-theme-primary border-theme-primary'
+                        : 'text-theme-text-strong'}"
                     aria-label="Sound"
+                    onclick={toggleSound}
                 >
-                    <Volume2 size={24} />
+                    {#if isSoundEnabled}
+                        <Volume2 size={24} />
+                    {:else}
+                        <VolumeX size={24} />
+                    {/if}
+                </button>
+
+                <button
+                    class="p-4 rounded-full bg-theme-surface border border-theme-line hover:border-theme-text-muted hover:bg-theme-surface-subtle transition-all {zenMode
+                        ? 'text-theme-primary border-theme-primary'
+                        : 'text-theme-text-strong'}"
+                    aria-label="Zen Mode"
+                    onclick={() => focusStore.toggleZenMode()}
+                >
+                    {#if zenMode}
+                        <Minimize size={24} />
+                    {:else}
+                        <Maximize size={24} />
+                    {/if}
                 </button>
             </div>
 
-            <div class="mt-12 flex gap-4 justify-center">
-                <button
-                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                    'focus'
-                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
-                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
-                    onclick={() => focusStore.setMode("focus")}
-                >
-                    Pomodoro
-                </button>
-                <button
-                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                    'shortBreak'
-                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
-                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
-                    onclick={() => focusStore.setMode("shortBreak")}
-                >
-                    Short Break
-                </button>
-                <button
-                    class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
-                    'longBreak'
-                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
-                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
-                    onclick={() => focusStore.setMode("longBreak")}
-                >
-                    Long Break
-                </button>
-            </div>
+            {#if !zenMode}
+                <div class="mt-12 flex gap-4 justify-center">
+                    <button
+                        class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                        'focus'
+                            ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                            : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
+                        onclick={() => focusStore.setMode("focus")}
+                    >
+                        Pomodoro
+                    </button>
+                    <button
+                        class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                        'shortBreak'
+                            ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                            : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
+                        onclick={() => focusStore.setMode("shortBreak")}
+                    >
+                        Short Break
+                    </button>
+                    <button
+                        class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
+                        'longBreak'
+                            ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                            : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
+                        onclick={() => focusStore.setMode("longBreak")}
+                    >
+                        Long Break
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
 </div>

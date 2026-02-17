@@ -19,6 +19,12 @@
             dashboardStore.fetchData();
         }
     });
+    function getFriendlyError(error: string) {
+        if (error.includes("fetch"))
+            return "Connection failed. Please check your internet.";
+        if (error.includes("auth")) return "Please sign in again.";
+        return "Something went wrong. Please try again.";
+    }
 </script>
 
 <div class="page-container h-full">
@@ -44,7 +50,7 @@
                 class="w-2 h-2 rounded-full bg-theme-danger animate-pulse"
             ></div>
             <p class="text-sm font-medium">
-                Data Error: {dashboardStore.error}
+                {getFriendlyError(dashboardStore.error)}
             </p>
             <button
                 onclick={() => dashboardStore.fetchData()}

@@ -21,6 +21,7 @@
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import HistoryGrid from "./HistoryGrid.svelte";
     import { onMount } from "svelte";
+    import Modal from "$lib/components/ui/Modal.svelte";
 
     onMount(() => {
         habitsStore.init();
@@ -284,7 +285,7 @@
                                     <button
                                         onclick={() =>
                                             habitsStore.remove(habit.id)}
-                                        class="p-2 text-muted hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                                        class="p-2 text-muted hover:text-red-400 transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                     >
                                         <Trash2 size={14} />
                                     </button>
@@ -364,82 +365,51 @@
     </div>
 </div>
 
-{#if isAdding}
-    <div
-        class="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4"
-        transition:fade={{ duration: 300 }}
-        onclick={() => (isAdding = false)}
-        onkeydown={(e) => e.key === "Escape" && (isAdding = false)}
-        role="button"
-        tabindex="0"
-    >
-        <div
-            class="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-[40px] p-10 shadow-2xl"
-            transition:scale={{ duration: 400, start: 0.9, opacity: 0 }}
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            tabindex="-1"
-        >
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-white mb-2">
-                        New Ritual
-                    </h2>
-                    <p class="text-muted">
-                        What new behavior are you committing to today?
-                    </p>
-                </div>
-                <button
-                    onclick={() => (isAdding = false)}
-                    class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-muted hover:text-white hover:bg-white/10 transition-all"
-                >
-                    <X size={20} />
-                </button>
-            </div>
-
-            <div class="space-y-6">
-                <div class="relative">
-                    <input
-                        type="text"
-                        bind:value={newHabitName}
-                        placeholder="Enter habit name..."
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl text-white placeholder-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
-                        onkeydown={(e) => e.key === "Enter" && addHabit()}
-                    />
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                    {#each ["Drink Water", "Meditation", "Read 10 pages", "Workout", "Early Wakeup"] as suggestion}
-                        <button
-                            onclick={() => (newHabitName = suggestion)}
-                            class="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-xs text-muted hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
-                        >
-                            {suggestion}
-                        </button>
-                    {/each}
-                </div>
-
-                <div class="flex gap-4 pt-4">
-                    <button
-                        onclick={() => (isAdding = false)}
-                        class="flex-1 py-4 bg-white/5 text-white rounded-2xl font-bold hover:bg-white/10 transition-all"
-                    >
-                        Maybe Later
-                    </button>
-                    <button
-                        onclick={addHabit}
-                        disabled={!newHabitName.trim()}
-                        class="flex-[2] py-4 bg-primary text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
-                    >
-                        Begin Streak
-                    </button>
-                </div>
+<Modal bind:isOpen={isAdding} title="New Ritual">
+    <div class="space-y-6">
+        <div>
+            <p class="text-muted mb-4">
+                What new behavior are you committing to today?
+            </p>
+            <div class="relative">
+                <input
+                    type="text"
+                    bind:value={newHabitName}
+                    placeholder="Enter habit name..."
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl text-white placeholder-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+                    onkeydown={(e) => e.key === "Enter" && addHabit()}
+                />
             </div>
         </div>
+
+        <div class="flex flex-wrap gap-2">
+            {#each ["Drink Water", "Meditation", "Read 10 pages", "Workout", "Early Wakeup"] as suggestion}
+                <button
+                    onclick={() => (newHabitName = suggestion)}
+                    class="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-xs text-muted hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
+                >
+                    {suggestion}
+                </button>
+            {/each}
+        </div>
+
+        <div class="flex gap-4 pt-4">
+            <button
+                onclick={() => (isAdding = false)}
+                class="flex-1 py-4 bg-white/5 text-white rounded-2xl font-bold hover:bg-white/10 transition-all"
+            >
+                Maybe Later
+            </button>
+            <button
+                onclick={addHabit}
+                disabled={!newHabitName.trim()}
+                class="flex-[2] py-4 bg-primary text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
+            >
+                Begin Streak
+            </button>
+        </div>
     </div>
-{/if}
+</Modal>
 
 <style>
     /* Custom spacing for the page container to align with premium look */

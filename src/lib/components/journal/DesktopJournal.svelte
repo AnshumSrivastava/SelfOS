@@ -288,7 +288,7 @@
                                             e.stopPropagation();
                                             removeEntry(entry.id);
                                         }}
-                                        class="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-400 transition-all"
+                                        class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1 text-muted hover:text-red-400 transition-all"
                                     >
                                         <Trash2 size={14} />
                                     </button>
