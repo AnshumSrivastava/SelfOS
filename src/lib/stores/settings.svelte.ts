@@ -190,6 +190,12 @@ class SettingsStore {
         const root = document.documentElement;
         const { theme, accentColor } = this.current;
 
+        // Base color calculations for soft states
+        // In a real app, we might use a library like tinycolor or chroma-js
+        // For now, we'll use string manipulation for common opacities
+        const primarySoft = accentColor + '1a'; // 10% opacity hex
+        const primaryGhost = accentColor + '08'; // 5% opacity hex
+
         if (theme === 'dark' || theme === 'amoled' || theme === 'minimal') {
             root.classList.add('dark');
         } else {
@@ -199,39 +205,60 @@ class SettingsStore {
         if (theme === 'light') {
             root.style.setProperty('--theme-background', '#ffffff');
             root.style.setProperty('--theme-surface', '#f4f4f5');
+            root.style.setProperty('--theme-surface-subtle', '#fafafa');
+            root.style.setProperty('--theme-surface-strong', '#e4e4e7');
             root.style.setProperty('--theme-text', '#18181b');
-            root.style.setProperty('--color-text', '#18181b');
-            root.style.setProperty('--theme-muted', '#71717a');
+            root.style.setProperty('--theme-text-secondary', '#52525b');
+            root.style.setProperty('--theme-text-muted', '#a1a1aa');
+            root.style.setProperty('--theme-text-strong', '#09090b');
+            root.style.setProperty('--theme-text-inverse', '#ffffff');
             root.style.setProperty('--theme-line', '#e4e4e7');
+            root.style.setProperty('--theme-line-soft', '#f4f4f5');
         } else if (theme === 'amoled') {
             root.style.setProperty('--theme-background', '#000000');
             root.style.setProperty('--theme-surface', '#050505');
+            root.style.setProperty('--theme-surface-subtle', '#0a0a0a');
+            root.style.setProperty('--theme-surface-strong', '#121212');
             root.style.setProperty('--theme-text', '#ededed');
-            root.style.setProperty('--color-text', '#ededed');
-            root.style.setProperty('--theme-muted', '#a1a1aa');
-            root.style.setProperty('--theme-line', '#27272a');
+            root.style.setProperty('--theme-text-secondary', '#a1a1aa');
+            root.style.setProperty('--theme-text-muted', '#71717a');
+            root.style.setProperty('--theme-text-strong', '#ffffff');
+            root.style.setProperty('--theme-text-inverse', '#000000');
+            root.style.setProperty('--theme-line', '#161618');
+            root.style.setProperty('--theme-line-soft', '#0a0a0a');
         } else if (theme === 'minimal') {
             root.style.setProperty('--theme-background', '#000000');
-            root.style.setProperty('--theme-surface', '#1a1a1a');
+            root.style.setProperty('--theme-surface', '#0a0a0a');
+            root.style.setProperty('--theme-surface-subtle', '#121212');
+            root.style.setProperty('--theme-surface-strong', '#1a1a1a');
             root.style.setProperty('--theme-text', '#FFFFFF');
-            root.style.setProperty('--color-text', '#FFFFFF');
-            root.style.setProperty('--theme-muted', '#999999');
-            root.style.setProperty('--theme-line', '#333333');
+            root.style.setProperty('--theme-text-secondary', '#888888');
+            root.style.setProperty('--theme-text-muted', '#555555');
+            root.style.setProperty('--theme-text-strong', '#FFFFFF');
+            root.style.setProperty('--theme-text-inverse', '#000000');
+            root.style.setProperty('--theme-line', '#222222');
+            root.style.setProperty('--theme-line-soft', '#111111');
         } else {
+            // Default Dark
             root.style.setProperty('--theme-background', '#0a0a0c');
             root.style.setProperty('--theme-surface', '#121214');
+            root.style.setProperty('--theme-surface-subtle', '#18181b');
+            root.style.setProperty('--theme-surface-strong', '#1e1e22');
             root.style.setProperty('--theme-text', '#ededed');
-            root.style.setProperty('--color-text', '#ededed');
-            root.style.setProperty('--theme-muted', '#a1a1aa');
+            root.style.setProperty('--theme-text-secondary', '#a1a1aa');
+            root.style.setProperty('--theme-text-muted', '#71717a');
+            root.style.setProperty('--theme-text-strong', '#ffffff');
+            root.style.setProperty('--theme-text-inverse', '#000000');
             root.style.setProperty('--theme-line', '#27272a');
+            root.style.setProperty('--theme-line-soft', '#1e1e22');
         }
 
         if (theme === 'minimal') {
             root.style.setProperty('--theme-primary', '#FFFFFF');
-            root.style.setProperty('--color-primary', '#FFFFFF');
+            root.style.setProperty('--theme-primary-soft', 'rgba(255, 255, 255, 0.1)');
         } else {
             root.style.setProperty('--theme-primary', accentColor);
-            root.style.setProperty('--color-primary', accentColor);
+            root.style.setProperty('--theme-primary-soft', primarySoft);
         }
     }
 }

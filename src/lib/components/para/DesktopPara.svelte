@@ -6,6 +6,8 @@
     import ParaKanbanColumn from "./ParaKanbanColumn.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
     import { syncStore } from "$lib/stores/sync.svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
+    import { FolderKanban, ShieldCheck, Activity } from "lucide-svelte";
 
     let selectedProject: Project | null = $state(null);
 
@@ -36,65 +38,47 @@
     />
 {/if}
 
-<div class="h-screen flex flex-col overflow-hidden bg-background">
-    <!-- Header Area -->
-    <div class="px-10 py-12 shrink-0">
-        <div class="flex items-end justify-between w-full mx-auto">
-            <div>
-                <h1 class="text-5xl font-light text-white tracking-tight mb-3">
-                    P.A.R.A. <span class="text-primary font-bold">Registry</span
-                    >
-                </h1>
-                <div class="flex items-center gap-4">
-                    <p
-                        class="text-[10px] font-bold text-muted uppercase tracking-[0.4em] opacity-60"
-                    >
-                        Strategic Metadata Management
-                    </p>
-                    <div class="h-px w-12 bg-line"></div>
+<div class="h-full flex flex-col overflow-hidden">
+    <PageHeader
+        title="P.A.R.A. Registry"
+        subtitle="Strategic metadata management."
+        icon={FolderKanban}
+    >
+        <div class="flex items-center gap-6">
+            <div class="flex flex-col items-end">
+                <span
+                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest"
+                    >System Health</span
+                >
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
+                        'stable'
+                            ? 'bg-theme-success'
+                            : syncStore.globalStatus === 'syncing'
+                              ? 'bg-theme-primary animate-pulse'
+                              : 'bg-theme-danger'}"
+                    ></div>
                     <span
-                        class="text-[10px] font-bold text-primary uppercase tracking-widest"
-                        >v2.0 Beta</span
+                        class="text-xs font-bold {syncStore.globalStatus ===
+                        'stable'
+                            ? 'text-theme-success'
+                            : syncStore.globalStatus === 'syncing'
+                              ? 'text-theme-primary'
+                              : 'text-theme-danger'} uppercase"
                     >
-                </div>
-            </div>
-
-            <div class="flex items-center gap-6">
-                <div class="flex flex-col items-end">
-                    <span
-                        class="text-[10px] font-bold text-muted uppercase tracking-widest"
-                        >System Health</span
-                    >
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-1.5 h-1.5 rounded-full {syncStore.globalStatus ===
-                            'stable'
-                                ? 'bg-emerald-500'
-                                : syncStore.globalStatus === 'syncing'
-                                  ? 'bg-primary animate-pulse'
-                                  : 'bg-red-500'}"
-                        ></div>
-                        <span
-                            class="text-xs font-bold {syncStore.globalStatus ===
-                            'stable'
-                                ? 'text-emerald-500'
-                                : syncStore.globalStatus === 'syncing'
-                                  ? 'text-primary'
-                                  : 'text-red-500'} uppercase"
-                        >
-                            {syncStore.globalStatus === "stable"
-                                ? "Operational"
-                                : syncStore.globalStatus.toUpperCase()}
-                        </span>
-                    </div>
+                        {syncStore.globalStatus === "stable"
+                            ? "Operational"
+                            : syncStore.globalStatus.toUpperCase()}
+                    </span>
                 </div>
             </div>
         </div>
-    </div>
+    </PageHeader>
 
     <!-- Kanban Board (Horizontal) -->
     <div
-        class="flex-1 flex gap-8 px-10 overflow-x-auto pb-12 custom-scrollbar-h items-start w-full mx-auto"
+        class="flex-1 flex gap-8 px-10 overflow-x-auto pb-12 custom-scrollbar-h items-start w-full mx-auto mt-8"
     >
         {#if projectsStore.loading}
             <div class="flex gap-6 w-full">

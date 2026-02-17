@@ -7,7 +7,7 @@
   --color-primary: var(--theme-primary);
   --color-secondary: var(--theme-secondary);
   --color-text: var(--theme-text);
-  --color-muted: var(--theme-muted);
+  --color-muted: var(--theme-text-muted);
   --color-line: var(--theme-line);
 
   /* Premium Spacing System (8px grid) */
@@ -69,20 +69,40 @@
 
 @layer base {
   :root {
+    /* Main Theme Colors */
     --theme-background: #08080a;
     --theme-surface: #111114;
+    --theme-surface-subtle: #16161a;
+    --theme-surface-strong: #1a1a20;
     --theme-surface-glass: rgba(17, 17, 20, 0.7);
+
+    /* Brand/Accent */
     --theme-primary: #00ff9d;
+    --theme-primary-soft: rgba(0, 255, 157, 0.1);
     --theme-secondary: #00bcd4;
-    --theme-accent: #6d28d9;
+    --theme-secondary-soft: rgba(0, 188, 212, 0.1);
+
+    /* Text Hierarchy */
     --theme-text: #f0f0f2;
-    --theme-muted: #71717a;
+    --theme-text-secondary: #a1a1aa;
+    --theme-text-muted: #71717a;
+    --theme-text-strong: #ffffff;
+    --theme-text-inverse: #000000;
+
+    /* Lines & Borders */
     --theme-line: #1e1e22;
+    --theme-line-soft: #161618;
+
+    /* Semantic States */
+    --theme-success: #10b981;
+    --theme-warning: #f59e0b;
+    --theme-danger: #ef4444;
+    --theme-info: #3b82f6;
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-text);
+    background-color: var(--theme-background);
+    color: var(--theme-text);
     font-family: var(--font-sans);
     font-size: var(--text-base);
     letter-spacing: -0.01em;
@@ -96,32 +116,30 @@
   h1 {
     font-size: var(--text-3xl);
     font-weight: 300;
-    /* Confident/Light */
     letter-spacing: -0.03em;
-    color: #fff;
+    color: var(--theme-text-strong);
   }
 
   h2 {
     font-size: var(--text-2xl);
     font-weight: 300;
     letter-spacing: -0.02em;
+    color: var(--theme-text-primary);
   }
 
   h3 {
     font-size: var(--text-xl);
     font-weight: 600;
     letter-spacing: -0.01em;
+    color: var(--theme-text-primary);
   }
 
   /* Mobile Spacing Overrides */
   @media (max-width: 768px) {
     :root {
       --space-4: 1.25rem;
-      /* 20px instead of 32px */
       --space-8: 1.5rem;
-      /* 24px instead of 64px */
       --space-12: 2rem;
-      /* 32px instead of 96px */
 
       --module-padding: var(--space-3);
       --section-gap: var(--space-6);
@@ -132,31 +150,6 @@
       gap: var(--space-6);
       padding-bottom: var(--space-12);
     }
-
-    .card-subtle {
-      background: rgba(255, 255, 255, 0.03);
-      border: none;
-      box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.3);
-    }
-  }
-
-  /* Minimal Theme Refinements */
-  :root.theme-minimal {
-    --theme-background: #000000;
-    --theme-surface: #0a0a0a;
-    --theme-primary: #FFFFFF;
-    --theme-text: #FFFFFF;
-    --theme-muted: #666666;
-    --theme-line: #222222;
-  }
-
-  :root.theme-minimal,
-  :root.theme-minimal * {
-    background-image: none !important;
-    mask-image: none !important;
-    filter: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
   }
 }
 
@@ -165,7 +158,7 @@
   /* Simplified Card - Clean with subtle borders */
   .card {
     padding: var(--space-4) 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--theme-line-soft);
     transition: all 0.2s ease;
   }
 
@@ -173,7 +166,7 @@
     border-bottom: none;
   }
 
-  /* Card with subtle background - less opacity for cleaner look */
+  /* Card with subtle background */
   .card-subtle {
     background: var(--theme-surface);
     border-radius: var(--card-radius);
@@ -183,8 +176,8 @@
   }
 
   .card-subtle:hover {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.05);
+    background: var(--theme-surface-subtle);
+    border-color: var(--theme-line);
   }
 
   /* Page container normalization */
@@ -202,58 +195,74 @@
     margin-bottom: var(--space-2);
   }
 
-  /* Premium Button Styles - Simplified */
+  /* Premium Button Styles */
   .btn {
     padding: var(--space-2) var(--space-4);
-    border-radius: 10px;
+    border-radius: var(--radius-subtle);
     font-weight: 500;
     font-size: var(--text-sm);
     transition: all 0.2s ease;
     cursor: pointer;
-    border: none;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
   }
 
   .btn-primary {
-    background: var(--color-primary);
-    color: #000;
+    background: var(--theme-primary);
+    color: var(--theme-text-inverse);
   }
 
   .btn-primary:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+    box-shadow: 0 4px 20px -5px var(--theme-primary-soft);
   }
 
   .btn-ghost {
     background: transparent;
-    color: var(--color-text);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--theme-text);
+    border: 1px solid var(--theme-line);
   }
 
   .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: var(--theme-surface-subtle);
+    border-color: var(--theme-text-muted);
   }
 
-  /* Premium Input Styles - Cleaner borders */
+  .btn-danger {
+    background: var(--theme-danger);
+    color: var(--theme-text-inverse);
+  }
+
+  .btn-danger:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  /* Premium Input Styles */
   .input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0;
-    padding: var(--space-2) 0;
+    background: var(--theme-surface-subtle);
+    border: 1px solid var(--theme-line);
+    border-radius: var(--input-radius);
+    padding: var(--space-2) var(--space-4);
     font-size: var(--text-base);
-    transition: border-color 0.2s ease;
+    color: var(--theme-text);
+    transition: all 0.2s ease;
   }
 
   .input:focus {
     outline: none;
-    border-bottom-color: var(--color-primary);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px var(--theme-primary-soft);
   }
 
   /* Subtle Divider */
   .divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--theme-line);
     margin: var(--space-4) 0;
   }
 
@@ -297,6 +306,7 @@
 
   .font-normal {
     /* Default sizes already set in @theme */
+    font-size: var(--text-base);
   }
 
   .font-large {

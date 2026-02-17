@@ -67,13 +67,18 @@
     }
 
     const tabs = [
-        { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
-        { id: "goals", label: "Goals", icon: Network, color: "text-primary" },
+        { id: "today", label: "Today", icon: Zap, color: "text-theme-warning" },
+        {
+            id: "goals",
+            label: "Goals",
+            icon: Network,
+            color: "text-theme-primary",
+        },
         {
             id: "review",
             label: "Review",
             icon: TrendingUp,
-            color: "text-purple-400",
+            color: "text-theme-secondary",
         },
     ];
 </script>
@@ -83,14 +88,16 @@
     <PageHeader title="Vision" subtitle="Strategic Operations" icon={Target}>
         <div class="flex items-center gap-6">
             <!-- Tabs -->
-            <div class="flex bg-white/5 p-1 rounded-xl border border-white/5">
+            <div
+                class="flex bg-theme-surface-subtle p-1 rounded-xl border border-theme-line"
+            >
                 {#each tabs as tab}
                     <button
                         onclick={() => onTabChange(tab.id as any)}
                         class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 {activeTab ===
                         tab.id
-                            ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                            : 'text-muted hover:text-white'}"
+                            ? 'bg-theme-primary text-theme-text-inverse shadow-lg shadow-theme-primary/20'
+                            : 'text-theme-text-muted hover:text-theme-text-strong'}"
                     >
                         <tab.icon size={14} />
                         {tab.label}
@@ -98,7 +105,7 @@
                 {/each}
             </div>
 
-            <div class="h-6 w-px bg-line"></div>
+            <div class="h-6 w-px bg-theme-line"></div>
 
             <button
                 onclick={() => openGoalModal()}
@@ -113,7 +120,7 @@
 
             <button
                 onclick={() => (rightPaneOpen = !rightPaneOpen)}
-                class="p-2 rounded-xl border border-line text-muted hover:text-text hover:bg-white/5 transition-all"
+                class="p-2 rounded-xl border border-theme-line text-theme-text-muted hover:text-theme-text-strong hover:bg-theme-surface transition-all"
                 title={rightPaneOpen ? "Close Context" : "Open Context"}
             >
                 {#if rightPaneOpen}
@@ -128,21 +135,21 @@
     <div class="flex-1 flex overflow-hidden">
         <!-- 2. MAIN WORKSPACE -->
         <main
-            class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative"
+            class="flex-1 flex flex-col min-w-0 bg-theme-background overflow-hidden relative"
         >
             <!-- Sub-navigation for Goals view -->
             {#if activeTab === "goals"}
                 <div
-                    class="h-14 flex-shrink-0 border-b border-line flex items-center justify-between px-8 bg-white/2"
+                    class="h-14 flex-shrink-0 border-b border-theme-line flex items-center justify-between px-8 bg-theme-surface-subtle"
                 >
                     <GoalsFilters bind:filters />
 
                     <div class="flex items-center gap-1">
                         {#each [{ id: "tree", icon: Network, title: "Network" }, { id: "board", icon: Columns, title: "Board" }, { id: "roadmap", icon: Map, title: "Map" }] as mode}
                             <button
-                                class="p-2 rounded-xl text-muted hover:text-text hover:bg-white/5 transition-all {planViewMode ===
+                                class="p-2 rounded-xl text-theme-text-muted hover:text-theme-text-strong hover:bg-theme-surface transition-all {planViewMode ===
                                 mode.id
-                                    ? 'text-primary'
+                                    ? 'text-theme-primary'
                                     : ''}"
                                 onclick={() => (planViewMode = mode.id as any)}
                                 title={mode.title}
@@ -150,12 +157,12 @@
                                 <mode.icon size={16} />
                             </button>
                         {/each}
-                        <div class="w-px h-4 bg-line mx-2"></div>
+                        <div class="w-px h-4 bg-theme-line mx-2"></div>
                         <button
                             onclick={() => (planViewMode = "importer")}
-                            class="p-2 rounded-xl text-muted hover:text-text hover:bg-white/5 transition-all {planViewMode ===
+                            class="p-2 rounded-xl text-theme-text-muted hover:text-theme-text-strong hover:bg-theme-surface transition-all {planViewMode ===
                             'importer'
-                                ? 'text-primary'
+                                ? 'text-theme-primary'
                                 : ''}"
                             title="Import"
                         >
@@ -165,10 +172,10 @@
                 </div>
             {:else if activeTab === "today"}
                 <div
-                    class="h-12 flex-shrink-0 border-b border-line flex items-center px-8 bg-white/1"
+                    class="h-12 flex-shrink-0 border-b border-theme-line flex items-center px-8 bg-theme-background-glass"
                 >
                     <span
-                        class="text-[10px] font-bold text-muted uppercase tracking-[0.2em]"
+                        class="text-[10px] font-bold text-theme-text-muted uppercase tracking-[0.2em]"
                         >Prioritized Strategic Operations</span
                     >
                 </div>
@@ -221,7 +228,7 @@
         <!-- 3. CONTEXT PANEL -->
         {#if rightPaneOpen}
             <aside
-                class="w-96 flex-shrink-0 border-l border-line bg-surface/5"
+                class="w-96 flex-shrink-0 border-l border-theme-line bg-theme-surface-subtle"
                 in:slide={{ axis: "x" }}
             >
                 <GoalContextPanel
@@ -250,7 +257,7 @@
         background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--theme-line);
         border-radius: 10px;
     }
 </style>

@@ -62,13 +62,18 @@
     // ... (tabs and areas definitions remain same)
 
     const tabs = [
-        { id: "today", label: "Today", icon: Zap, color: "text-amber-400" },
-        { id: "goals", label: "Goals", icon: Target, color: "text-primary" },
+        { id: "today", label: "Today", icon: Zap, color: "text-theme-warning" },
+        {
+            id: "goals",
+            label: "Goals",
+            icon: Target,
+            color: "text-theme-primary",
+        },
         {
             id: "review",
             label: "Review",
             icon: TrendingUp,
-            color: "text-purple-400",
+            color: "text-theme-secondary",
         },
     ];
 
@@ -105,14 +110,14 @@
 {#snippet headerAction()}
     <button
         onclick={() => (showFilterSheet = !showFilterSheet)}
-        class="p-2 rounded-full text-white/40 hover:text-white active:scale-95 transition-all"
+        class="p-2 rounded-full text-theme-text-muted hover:text-theme-text-strong active:scale-95 transition-all"
     >
         <Filter size={18} />
     </button>
 {/snippet}
 
 <div
-    class="flex flex-col bg-background relative"
+    class="flex flex-col bg-theme-background relative"
     use:swipe={{ onSwipeLeft: nextTab, onSwipeRight: prevTab }}
 >
     <!-- 1. Header Area -->
@@ -145,8 +150,8 @@
                             onclick={() => (filters.area = area as any)}
                             class="px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap {filters.area ===
                             area
-                                ? 'bg-primary border-primary text-black'
-                                : 'bg-surface border-line text-muted'}"
+                                ? 'bg-theme-primary border-theme-primary text-theme-text-inverse'
+                                : 'bg-theme-surface border-theme-line text-theme-text-muted'}"
                         >
                             {area}
                         </button>
@@ -158,25 +163,30 @@
                         <button
                             onclick={() => (ux.selectedGoalId = goal.id)}
                             class="w-full card-subtle p-5 flex items-center justify-between border-l-4 group active:scale-[0.98] transition-all"
-                            style="border-left-color: var(--color-primary)"
+                            style="border-left-color: var(--theme-primary)"
                         >
                             <div class="flex flex-col items-start gap-1">
                                 <span
-                                    class="text-[9px] font-black text-muted uppercase tracking-widest"
+                                    class="text-[9px] font-black text-theme-text-muted uppercase tracking-widest"
                                     >{goal.horizon} • {goal.area}</span
                                 >
                                 <span
-                                    class="text-base font-bold text-white group-active:text-primary transition-colors"
+                                    class="text-base font-bold text-theme-text-strong group-active:text-theme-primary transition-colors"
                                     >{goal.title}</span
                                 >
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="text-right">
-                                    <div class="text-lg font-black text-white">
+                                    <div
+                                        class="text-lg font-black text-theme-text-strong"
+                                    >
                                         {goalsStore.getGoalProgress(goal.id)}%
                                     </div>
                                 </div>
-                                <ChevronRight size={18} class="text-muted" />
+                                <ChevronRight
+                                    size={18}
+                                    class="text-theme-text-muted"
+                                />
                             </div>
                         </button>
                     {/each}
@@ -184,7 +194,7 @@
 
                 <div class="pt-4">
                     <h3
-                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-4 px-2"
+                        class="text-[10px] font-black text-theme-text-muted uppercase tracking-[0.2em] mb-4 px-2"
                     >
                         Visual Hierarchy
                     </h3>
@@ -203,22 +213,22 @@
 
     <!-- 3. Bottom Tabs (Action Bar) -->
     <nav
-        class="h-20 flex-shrink-0 flex items-center justify-around px-4 border-t border-white/5 bg-background/40 backdrop-blur-3xl pb-6"
+        class="h-20 flex-shrink-0 flex items-center justify-around px-4 border-t border-theme-line bg-theme-background-glass pb-6"
     >
         {#each tabs as tab}
             <button
                 onclick={() => onTabChange(tab.id as any)}
                 class="flex flex-col items-center gap-1.5 px-6 py-2 transition-all relative {activeTab ===
                 tab.id
-                    ? 'text-primary'
-                    : 'text-muted/40 hover:text-white'}"
+                    ? 'text-theme-primary'
+                    : 'text-theme-text-muted hover:text-theme-text-strong'}"
             >
                 <div class="relative">
                     <tab.icon
                         size={18}
                         strokeWidth={activeTab === tab.id ? 2.5 : 2}
                         class="transition-all {activeTab === tab.id
-                            ? 'drop-shadow-[0_0_8px_rgba(0,255,157,0.3)] scale-110'
+                            ? 'drop-shadow-[0_0_8px_var(--theme-primary-soft)] scale-110'
                             : ''}"
                     />
                 </div>
@@ -235,24 +245,24 @@
     <!-- 4. Goal Detail Sheet (Progressive Disclosure) -->
     {#if ux.selectedGoalId}
         <div
-            class="fixed inset-0 z-[100] bg-background lg:hidden flex flex-col"
+            class="fixed inset-0 z-[100] bg-theme-background lg:hidden flex flex-col"
             in:fly={{ y: "100%", duration: 400, opacity: 1 }}
             out:fly={{ y: "100%", duration: 300, opacity: 1 }}
         >
             <header
-                class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-line"
+                class="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-theme-line"
             >
                 <button
                     onclick={() => (ux.selectedGoalId = null)}
-                    class="p-2 -ml-2 text-muted hover:text-white"
+                    class="p-2 -ml-2 text-theme-text-muted hover:text-theme-text-strong"
                 >
                     <ArrowLeft size={22} />
                 </button>
                 <span
-                    class="text-xs font-bold text-white uppercase tracking-widest"
+                    class="text-xs font-bold text-theme-text-strong uppercase tracking-widest"
                     >Goal Dynamics</span
                 >
-                <button class="p-2 -mr-2 text-muted">
+                <button class="p-2 -mr-2 text-theme-text-muted">
                     <MoreHorizontal size={22} />
                 </button>
             </header>
@@ -275,17 +285,21 @@
             transition:fade
         ></div>
         <div
-            class="fixed left-0 right-0 bottom-0 z-[70] bg-surface rounded-t-[2.5rem] border-t border-line p-8 pb-12 space-y-8 shadow-2xl"
+            class="fixed left-0 right-0 bottom-0 z-[70] bg-theme-surface rounded-t-[2.5rem] border-t border-theme-line p-8 pb-12 space-y-8 shadow-2xl"
             transition:fly={{ y: "100%" }}
         >
-            <div class="w-12 h-1.5 bg-line rounded-full mx-auto -mt-2"></div>
+            <div
+                class="w-12 h-1.5 bg-theme-line rounded-full mx-auto -mt-2"
+            ></div>
 
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-white">Refine Logic</h3>
+                    <h3 class="text-lg font-bold text-theme-text-strong">
+                        Refine Logic
+                    </h3>
                     <button
                         onclick={() => (showFilterSheet = false)}
-                        class="text-xs font-bold text-primary uppercase"
+                        class="text-xs font-bold text-theme-primary uppercase"
                         >Done</button
                     >
                 </div>
@@ -293,7 +307,7 @@
                 <!-- Horizon -->
                 <div class="space-y-3">
                     <span
-                        class="text-[10px] font-black text-muted uppercase tracking-widest"
+                        class="text-[10px] font-black text-theme-text-muted uppercase tracking-widest"
                         >Active Horizon</span
                     >
                     <div class="flex flex-wrap gap-2">
@@ -302,8 +316,8 @@
                                 onclick={() => (filters.horizon = h as any)}
                                 class="px-5 py-2.5 rounded-2xl text-xs font-bold border transition-all {filters.horizon ===
                                 h
-                                    ? 'bg-primary border-primary text-black'
-                                    : 'bg-background border-line text-muted'}"
+                                    ? 'bg-theme-primary border-theme-primary text-theme-text-inverse'
+                                    : 'bg-theme-background border-theme-line text-theme-text-muted'}"
                                 >{h}</button
                             >
                         {/each}
@@ -313,7 +327,7 @@
                 <!-- Status -->
                 <div class="space-y-3">
                     <span
-                        class="text-[10px] font-black text-muted uppercase tracking-widest"
+                        class="text-[10px] font-black text-theme-text-muted uppercase tracking-widest"
                         >Fulfillment Status</span
                     >
                     <div class="flex flex-wrap gap-2">
@@ -322,8 +336,8 @@
                                 onclick={() => (filters.status = s as any)}
                                 class="px-5 py-2.5 rounded-2xl text-xs font-bold border transition-all {filters.status ===
                                 s
-                                    ? 'bg-primary border-primary text-black'
-                                    : 'bg-background border-line text-muted'}"
+                                    ? 'bg-theme-primary border-theme-primary text-theme-text-inverse'
+                                    : 'bg-theme-background border-theme-line text-theme-text-muted'}"
                                 >{s}</button
                             >
                         {/each}

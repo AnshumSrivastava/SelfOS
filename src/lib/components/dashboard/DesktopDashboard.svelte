@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { Settings2 } from "lucide-svelte";
-    import { slide } from "svelte/transition";
+    import { Settings2, LayoutDashboard } from "lucide-svelte";
+    import { slide, fade } from "svelte/transition";
     import { dashboardStore } from "$lib/stores/dashboard.svelte";
     import { auth } from "$lib/stores/auth.svelte";
     import WelcomeWidget from "./WelcomeWidget.svelte";
@@ -13,6 +13,7 @@
     import FinancialPulse from "./FinancialPulse.svelte";
     import GoalPulse from "./GoalPulse.svelte";
     import QuickCapture from "$lib/components/ui/QuickCapture.svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
 
     let showSettings = $state(false);
 
@@ -24,35 +25,35 @@
 </script>
 
 <div class="page-container h-full">
-    <div class="module-header mb-10">
-        <div>
-            <div class="flex items-center gap-4 mb-2">
-                <h1 class="text-3xl font-light text-white leading-none">
-                    Dashboard
-                </h1>
-                <button
-                    onclick={() => (showSettings = !showSettings)}
-                    class="p-1.5 rounded-lg hover:bg-surface transition-colors text-muted hover:text-white"
-                    aria-label="Dashboard settings"
-                >
-                    <Settings2 size={18} />
-                </button>
-            </div>
-            <p class="text-muted">Welcome back. Here's your focus for today.</p>
-        </div>
-    </div>
+    <PageHeader
+        title="Dashboard"
+        subtitle="Welcome back. Here's your focus for today."
+        icon={LayoutDashboard}
+    >
+        <button
+            onclick={() => (showSettings = !showSettings)}
+            class="btn btn-ghost"
+            aria-label="Dashboard settings"
+        >
+            <Settings2 size={18} />
+            <span>Customize</span>
+        </button>
+    </PageHeader>
 
     {#if dashboardStore.error}
         <div
-            class="p-4 mb-8 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-3"
+            class="p-4 mx-8 mb-8 rounded-xl bg-theme-danger/10 border border-theme-danger/20 text-theme-danger flex items-center gap-3"
         >
-            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            <div
+                class="w-2 h-2 rounded-full bg-theme-danger animate-pulse"
+            ></div>
             <p class="text-sm font-medium">
                 Data Error: {dashboardStore.error}
             </p>
             <button
                 onclick={() => dashboardStore.fetchData()}
-                class="ml-auto underline hover:text-white">Retry</button
+                class="ml-auto underline hover:text-theme-text-strong"
+                >Retry</button
             >
         </div>
     {/if}
@@ -60,10 +61,10 @@
     <!-- Settings Panel -->
     {#if showSettings}
         <div
-            class="card-subtle border-primary/20 animate-slide-up"
+            class="card-subtle mx-8 border-theme-primary/20 animate-slide-up"
             transition:slide={{ duration: 200 }}
         >
-            <h3 class="text-lg font-semibold text-white mb-4">
+            <h3 class="text-lg font-semibold text-theme-text-strong mb-4">
                 Customize Dashboard
             </h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -71,8 +72,8 @@
                     <button
                         onclick={() => dashboardStore.toggleWidget(widget.id)}
                         class="p-3 rounded-lg border transition-all {widget.enabled
-                            ? 'border-primary bg-primary/10 text-white'
-                            : 'border-line bg-surface text-muted hover:border-primary/50'}"
+                            ? 'border-theme-primary bg-theme-primary/10 text-theme-text-strong'
+                            : 'border-theme-line bg-theme-surface text-theme-text-muted hover:border-theme-primary/50'}"
                     >
                         <span class="text-sm font-medium capitalize"
                             >{widget.type}</span
@@ -80,10 +81,12 @@
                     </button>
                 {/each}
             </div>
-            <div class="mt-4 pt-4 border-t border-line flex justify-end gap-2">
+            <div
+                class="mt-4 pt-4 border-t border-theme-line flex justify-end gap-2"
+            >
                 <button
                     onclick={() => dashboardStore.resetToDefaults()}
-                    class="btn btn-secondary text-sm"
+                    class="btn btn-ghost text-sm"
                 >
                     Reset to Defaults
                 </button>
@@ -98,24 +101,20 @@
     {/if}
 
     <!-- Dynamic Dashboard Layout -->
-    <div class="flex flex-col gap-10 group/dashboard">
+    <div class="flex flex-col gap-10 px-8 py-4">
         <!-- Top Tier: Welcome & Critical Quick Capture -->
-        <div
-            class="w-full transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-        >
-            <WelcomeWidget />
-        </div>
+        <WelcomeWidget />
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <!-- Main Content: Direct Execution and Decisions -->
             <div class="lg:col-span-2 space-y-10">
-                <section
-                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-                >
+                <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
-                        <div class="w-1 h-4 bg-primary rounded-full"></div>
+                        <div
+                            class="w-1 h-4 bg-theme-primary rounded-full"
+                        ></div>
                         <h2
-                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
                         >
                             Daily Precision
                         </h2>
@@ -126,13 +125,13 @@
                     </div>
                 </section>
 
-                <section
-                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-                >
+                <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
-                        <div class="w-1 h-4 bg-secondary rounded-full"></div>
+                        <div
+                            class="w-1 h-4 bg-theme-secondary rounded-full"
+                        ></div>
                         <h2
-                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
                         >
                             Execution Flow
                         </h2>
@@ -146,12 +145,10 @@
 
             <!-- Sidebar: Context & Snapshots -->
             <div class="space-y-10">
-                <section
-                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-                >
+                <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
                         <h2
-                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
                         >
                             Timeline
                         </h2>
@@ -159,12 +156,10 @@
                     <CalendarSnapshot />
                 </section>
 
-                <section
-                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-                >
+                <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
                         <h2
-                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
                         >
                             Momentum
                         </h2>
@@ -172,12 +167,10 @@
                     <MomentumSnapshot />
                 </section>
 
-                <section
-                    class="space-y-4 transition-all duration-300 group-hover/dashboard:opacity-30 hover:!opacity-100"
-                >
+                <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
                         <h2
-                            class="text-xs font-bold uppercase tracking-widest text-muted"
+                            class="text-xs font-bold uppercase tracking-widest text-theme-text-muted"
                         >
                             Strategic Pulse
                         </h2>

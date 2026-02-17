@@ -10,7 +10,9 @@
         Target,
         ChevronRight,
         X,
+        Focus as FocusIcon,
     } from "lucide-svelte";
+    import PageHeader from "$lib/components/ui/PageHeader.svelte";
     import { focusStore } from "$lib/stores/focus.svelte";
     import { tasksStore, type Task } from "$lib/stores/tasks.svelte";
     import { fade, slide } from "svelte/transition";
@@ -62,16 +64,29 @@
     }
 </script>
 
-<div class="flex h-[80vh] relative overflow-hidden">
+<PageHeader
+    title="Focus"
+    subtitle="Deep work and flow state manager."
+    icon={FocusIcon}
+>
+    <button
+        class="btn btn-ghost"
+        onclick={() => (showTaskSelector = !showTaskSelector)}
+    >
+        {showTaskSelector ? "Hide Tasks" : "Show Tasks"}
+    </button>
+</PageHeader>
+
+<div class="flex h-[calc(100vh-80px)] relative overflow-hidden">
     <!-- Task Selector Sidebar -->
     {#if showTaskSelector}
         <div
-            class="w-80 border-r border-line bg-surface/30 backdrop-blur-xl p-6 flex flex-col"
+            class="w-80 border-r border-theme-line bg-theme-surface/30 backdrop-blur-xl p-6 flex flex-col"
             transition:slide={{ axis: "x", duration: 300 }}
         >
             <div class="flex items-center justify-between mb-6">
                 <h3
-                    class="text-sm font-bold uppercase tracking-widest text-muted"
+                    class="text-sm font-bold uppercase tracking-widest text-theme-text-muted"
                 >
                     Active Missions
                 </h3>
@@ -89,8 +104,8 @@
                         onclick={() => toggleTask(task.id)}
                         class="w-full text-left p-3 rounded-xl border transition-all {selectedTaskId ===
                         task.id
-                            ? 'bg-primary/10 border-primary text-primary'
-                            : 'bg-background/40 border-line text-muted hover:border-white/20'}"
+                            ? 'bg-theme-primary-soft border-theme-primary text-theme-primary'
+                            : 'bg-theme-background-subtle border-theme-line text-theme-text-secondary hover:border-theme-text-muted'}"
                     >
                         <div class="flex items-start gap-3">
                             <div class="mt-1">
@@ -124,8 +139,9 @@
         {#if !showTaskSelector}
             <button
                 onclick={() => (showTaskSelector = true)}
-                class="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-surface border border-line rounded-full text-muted hover:text-white transition-all shadow-lg"
+                class="absolute left-6 top-1/2 -translate-y-1/2 p-2 bg-theme-surface border border-theme-line rounded-full text-theme-text-muted hover:text-theme-text-strong transition-all shadow-lg"
                 transition:fade
+                aria-label="Show task selector"
             >
                 <ChevronRight size={20} />
             </button>
@@ -144,7 +160,7 @@
         <div class="relative z-10 text-center">
             {#if selectedTask}
                 <div
-                    class="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary animate-slide-up"
+                    class="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-theme-primary-soft border border-theme-primary/20 rounded-full text-theme-primary animate-slide-up"
                     in:fade
                 >
                     <Target size={14} />
@@ -176,7 +192,7 @@
                 tabindex="0"
             >
                 <h2
-                    class="text-muted tracking-widest uppercase font-medium mb-2"
+                    class="text-theme-text-muted tracking-widest uppercase font-medium mb-2"
                 >
                     {focusStore.mode === "shortBreak"
                         ? "Short Break"
@@ -192,18 +208,19 @@
                             bind:value={editMinutes}
                             min="1"
                             max="180"
-                            class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] bg-transparent border-b-4 border-primary w-[400px] text-center focus:outline-none"
+                            class="text-[120px] md:text-[180px] font-bold text-theme-text-strong tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_var(--theme-primary-soft)] bg-transparent border-b-4 border-theme-primary w-[300px] text-center focus:outline-none"
                             onclick={(e) => e.stopPropagation()}
                             onkeydown={(e) =>
                                 e.key === "Enter" && saveDuration()}
                             aria-label="Edit duration minutes"
                         />
                         <button
-                            class="p-6 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                            class="p-6 bg-theme-surface-subtle border border-theme-line rounded-full hover:bg-theme-surface transition-colors"
                             onclick={(e) => {
                                 e.stopPropagation();
                                 saveDuration();
                             }}
+                            aria-label="Save duration"
                         >
                             <Check size={48} />
                         </button>
@@ -211,7 +228,7 @@
                 {:else}
                     <div class="relative inline-block">
                         <span
-                            class="text-[120px] md:text-[180px] font-bold text-white tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_rgba(0,255,157,0.3)] group-hover:text-primary/90 transition-colors"
+                            class="text-[120px] md:text-[180px] font-bold text-theme-text-strong tabular-nums leading-none tracking-tighter drop-shadow-[0_0_30px_var(--theme-primary-soft)] group-hover:text-theme-primary transition-colors"
                         >
                             {focusStore.formattedTime}
                         </span>
@@ -220,7 +237,7 @@
                                 class="absolute -right-24 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                                 <span
-                                    class="flex items-center gap-2 text-muted text-lg bg-surface/80 px-4 py-2 rounded-full border border-line"
+                                    class="flex items-center gap-2 text-theme-text-muted text-lg bg-theme-surface-glass px-4 py-2 rounded-full border border-theme-line"
                                 >
                                     <Pencil size={18} /> Edit
                                 </span>
@@ -232,7 +249,7 @@
 
             <div class="flex items-center justify-center gap-8">
                 <button
-                    class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
+                    class="p-4 rounded-full bg-theme-surface border border-theme-line hover:border-theme-text-muted hover:bg-theme-surface-subtle transition-all text-theme-text-strong"
                     aria-label="Reset"
                     onclick={() => focusStore.reset()}
                 >
@@ -240,8 +257,9 @@
                 </button>
 
                 <button
-                    class="w-24 h-24 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                    class="w-24 h-24 rounded-full bg-theme-text-strong text-theme-text-inverse flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_var(--theme-primary-soft)]"
                     onclick={() => focusStore.toggle()}
+                    aria-label={focusStore.isRunning ? "Pause" : "Start"}
                 >
                     {#if focusStore.isRunning}
                         <Pause size={40} fill="currentColor" />
@@ -251,7 +269,7 @@
                 </button>
 
                 <button
-                    class="p-4 rounded-full bg-surface border border-line hover:border-white hover:bg-white/10 transition-all text-white"
+                    class="p-4 rounded-full bg-theme-surface border border-theme-line hover:border-theme-text-muted hover:bg-theme-surface-subtle transition-all text-theme-text-strong"
                     aria-label="Sound"
                 >
                     <Volume2 size={24} />
@@ -262,8 +280,8 @@
                 <button
                     class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                     'focus'
-                        ? 'bg-white text-black border-white shadow-lg'
-                        : 'bg-surface border-line text-muted hover:text-white'}"
+                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
                     onclick={() => focusStore.setMode("focus")}
                 >
                     Pomodoro
@@ -271,8 +289,8 @@
                 <button
                     class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                     'shortBreak'
-                        ? 'bg-white text-black border-white shadow-lg'
-                        : 'bg-surface border-line text-muted hover:text-white'}"
+                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
                     onclick={() => focusStore.setMode("shortBreak")}
                 >
                     Short Break
@@ -280,8 +298,8 @@
                 <button
                     class="px-5 py-2 rounded-full text-sm font-medium transition-all active:scale-95 border {focusStore.mode ===
                     'longBreak'
-                        ? 'bg-white text-black border-white shadow-lg'
-                        : 'bg-surface border-line text-muted hover:text-white'}"
+                        ? 'bg-theme-text-strong text-theme-text-inverse border-theme-text-strong shadow-lg'
+                        : 'bg-theme-surface border-theme-line text-theme-text-muted hover:text-theme-text-strong'}"
                     onclick={() => focusStore.setMode("longBreak")}
                 >
                     Long Break

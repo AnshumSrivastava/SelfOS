@@ -266,7 +266,7 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-theme-background-glass backdrop-blur-md"
         transition:fade={{ duration: 200 }}
         onclick={onClose}
         onkeydown={(e) => (e.key === "Escape" || e.key === " ") && onClose()}
@@ -274,7 +274,7 @@
         tabindex="-1"
     >
         <div
-            class="bg-surface border border-line w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]"
+            class="bg-theme-surface border border-theme-line w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px]"
             onclick={(e) => e.stopPropagation()}
             onkeydown={(e) => e.stopPropagation()}
             role="dialog"
@@ -282,10 +282,10 @@
             tabindex="-1"
         >
             <!-- Header & Progress -->
-            <div class="p-8 pb-4 relative border-b border-line">
+            <div class="p-8 pb-4 relative border-b border-theme-line">
                 <button
                     onclick={onClose}
-                    class="absolute top-8 right-8 p-2 hover:bg-background rounded-full transition-colors text-muted hover:text-white"
+                    class="absolute top-8 right-8 p-2 hover:bg-theme-background-subtle rounded-full transition-colors text-theme-text-muted hover:text-theme-text-strong"
                 >
                     <X size={20} />
                 </button>
@@ -296,21 +296,23 @@
                             class="h-1 flex-1 rounded-full transition-all duration-500 {i +
                                 1 <=
                             currentStep
-                                ? 'bg-primary shadow-lg shadow-primary/20'
-                                : 'bg-background'}"
+                                ? 'bg-theme-primary shadow-lg shadow-theme-primary/20'
+                                : 'bg-theme-background-subtle'}"
                         ></div>
                     {/each}
                 </div>
 
                 <span
-                    class="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1 block"
+                    class="text-[10px] font-black uppercase tracking-[0.2em] text-theme-primary mb-1 block"
                 >
                     Step {currentStep} of {totalSteps}
                 </span>
-                <h2 class="text-2xl font-bold text-white leading-tight">
+                <h2
+                    class="text-2xl font-bold text-theme-text-strong leading-tight"
+                >
                     {stepTitles[currentStep - 1]}
                 </h2>
-                <p class="text-xs text-muted mt-1">
+                <p class="text-xs text-theme-text-muted mt-1">
                     {stepSubs[currentStep - 1]}
                 </p>
             </div>
@@ -322,27 +324,27 @@
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-1.5"
                                     >Goal Title</span
                                 >
                                 <input
                                     bind:value={title}
                                     placeholder="e.g., Become a Senior Architect"
-                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30"
+                                    class="w-full bg-theme-background border border-theme-line rounded-2xl px-5 py-4 text-theme-text-strong focus:border-theme-primary/50 focus:ring-1 focus:ring-theme-primary/20 outline-none transition-all placeholder:text-theme-text-muted/30"
                                 />
                             </label>
                         </div>
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-1.5"
                                     >The Vision (Why?)</span
                                 >
                                 <textarea
                                     bind:value={vision}
                                     placeholder="The core purpose... 'So I can design systems that help millions.'"
                                     rows="3"
-                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-muted/30 resize-none italic font-serif"
+                                    class="w-full bg-theme-background border border-theme-line rounded-2xl px-5 py-4 text-theme-text-strong focus:border-theme-primary/50 focus:ring-1 focus:ring-theme-primary/20 outline-none transition-all placeholder:text-theme-text-muted/30 resize-none italic font-serif"
                                 ></textarea>
                             </label>
                         </div>
@@ -355,16 +357,16 @@
                                     type="button"
                                     class="p-4 rounded-2xl border transition-all text-left flex items-center justify-between {horizon ===
                                     h.value
-                                        ? 'border-primary/50 bg-primary/5'
-                                        : 'border-line bg-background/40 hover:border-muted'}"
+                                        ? 'border-theme-primary/50 bg-theme-primary/5'
+                                        : 'border-theme-line bg-theme-background/40 hover:border-theme-text-muted'}"
                                     onclick={() => (horizon = h.value)}
                                 >
                                     <div class="flex items-center gap-4">
                                         <div
-                                            class="p-2 rounded-xl bg-surface border border-line {horizon ===
+                                            class="p-2 rounded-xl bg-theme-surface border border-theme-line {horizon ===
                                             h.value
-                                                ? 'text-primary'
-                                                : 'text-muted'}"
+                                                ? 'text-theme-primary'
+                                                : 'text-theme-text-muted'}"
                                         >
                                             {#if h.value === "life"}<Sparkles
                                                     size={18}
@@ -379,18 +381,20 @@
                                         </div>
                                         <div>
                                             <div
-                                                class="text-sm font-bold text-white mb-0.5"
+                                                class="text-sm font-bold text-theme-text-strong mb-0.5"
                                             >
                                                 {h.label}
                                             </div>
-                                            <div class="text-[10px] text-muted">
+                                            <div
+                                                class="text-[10px] text-theme-text-muted"
+                                            >
                                                 {h.desc}
                                             </div>
                                         </div>
                                     </div>
                                     {#if horizon === h.value}
                                         <div
-                                            class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-black"
+                                            class="w-5 h-5 rounded-full bg-theme-primary flex items-center justify-center text-theme-text-inverse"
                                         >
                                             <Check size={12} strokeWidth={4} />
                                         </div>
@@ -403,7 +407,7 @@
                     <div class="space-y-8" in:fly={{ x: 20, duration: 400 }}>
                         <div>
                             <span
-                                class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
+                                class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-3"
                                 >Life Area</span
                             >
                             <div class="flex flex-wrap gap-2">
@@ -412,8 +416,8 @@
                                         type="button"
                                         class="px-4 py-2 rounded-xl border text-xs font-bold transition-all {area ===
                                         a
-                                            ? 'border-primary bg-primary text-black shadow-lg shadow-primary/20'
-                                            : 'border-line text-muted hover:border-muted'}"
+                                            ? 'border-theme-primary bg-theme-primary text-theme-text-inverse shadow-lg shadow-theme-primary/20'
+                                            : 'border-theme-line text-theme-text-muted hover:border-theme-text-muted'}"
                                         onclick={() => (area = a)}
                                     >
                                         {a}
@@ -426,12 +430,12 @@
                             <div>
                                 <label class="block">
                                     <span
-                                        class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
+                                        class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-3"
                                         >Parent Objective (Optional)</span
                                     >
                                     <select
                                         bind:value={parentId}
-                                        class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all appearance-none"
+                                        class="w-full bg-theme-background border border-theme-line rounded-2xl px-5 py-4 text-theme-text-strong focus:border-theme-primary/50 outline-none transition-all appearance-none"
                                     >
                                         <option value={undefined}
                                             >No Parent (Standalone)</option
@@ -451,7 +455,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <span
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
+                                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-3"
                                     >Priority</span
                                 >
                                 <div class="flex flex-col gap-2">
@@ -460,15 +464,15 @@
                                             type="button"
                                             class="p-3 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all capitalize {priority ===
                                             p
-                                                ? 'border-amber-500/50 bg-amber-500/5 text-amber-500'
-                                                : 'border-line text-muted hover:border-muted'}"
+                                                ? 'border-theme-warning/50 bg-theme-warning/5 text-theme-warning'
+                                                : 'border-theme-line text-theme-text-muted hover:border-theme-text-muted'}"
                                             onclick={() =>
                                                 (priority = p as Priority)}
                                         >
                                             <Flag
                                                 size={14}
                                                 class={p === "high"
-                                                    ? "text-rose-500"
+                                                    ? "text-theme-danger"
                                                     : ""}
                                             />
                                             {p}
@@ -479,13 +483,13 @@
                             <div>
                                 <label class="block">
                                     <span
-                                        class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-3"
+                                        class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-3"
                                         >Target Date</span
                                     >
                                     <input
                                         type="date"
                                         bind:value={targetDate}
-                                        class="w-full bg-background border border-line rounded-2xl px-5 py-3 text-white focus:border-primary outline-none color-scheme-dark"
+                                        class="w-full bg-theme-background border border-theme-line rounded-2xl px-5 py-3 text-theme-text-strong focus:border-theme-primary outline-none color-scheme-dark"
                                     />
                                 </label>
                             </div>
@@ -493,14 +497,14 @@
                         <div>
                             <label class="block">
                                 <span
-                                    class="text-[10px] font-bold text-muted uppercase tracking-widest block mb-1.5"
+                                    class="text-[10px] font-bold text-theme-text-muted uppercase tracking-widest block mb-1.5"
                                     >Strategic Notes</span
                                 >
                                 <textarea
                                     bind:value={description}
                                     placeholder="Resources, obstacles, or starting context..."
                                     rows="3"
-                                    class="w-full bg-background border border-line rounded-2xl px-5 py-4 text-white focus:border-primary/50 outline-none transition-all placeholder:text-muted/30 resize-none"
+                                    class="w-full bg-theme-background border border-theme-line rounded-2xl px-5 py-4 text-theme-text-strong focus:border-theme-primary/50 outline-none transition-all placeholder:text-theme-text-muted/30 resize-none"
                                 ></textarea>
                             </label>
                         </div>
@@ -508,18 +512,21 @@
                 {:else if currentStep === 5}
                     <div class="space-y-6" in:fly={{ x: 20, duration: 400 }}>
                         <div
-                            class="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex gap-4"
+                            class="bg-theme-primary/10 border border-theme-primary/20 rounded-2xl p-4 flex gap-4"
                         >
-                            <Sparkles class="text-primary/70" size={20} />
+                            <Sparkles class="text-theme-primary/70" size={20} />
                             <div>
-                                <p class="text-xs font-bold text-primary mb-1">
+                                <p
+                                    class="text-xs font-bold text-theme-primary mb-1"
+                                >
                                     Atomic Breakdown
                                 </p>
                                 <p
-                                    class="text-[10px] text-muted leading-relaxed"
+                                    class="text-[10px] text-theme-text-muted leading-relaxed"
                                 >
                                     Quickly architect your plan. Lines starting
-                                    with <span class="text-white font-black"
+                                    with <span
+                                        class="text-theme-text-strong font-black"
                                         >&gt;</span
                                     > create sub-goals. Other lines become tasks.
                                 </p>
@@ -527,13 +534,13 @@
                         </div>
 
                         <div
-                            class="bg-background border border-line rounded-2xl p-4 min-h-[250px] relative"
+                            class="bg-theme-background border border-theme-line rounded-2xl p-4 min-h-[250px] relative"
                         >
                             <textarea
                                 bind:value={structurePlan}
                                 placeholder="> Milestone: First Prototype&#10;- Design schema&#10;- Implement store&#10;&#10;> Milestone: UI Polish"
                                 rows="10"
-                                class="w-full bg-transparent border-none text-sm text-white focus:ring-0 outline-none placeholder:text-muted/30 leading-relaxed resize-none font-mono"
+                                class="w-full bg-transparent border-none text-sm text-theme-text-strong focus:ring-0 outline-none placeholder:text-theme-text-muted/30 leading-relaxed resize-none font-mono"
                             ></textarea>
                         </div>
                     </div>
@@ -542,12 +549,12 @@
 
             <!-- Footer -->
             <div
-                class="p-8 pb-10 pt-4 flex gap-3 bg-surface border-t border-line"
+                class="p-8 pb-10 pt-4 flex gap-3 bg-theme-surface border-t border-theme-line"
             >
                 {#if currentStep > 1}
                     <button
                         onclick={prevStep}
-                        class="px-6 py-4 rounded-2xl border border-line text-muted font-bold hover:bg-background transition-all flex items-center gap-2"
+                        class="px-6 py-4 rounded-2xl border border-theme-line text-theme-text-muted font-bold hover:bg-theme-background transition-all flex items-center gap-2"
                     >
                         <ChevronLeft size={18} />
                         Back
@@ -556,7 +563,7 @@
                 <button
                     onclick={nextStep}
                     disabled={currentStep === 1 && !title.trim()}
-                    class="flex-1 px-6 py-4 rounded-2xl bg-primary text-black font-bold hover:opacity-90 transition-all shadow-lg shadow-primary/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                    class="flex-1 px-6 py-4 rounded-2xl bg-theme-primary text-theme-text-inverse font-bold hover:opacity-90 transition-all shadow-lg shadow-theme-primary/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                 >
                     {#if currentStep === totalSteps}
                         <span>Finish & {goal ? "Save" : "Create"}</span>
@@ -581,7 +588,7 @@
         background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.05);
+        background: var(--theme-line);
         border-radius: 10px;
     }
 </style>

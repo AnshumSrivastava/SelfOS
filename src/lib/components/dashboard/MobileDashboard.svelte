@@ -47,20 +47,21 @@
 
     {#if dashboardStore.error}
         <div
-            class="mx-6 mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400"
+            class="mx-6 mt-4 p-4 rounded-2xl bg-theme-danger/10 border border-theme-danger/20 text-theme-danger"
         >
             <div class="flex items-center gap-3 mb-2">
                 <div
-                    class="w-2 h-2 rounded-full bg-red-500 animate-pulse"
+                    class="w-2 h-2 rounded-full bg-theme-danger animate-pulse"
                 ></div>
-                <p class="text-xs font-bold uppercase tracking-widest">
+                <p class="text-[10px] font-bold uppercase tracking-widest">
                     System Error
                 </p>
             </div>
             <p class="text-sm mb-3">{dashboardStore.error}</p>
             <button
                 onclick={() => dashboardStore.fetchData()}
-                class="w-full py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors"
+                class="w-full py-2 bg-theme-danger/20 hover:bg-theme-danger/30 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors"
+                aria-label="Retry dashboard initialization"
             >
                 Re-initialize Dashboard
             </button>
@@ -71,9 +72,9 @@
     {#if dashboardStore.todayDecisions.length > 0}
         <div class="px-6 py-10">
             <div class="mb-5 flex items-center gap-2.5">
-                <div class="w-1 h-3.5 bg-primary rounded-full"></div>
+                <div class="w-1 h-3.5 bg-theme-primary rounded-full"></div>
                 <span
-                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary"
+                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-theme-primary"
                     >Primary Directive</span
                 >
             </div>
@@ -86,7 +87,7 @@
         <section class="space-y-4">
             <div class="flex items-center gap-2 px-1">
                 <span
-                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted/40"
+                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-theme-text-muted"
                     >Timeline</span
                 >
             </div>
@@ -96,7 +97,7 @@
         <section class="space-y-4">
             <div class="flex items-center gap-2 px-1">
                 <span
-                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted/40"
+                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-theme-text-muted"
                     >Momentum</span
                 >
             </div>
@@ -106,7 +107,7 @@
         <section class="space-y-4">
             <div class="flex items-center gap-2 px-1">
                 <span
-                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted/40"
+                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-theme-text-muted"
                     >Strategic Pulse</span
                 >
             </div>
@@ -116,7 +117,7 @@
         <section class="space-y-4">
             <div class="flex items-center gap-2 px-1">
                 <span
-                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted/40"
+                    class="text-[9px] font-bold uppercase tracking-[0.2em] text-theme-text-muted"
                     >Resilience</span
                 >
             </div>
