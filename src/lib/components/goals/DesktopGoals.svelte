@@ -85,11 +85,7 @@
 
 <div class="h-full flex flex-col overflow-hidden bg-background">
     <!-- 1. UNIFIED HEADER -->
-    <PageHeader
-        title="Goals"
-        subtitle="Manage your long-term objectives."
-        icon={Target}
-    >
+    <PageHeader title="Goals" subtitle="Manage your long-term objectives.">
         <div class="flex items-center gap-6">
             <!-- Tabs -->
             <div

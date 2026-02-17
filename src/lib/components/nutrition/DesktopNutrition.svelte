@@ -56,7 +56,7 @@
 </script>
 
 <div class="page-container h-full relative">
-    <PageHeader title="Nutrition" subtitle="Metabolic Control" icon={Utensils}>
+    <PageHeader title="Nutrition" subtitle="Metabolic Control">
         <button
             onclick={() => (isProfileOpen = true)}
             class="btn btn-ghost border-line flex items-center gap-2"

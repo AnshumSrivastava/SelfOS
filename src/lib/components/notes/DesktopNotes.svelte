@@ -57,7 +57,7 @@
 <NoteModal bind:isOpen={isModalOpen} bind:note={currentNote} />
 
 <div class="page-container relative">
-    <PageHeader title="Notes" subtitle="Collective Archive" icon={FileText}>
+    <PageHeader title="Notes" subtitle="Collective Archive">
         <div class="relative">
             <Search
                 size={18}

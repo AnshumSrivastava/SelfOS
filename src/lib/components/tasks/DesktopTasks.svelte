@@ -35,7 +35,6 @@
     let isAdding = $state(false);
     let isProcessing = $state(false);
 
-    // New Task Form State
     let newTask = $state({
         title: "",
         projectId: null as string | null,
@@ -44,11 +43,8 @@
         scheduled: "",
     });
 
-    // Use derived filters from store
     let filteredTasks = $derived.by(() => {
         let tasks = tasksStore.tasks;
-
-        // Apply filter
         switch (filter) {
             case "active":
                 tasks = tasks.filter((t) => t.status !== "completed");
@@ -83,7 +79,6 @@
             default:
                 tasks = tasks.filter((t) => t.status !== "completed");
         }
-
         return tasks
             .map((task) => {
                 let urgency = 0;
@@ -93,53 +88,24 @@
             .sort((a, b) => b.urgency - a.urgency);
     });
 
-    // Calculate insights from store
     let insights = $derived.by(() => {
         const overdue = tasksStore.overdueTasks.length;
         const dueToday = tasksStore.todayTasks.length;
         const highPriority = tasksStore.tasks.filter(
             (t) => t.priority === "high" && t.status !== "completed",
         ).length;
-
         return { overdue, dueToday, highPriority };
     });
 
-    function getPriorityColor(p: string) {
-        switch (p) {
-            case "high":
-                return "text-red-400 border-red-400/20 bg-red-400/10";
-            case "medium":
-                return "text-yellow-400 border-yellow-400/20 bg-yellow-400/10";
-            case "low":
-                return "text-blue-400 border-blue-400/20 bg-blue-400/10";
-            default:
-                return "text-gray-400 border-gray-400/20 bg-gray-400/10";
-        }
-    }
-
-    function formatDate(iso: string | null) {
-        if (!iso) return "";
-        return new Date(iso).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-        });
-    }
-
     async function handleAddTask() {
         if (!newTask.title.trim()) return;
-
         isProcessing = true;
-        console.log(
-            "[DesktopTasks] Adding task(s) with project:",
-            newTask.projectId,
-        );
         try {
             await tasksStore.addBatch(
                 newTask.title,
                 newTask.projectId,
                 newTask.priority,
             );
-
             newTask = {
                 title: "",
                 projectId: null,
@@ -179,11 +145,9 @@
 {/if}
 
 <div class="page-container relative h-full flex flex-col">
-    <!-- Header -->
     <PageHeader
         title="Tasks"
         subtitle="{tasksStore.activeCount} active · {tasksStore.completedCount} completed"
-        icon={CheckSquare}
     >
         <button
             onclick={() => (isAdding = !isAdding)}
@@ -291,10 +255,6 @@
                     }
                 }}
             ></textarea>
-            <div class="text-[10px] text-neutral-500 mt-1">
-                Press Ctrl+Enter to add
-            </div>
-
             <div class="flex flex-wrap items-center gap-4">
                 <div class="relative group">
                     <select
@@ -311,7 +271,6 @@
                         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
                     />
                 </div>
-
                 <div
                     class="flex bg-background/50 rounded-lg p-1 border border-line"
                 >
@@ -327,32 +286,7 @@
                         </button>
                     {/each}
                 </div>
-
-                <div
-                    class="flex items-center gap-2 text-sm text-muted bg-background/50 px-3 py-1.5 rounded-lg border border-line"
-                >
-                    <AlertCircle size={14} />
-                    <span class="text-xs">Deadline:</span>
-                    <input
-                        type="date"
-                        bind:value={newTask.deadline}
-                        class="bg-transparent text-white focus:outline-none w-[110px]"
-                    />
-                </div>
-
-                <div
-                    class="flex items-center gap-2 text-sm text-muted bg-background/50 px-3 py-1.5 rounded-lg border border-line"
-                >
-                    <CalendarDays size={14} />
-                    <span class="text-xs">Do on:</span>
-                    <input
-                        type="date"
-                        bind:value={newTask.scheduled}
-                        class="bg-transparent text-white focus:outline-none w-[110px]"
-                    />
-                </div>
             </div>
-
             <div class="flex justify-end pt-2">
                 <button
                     onclick={handleAddTask}
@@ -360,8 +294,7 @@
                     class="btn btn-primary"
                 >
                     {#if isProcessing}
-                        <Loader2 size={18} class="animate-spin" />
-                        Processing...
+                        <Loader2 size={18} class="animate-spin" /> Processing...
                     {:else}
                         Add Tasks
                     {/if}
@@ -370,8 +303,9 @@
         </div>
     {/if}
 
-    <!-- Task List -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 overflow-hidden">
+    <div
+        class="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 overflow-hidden mt-8"
+    >
         <div
             class="lg:col-span-2 space-y-3 overflow-y-auto pr-2 custom-scrollbar"
         >
@@ -379,20 +313,13 @@
                 <div class="space-y-3">
                     <SkeletonLoader lines={1} height="h-24" />
                     <SkeletonLoader lines={1} height="h-24" />
-                    <SkeletonLoader lines={1} height="h-24" />
                 </div>
             {:else if filteredTasks.length === 0}
                 <div class="text-center py-12 text-neutral-500">
                     <CheckSquare size={48} class="mx-auto mb-4 opacity-50" />
                     <p class="text-lg font-medium">No tasks found</p>
-                    <p class="text-sm mt-2">
-                        {filter === "completed"
-                            ? "Complete some tasks to see them here"
-                            : "Add a new task to get started"}
-                    </p>
                 </div>
             {/if}
-
             {#each filteredTasks as task (task.id)}
                 <TaskCard
                     {task}
@@ -401,8 +328,6 @@
                 />
             {/each}
         </div>
-
-        <!-- Sidebar Info -->
         <div class="space-y-[var(--space-3)]">
             <div
                 class="card-subtle flex flex-col !p-6"
@@ -415,16 +340,8 @@
                 <p class="text-sm text-muted mb-6 leading-relaxed">
                     You have <span class="text-text font-medium"
                         >{tasksStore.activeCount}</span
-                    >
-                    active tasks across all projects.
-                    {#if insights.highPriority > 0}
-                        <br /><span class="text-primary/70"
-                            >Focus on the {insights.highPriority} mission-critical
-                            items.</span
-                        >
-                    {/if}
+                    > active tasks.
                 </p>
-
                 <div class="space-y-3 mb-8">
                     <div
                         class="h-1 w-full bg-line rounded-full overflow-hidden"
@@ -438,50 +355,6 @@
                                 : 0}%"
                         ></div>
                     </div>
-                    <div
-                        class="flex justify-between text-[10px] uppercase tracking-widest text-muted"
-                    >
-                        <span>{tasksStore.completedCount} completed</span>
-                        <span
-                            >{tasksStore.tasks.length > 0
-                                ? Math.round(
-                                      (tasksStore.completedCount /
-                                          tasksStore.tasks.length) *
-                                          100,
-                                  )
-                                : 0}%</span
-                        >
-                    </div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="space-y-2">
-                    <div
-                        class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5"
-                    >
-                        <span class="text-xs text-muted">Active</span>
-                        <span class="text-sm font-medium text-text"
-                            >{tasksStore.activeCount}</span
-                        >
-                    </div>
-                    <div
-                        class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5"
-                    >
-                        <span class="text-xs text-muted">Completed</span>
-                        <span class="text-sm font-medium text-primary"
-                            >{tasksStore.completedCount}</span
-                        >
-                    </div>
-                    {#if insights.overdue > 0}
-                        <div
-                            class="flex items-center justify-between p-3 rounded-[var(--radius-subtle)] bg-red-400/5 border border-red-400/10"
-                        >
-                            <span class="text-xs text-red-400/70">Overdue</span>
-                            <span class="text-sm font-medium text-red-400"
-                                >{insights.overdue}</span
-                            >
-                        </div>
-                    {/if}
                 </div>
             </div>
         </div>
@@ -498,8 +371,5 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #333;
         border-radius: 3px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #555;
     }
 </style>

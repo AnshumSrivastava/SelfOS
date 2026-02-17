@@ -42,7 +42,6 @@
     <PageHeader
         title="Projects & Areas"
         subtitle="Organize your resources and archives."
-        icon={FolderKanban}
     >
         <div class="flex items-center gap-6">
             <!-- Header actions if any -->

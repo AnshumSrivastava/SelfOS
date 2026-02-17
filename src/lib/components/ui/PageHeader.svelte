@@ -4,14 +4,10 @@
     let {
         title,
         subtitle = "",
-        icon: Icon = null,
-        iconColor = "text-primary",
         children,
     } = $props<{
         title: string;
         subtitle?: string;
-        icon?: any;
-        iconColor?: string;
         children?: import("svelte").Snippet;
     }>();
 </script>
@@ -19,15 +15,8 @@
 <header
     class="h-20 shrink-0 border-b border-theme-line flex items-center justify-between px-6 md:px-8 bg-theme-background/50 backdrop-blur-xl z-20"
 >
-    <!-- Left: Title & Icon -->
+    <!-- Left: Title -->
     <div class="flex items-center gap-4">
-        {#if Icon}
-            <div
-                class="p-2 rounded-xl bg-theme-surface-subtle border border-theme-line {iconColor}"
-            >
-                <Icon size={20} />
-            </div>
-        {/if}
         <div>
             <h1
                 class="text-xl font-medium tracking-tight text-theme-text-strong"

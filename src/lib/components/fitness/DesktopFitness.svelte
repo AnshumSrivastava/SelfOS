@@ -50,7 +50,7 @@
 </script>
 
 <div class="page-container h-full relative">
-    <PageHeader title="Fitness" subtitle="High Performance Lab" icon={Activity}>
+    <PageHeader title="Fitness" subtitle="High Performance Lab">
         <button
             onclick={() => {
                 console.log("DesktopFitness: Opening UpdateStatsModal");

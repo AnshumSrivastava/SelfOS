@@ -138,7 +138,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="page-container h-full flex flex-col">
-    <PageHeader title="Journal" subtitle="Reflect, Learn, Grow." icon={PenTool}>
+    <PageHeader title="Journal" subtitle="Reflect, Learn, Grow.">
         {#if view === "list"}
             <button
                 onclick={createNewEntry}

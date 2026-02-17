@@ -375,11 +375,7 @@
 <div class="page-container relative h-full flex flex-col">
     <!-- ... (modals) -->
 
-    <PageHeader
-        title="Finance"
-        subtitle="Master your wealth and cashflow."
-        icon={Wallet}
-    >
+    <PageHeader title="Finance" subtitle="Master your wealth and cashflow.">
         <button class="btn btn-ghost flex items-center gap-2">
             <PieChart size={16} />
             <span class="hidden sm:inline">Reports</span>
@@ -797,25 +793,14 @@
                                 >
                                 <span
                                     class="text-sm text-gray-500 mb-1.5 font-medium"
-                                    >/ {(
-                                        (goal.currentAmount /
-                                            goal.targetAmount) *
-                                        100
-                                    ).toFixed(0)}%</span
+                                    >/ {formatCurrency(goal.targetAmount)}</span
                                 >
                             </div>
-                            {#if goal.deadline}
-                                <p class="text-xs text-gray-500 mb-3">
-                                    Deadline: {new Date(
-                                        goal.deadline,
-                                    ).toLocaleDateString()}
-                                </p>
-                            {/if}
                             <div
-                                class="h-3 w-full bg-black/40 rounded-full overflow-hidden border border-white/5"
+                                class="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5"
                             >
                                 <div
-                                    class="h-full bg-[#00BCD4] w-[60%] rounded-full shadow-[0_0_15px_rgba(0,188,212,0.4)] transition-all duration-1000 ease-out"
+                                    class="h-full bg-gradient-to-r from-[#00BCD4] to-[#00838F] rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(0,188,212,0.3)]"
                                     style="width: {Math.min(
                                         (goal.currentAmount /
                                             goal.targetAmount) *
@@ -824,95 +809,19 @@
                                     )}%"
                                 ></div>
                             </div>
-                            <div class="flex mt-6 gap-2">
-                                <button
-                                    class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/5 hover:bg-[#00BCD4]/10 hover:text-[#00BCD4] transition-colors"
-                                    onclick={() =>
-                                        financeStore.addToGoal(goal.id, 100)}
-                                    >+ ₹100</button
-                                >
-                                <button
-                                    class="flex-1 py-2 text-xs font-bold rounded-lg bg-white/5 hover:bg-[#00BCD4]/10 hover:text-[#00BCD4] transition-colors"
-                                    onclick={() =>
-                                        financeStore.addToGoal(goal.id, 1000)}
-                                    >+ ₹1k</button
+                            <div class="flex justify-between mt-3">
+                                <span
+                                    class="text-[10px] text-gray-500 font-bold uppercase tracking-widest"
+                                    >{Math.round(
+                                        (goal.currentAmount /
+                                            goal.targetAmount) *
+                                            100,
+                                    )}% Complete</span
                                 >
                             </div>
                         </div>
                     </div>
                 {/each}
-
-                <!-- Bill Reminders -->
-                <div
-                    class="card p-6 rounded-2xl border border-[#FF5252]/20 bg-[#FF5252]/5"
-                >
-                    <h3
-                        class="font-bold text-[#FF5252] mb-4 flex items-center gap-2 text-lg"
-                    >
-                        <Bell size={20} /> Upcoming Bills
-                    </h3>
-                    <div class="space-y-3">
-                        {#if (financeStore.reminders || []).length > 0}
-                            {#each financeStore.reminders as reminder}
-                                <div
-                                    class="flex items-center gap-3 p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer group"
-                                >
-                                    <div
-                                        class="w-10 h-10 rounded-lg bg-[#FF5252]/10 flex items-center justify-center text-[#FF5252]"
-                                    >
-                                        <Calendar size={18} />
-                                    </div>
-                                    <div class="flex-1">
-                                        <p
-                                            class="text-sm font-bold text-white group-hover:text-[#FF5252] transition-colors"
-                                        >
-                                            {reminder.title}
-                                        </p>
-                                        <p class="text-xs text-gray-400">
-                                            {reminder.dueDate
-                                                ? new Date(
-                                                      reminder.dueDate,
-                                                  ).toLocaleDateString()
-                                                : ""}
-                                        </p>
-                                    </div>
-                                    <span class="font-bold text-sm text-white"
-                                        >{formatCurrency(reminder.amount)}</span
-                                    >
-                                </div>
-                            {/each}
-                        {:else}
-                            <!-- Placeholder if no reminders -->
-                            <div
-                                class="flex items-center gap-3 p-3 rounded-xl bg-black/20 hover:bg-black/30 transition-colors cursor-pointer group"
-                            >
-                                <div
-                                    class="w-10 h-10 rounded-lg bg-[#FF5252]/10 flex items-center justify-center text-[#FF5252]"
-                                >
-                                    <Calendar size={18} />
-                                </div>
-                                <div class="flex-1">
-                                    <p
-                                        class="text-sm font-bold text-white group-hover:text-[#FF5252] transition-colors"
-                                    >
-                                        Electricity
-                                    </p>
-                                    <p class="text-xs text-gray-400">
-                                        Due in 3 days
-                                    </p>
-                                </div>
-                                <span class="font-bold text-sm text-white"
-                                    >₹1,200</span
-                                >
-                            </div>
-                        {/if}
-                        <button
-                            class="w-full py-2 mt-2 text-xs font-bold rounded-lg text-[#FF5252] hover:bg-[#FF5252]/10 transition-colors"
-                        >
-                            + Set Reminder
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     {/if}

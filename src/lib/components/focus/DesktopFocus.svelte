@@ -64,11 +64,7 @@
     }
 </script>
 
-<PageHeader
-    title="Focus"
-    subtitle="Deep work and flow state manager."
-    icon={FocusIcon}
->
+<PageHeader title="Focus" subtitle="Deep work and flow state manager.">
     <button
         class="btn btn-ghost"
         onclick={() => (showTaskSelector = !showTaskSelector)}
@@ -308,3 +304,16 @@
         </div>
     </div>
 </div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 3px;
+    }
+</style>

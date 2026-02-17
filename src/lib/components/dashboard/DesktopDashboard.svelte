@@ -25,7 +25,6 @@
     <PageHeader
         title="Dashboard"
         subtitle="Welcome back. Here's your focus for today."
-        icon={LayoutDashboard}
     >
         <button
             onclick={() => (showSettings = !showSettings)}
@@ -97,13 +96,9 @@
         </div>
     {/if}
 
-    <!-- Dynamic Dashboard Layout -->
     <div class="flex flex-col gap-10 px-8 py-4">
-        <!-- Top Tier: Welcome & Critical Quick Capture -->
         <WelcomeWidget />
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <!-- Main Content: Direct Execution and Decisions -->
             <div class="lg:col-span-2 space-y-10">
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
@@ -121,7 +116,6 @@
                         <NowNextLater />
                     </div>
                 </section>
-
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
                         <div
@@ -139,8 +133,6 @@
                     </div>
                 </section>
             </div>
-
-            <!-- Sidebar: Context & Snapshots -->
             <div class="space-y-10">
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 px-1">
@@ -156,14 +148,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* Drag and drop styles */
-    :global(.dnd-action-draggable-wrapper) {
-        cursor: grab;
-    }
-
-    :global(.dnd-action-draggable-wrapper:active) {
-        cursor: grabbing;
-    }
-</style>

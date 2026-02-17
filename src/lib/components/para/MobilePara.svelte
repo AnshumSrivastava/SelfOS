@@ -38,11 +38,7 @@
 {/if}
 
 <div class="page-container h-full">
-    <PageHeader
-        title="P.A.R.A."
-        subtitle="Operational Overview"
-        icon={FolderKanban}
-    >
+    <PageHeader title="P.A.R.A." subtitle="Operational Overview">
         <button
             onclick={handleAdd}
             class="w-10 h-10 rounded-xl bg-theme-primary text-theme-text-inverse flex items-center justify-center shadow-lg active:scale-95 transition-all"
@@ -67,7 +63,7 @@
         >
     </div>
 
-    <!-- Stats / System Status (Optional - keeping it minimal) -->
+    <!-- Stats / System Status -->
     <div class="grid grid-cols-2 gap-3 mb-6 px-6">
         <div class="card-subtle p-4">
             <div class="text-2xl font-bold text-theme-text-strong">
@@ -102,7 +98,6 @@
                     class="w-full text-left bg-theme-surface-subtle/40 backdrop-blur-md border border-theme-line rounded-2xl p-4 active:scale-[0.98] transition-all group relative overflow-hidden shadow-lg ring-1 ring-white/5"
                     onclick={() => openProject(project)}
                 >
-                    <!-- Color Indicator Bar -->
                     <div
                         class="absolute left-0 top-0 bottom-0 w-1 {project.color ||
                             'bg-theme-text-muted'} opacity-70"
@@ -132,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- Last Updated / Metadata -->
                     <div
                         class="mt-4 pt-3 border-t border-theme-line flex items-center justify-between"
                     >

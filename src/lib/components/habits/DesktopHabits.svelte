@@ -155,7 +155,6 @@
             month: 'long',
             day: 'numeric',
         })} · {habitsStore.completedCount} of {habitsStore.totalCount} completed"
-        icon={Flame}
     >
         <button
             onclick={() => (isAdding = true)}
