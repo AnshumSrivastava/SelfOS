@@ -73,32 +73,35 @@
         <!-- Main Column -->
         <div class="lg:col-span-2 space-y-10">
             <!-- Daily Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-[var(--space-2)]">
                 <div
-                    class="card-subtle p-6 flex flex-col justify-between h-40 group hover:border-primary transition-all"
+                    class="card-subtle p-7 flex flex-col justify-between h-44 group hover:border-primary/30 transition-all bg-theme-surface-subtle/20"
+                    style="border-radius: var(--card-radius)"
                 >
                     <div class="flex justify-between items-start">
                         <div
-                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform"
+                            class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all"
                         >
-                            <Footprints size={20} />
+                            <Footprints size={18} />
                         </div>
                         <span
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
+                            class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
                             >Steps</span
                         >
                     </div>
                     <div>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-white"
+                            <span
+                                class="text-4xl font-light text-theme-text-strong tracking-tighter"
                                 >{stats.todaySteps.toLocaleString()}</span
                             >
-                            <span class="text-xs text-muted"
-                                >/ {stats.stepGoal.toLocaleString()}</span
+                            <span
+                                class="text-[10px] text-muted font-bold uppercase tracking-widest opacity-40"
+                                >/ {stats.stepGoal / 1000}k</span
                             >
                         </div>
                         <div
-                            class="mt-3 h-1.5 w-full bg-background rounded-full overflow-hidden"
+                            class="mt-4 h-0.5 w-full bg-white/5 rounded-full overflow-hidden"
                         >
                             <div
                                 class="h-full bg-primary transition-all duration-1000"
@@ -112,30 +115,33 @@
                 </div>
 
                 <div
-                    class="card-subtle p-6 flex flex-col justify-between h-40 group hover:border-secondary transition-all"
+                    class="card-subtle p-7 flex flex-col justify-between h-44 group hover:border-secondary/30 transition-all bg-theme-surface-subtle/20"
+                    style="border-radius: var(--card-radius)"
                 >
                     <div class="flex justify-between items-start">
                         <div
-                            class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform"
+                            class="w-10 h-10 rounded-full bg-secondary/5 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-black transition-all"
                         >
-                            <Droplets size={20} />
+                            <Droplets size={18} />
                         </div>
                         <span
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >Water</span
+                            class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                            >Hydration</span
                         >
                     </div>
                     <div>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-white"
-                                >{stats.todayWater.toFixed(1)}L</span
+                            <span
+                                class="text-4xl font-light text-theme-text-strong tracking-tighter"
+                                >{stats.todayWater.toFixed(1)}</span
                             >
-                            <span class="text-xs text-muted"
+                            <span
+                                class="text-[10px] text-muted font-bold uppercase tracking-widest opacity-40"
                                 >/ {stats.waterGoal}L</span
                             >
                         </div>
                         <div
-                            class="mt-3 h-1.5 w-full bg-background rounded-full overflow-hidden"
+                            class="mt-4 h-0.5 w-full bg-white/5 rounded-full overflow-hidden"
                         >
                             <div
                                 class="h-full bg-secondary transition-all duration-1000"
@@ -149,31 +155,36 @@
                 </div>
 
                 <div
-                    class="card-subtle p-6 flex flex-col justify-between h-40 group hover:border-orange-500 transition-all"
+                    class="card-subtle p-7 flex flex-col justify-between h-44 group hover:border-orange-500/30 transition-all bg-theme-surface-subtle/20"
+                    style="border-radius: var(--card-radius)"
                 >
                     <div class="flex justify-between items-start">
                         <div
-                            class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform"
+                            class="w-10 h-10 rounded-full bg-orange-500/5 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-black transition-all"
                         >
-                            <Activity size={20} />
+                            <Activity size={18} />
                         </div>
                         <span
-                            class="text-xs font-bold text-muted uppercase tracking-wider"
-                            >Activity</span
+                            class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+                            >Momentum</span
                         >
                     </div>
                     <div>
                         <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-bold text-white"
+                            <span
+                                class="text-4xl font-light text-theme-text-strong tracking-tighter"
                                 >450</span
                             >
-                            <span class="text-xs text-muted">kcal today</span>
+                            <span
+                                class="text-[10px] text-muted font-bold uppercase tracking-widest opacity-40"
+                                >kcal</span
+                            >
                         </div>
                         <div
-                            class="mt-3 text-xs text-muted flex items-center gap-1"
+                            class="mt-4 text-[10px] text-muted flex items-center gap-1 uppercase tracking-widest font-bold opacity-60"
                         >
-                            <TrendingUp size={12} class="text-emerald-500" />
-                            <span>12% more than yesterday</span>
+                            <TrendingUp size={10} class="text-emerald-500" />
+                            <span>Optimal Trend</span>
                         </div>
                     </div>
                 </div>

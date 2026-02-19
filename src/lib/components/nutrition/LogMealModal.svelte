@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { X, Save, Utensils, Zap, Flame, Clock, Star } from "lucide-svelte";
-    import { fade, scale } from "svelte/transition";
+    import { Save, Utensils, Zap, Flame, Clock, Star } from "lucide-svelte";
     import { nutritionStore, type Meal } from "$lib/stores/nutrition.svelte";
     import Modal from "$lib/components/ui/Modal.svelte";
 
@@ -55,179 +54,200 @@
     }
 </script>
 
-<Modal bind:isOpen title="Log Meal">
+<Modal bind:isOpen title="Log Intake">
     {#if showFrequent && nutritionStore.frequentMeals.length > 0}
-        <div class="mb-8">
-            <div
-                class="flex items-center gap-2 text-xs font-extrabold text-primary mb-4 uppercase tracking-tighter"
-            >
-                <Star size={14} /> Frequent Meals
+        <div class="space-y-6">
+            <div class="flex items-center justify-between mb-2">
+                <p
+                    class="text-[10px] font-black text-primary uppercase tracking-[0.2em]"
+                >
+                    Frequent Selections
+                </p>
+                <button
+                    onclick={() => (showFrequent = false)}
+                    class="text-[10px] font-bold text-muted uppercase hover:text-white transition-colors"
+                    >Manual Entry</button
+                >
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+            <div class="grid grid-cols-1 gap-2">
                 {#each nutritionStore.frequentMeals as m}
                     <button
                         onclick={() => selectFrequent(m)}
-                        class="p-3 rounded-xl border border-line bg-surface/50 text-left hover:border-primary/50 hover:bg-surface transition-all group"
+                        class="p-5 rounded-2xl bg-white/5 border border-transparent hover:border-primary/20 hover:bg-white/10 transition-all text-left flex justify-between items-center group"
                     >
-                        <p
-                            class="text-sm font-bold text-white group-hover:text-primary transition-colors"
-                        >
-                            {m.name}
-                        </p>
-                        <p class="text-[10px] text-muted">
-                            {m.calories} kcal • P:{m.protein} C:{m.carbs}
-                            F:{m.fats}
-                        </p>
+                        <div>
+                            <p
+                                class="text-sm font-bold text-white group-hover:text-primary transition-colors"
+                            >
+                                {m.name}
+                            </p>
+                            <p
+                                class="text-[10px] text-muted font-bold uppercase tracking-widest mt-1"
+                            >
+                                P:{m.protein}g • C:{m.carbs}g • F:{m.fats}g
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p
+                                class="text-lg font-light text-theme-text-strong tracking-tighter"
+                            >
+                                {m.calories}
+                            </p>
+                            <p
+                                class="text-[8px] text-muted font-black uppercase tracking-widest"
+                            >
+                                kcal
+                            </p>
+                        </div>
                     </button>
                 {/each}
-            </div>
-            <div class="mt-4 flex justify-center">
-                <button
-                    onclick={() => (showFrequent = false)}
-                    class="text-xs text-muted hover:text-white transition-colors"
-                    >Or add a new custom meal</button
-                >
             </div>
         </div>
     {:else}
         <div class="space-y-6">
-            <!-- Title & Time -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Header Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="sm:col-span-2 space-y-2">
                     <label
-                        class="text-xs font-bold text-muted uppercase ml-1"
-                        for="meal-name">Meal Name</label
+                        for="meal-name-field"
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1"
+                        >Nutrient Name</label
                     >
                     <div class="relative">
                         <Utensils
-                            size={16}
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-primary"
+                            size={14}
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-primary"
                         />
                         <input
-                            id="meal-name"
+                            id="meal-name-field"
                             type="text"
                             bind:value={name}
-                            placeholder="e.g. Scrambled Eggs"
-                            class="input w-full pl-10"
+                            placeholder="e.g. Protein Shake"
+                            class="input w-full pl-11 bg-white/5 border-white/5 focus:border-primary/30"
                         />
                     </div>
                 </div>
                 <div class="space-y-2">
                     <label
-                        class="text-xs font-bold text-muted uppercase ml-1"
-                        for="meal-time">Time</label
+                        for="meal-time-field"
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1"
+                        >Time</label
                     >
                     <div class="relative">
                         <Clock
-                            size={16}
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+                            size={14}
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
                         />
                         <input
-                            id="meal-time"
+                            id="meal-time-field"
                             type="text"
                             bind:value={time}
-                            class="input w-full pl-10"
+                            class="input w-full pl-11 bg-white/5 border-white/5"
                         />
                     </div>
                 </div>
             </div>
 
-            <!-- Calories & Frequent -->
-            <div class="grid grid-cols-2 gap-6 items-end">
+            <!-- Calories & Toggle -->
+            <div class="grid grid-cols-2 gap-4 items-end">
                 <div class="space-y-2">
                     <label
-                        class="text-xs font-bold text-muted uppercase ml-1"
-                        for="calories">Total Calories</label
+                        for="meal-calories-field"
+                        class="text-[10px] font-black text-muted uppercase tracking-[0.2em] ml-1"
+                        >Caloric Intensity</label
                     >
                     <div class="relative">
                         <Flame
-                            size={16}
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500"
+                            size={14}
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"
                         />
                         <input
-                            id="calories"
+                            id="meal-calories-field"
                             type="number"
                             bind:value={calories}
-                            class="input w-full pl-10"
+                            class="input w-full pl-11 bg-white/5 border-white/5 focus:border-orange-500/30"
                         />
                     </div>
                 </div>
                 <button
                     onclick={() => (isFrequent = !isFrequent)}
-                    class="p-4 rounded-xl border transition-all flex items-center justify-center gap-2 {isFrequent
-                        ? 'bg-primary/20 border-primary text-primary'
-                        : 'border-line bg-surface/50 text-muted'}"
+                    class="h-[52px] rounded-2xl border transition-all flex items-center justify-center gap-3 {isFrequent
+                        ? 'bg-primary text-black border-primary'
+                        : 'bg-white/5 border-transparent text-muted hover:text-white hover:border-white/10'}"
                 >
                     <Star
-                        size={18}
+                        size={14}
                         fill={isFrequent ? "currentColor" : "none"}
                     />
-                    <span class="text-sm font-bold">Mark Frequent</span>
+                    <span
+                        class="text-[10px] font-black uppercase tracking-[0.2em]"
+                        >Frequent</span
+                    >
                 </button>
             </div>
 
             <!-- Macros -->
             <div
-                class="p-6 rounded-2xl bg-surface/50 border border-line space-y-6"
+                class="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-5"
             >
                 <p
-                    class="text-xs font-bold text-muted uppercase tracking-widest text-center"
+                    class="text-[10px] font-black text-muted uppercase tracking-[0.2em] text-center opacity-60"
                 >
-                    Macronutrients (Optional)
+                    Detailed Macros (Optional)
                 </p>
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="space-y-2 text-center">
+                    <div class="space-y-2">
                         <span
-                            class="text-[10px] font-bold text-blue-400 uppercase"
-                            >Protein (g)</span
+                            class="text-[9px] font-bold text-blue-400 uppercase tracking-widest text-center block"
+                            >Protein</span
                         >
                         <input
                             type="number"
                             bind:value={protein}
-                            class="input text-center w-full bg-background"
-                            aria-label="Protein grams"
+                            class="input text-center w-full bg-white/5 border-transparent"
                         />
                     </div>
-                    <div class="space-y-2 text-center">
+                    <div class="space-y-2">
                         <span
-                            class="text-[10px] font-bold text-yellow-500 uppercase"
-                            >Carbs (g)</span
+                            class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest text-center block"
+                            >Carbs</span
                         >
                         <input
                             type="number"
                             bind:value={carbs}
-                            class="input text-center w-full bg-background"
-                            aria-label="Carbs grams"
+                            class="input text-center w-full bg-white/5 border-transparent"
                         />
                     </div>
-                    <div class="space-y-2 text-center">
+                    <div class="space-y-2">
                         <span
-                            class="text-[10px] font-bold text-red-500 uppercase"
-                            >Fats (g)</span
+                            class="text-[9px] font-bold text-red-500 uppercase tracking-widest text-center block"
+                            >Fats</span
                         >
                         <input
                             type="number"
                             bind:value={fats}
-                            class="input text-center w-full bg-background"
-                            aria-label="Fats grams"
+                            class="input text-center w-full bg-white/5 border-transparent"
                         />
                     </div>
                 </div>
             </div>
 
-            <div class="flex gap-4">
+            <!-- Actions -->
+            <div class="flex gap-4 pt-2">
                 {#if nutritionStore.frequentMeals.length > 0}
                     <button
                         onclick={() => (showFrequent = true)}
-                        class="btn btn-ghost border-line flex-1">Back</button
+                        class="flex-1 py-4 bg-white/5 text-white rounded-2xl font-bold hover:bg-white/10 transition-all"
+                        >Back</button
                     >
                 {/if}
                 <button
                     onclick={save}
                     disabled={!name || calories <= 0}
-                    class="btn btn-primary flex-1 flex items-center justify-center gap-2"
+                    class="flex-[2] py-4 bg-primary text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:grayscale transition-all shadow-lg shadow-primary/20"
                 >
-                    <Save size={18} /> Log Intake
+                    Confirm Intake
                 </button>
             </div>
         </div>

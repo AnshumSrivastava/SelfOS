@@ -230,87 +230,114 @@
         <div class="space-y-10">
             <!-- Calorie Ring -->
             <div
-                class="card-subtle flex flex-col items-center justify-center p-8 bg-gradient-to-br from-primary/10 to-transparent border-primary/20"
+                class="card-subtle flex flex-col items-center justify-center p-10 bg-theme-surface-subtle/20"
+                style="border-radius: var(--card-radius)"
             >
                 <div
-                    class="relative w-48 h-48 mb-6 flex items-center justify-center"
+                    class="relative w-52 h-52 mb-8 flex items-center justify-center"
                 >
-                    <svg
-                        class="w-full h-full transform -rotate-90 drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
-                    >
+                    <svg class="w-full h-full transform -rotate-90">
                         <circle
-                            cx="96"
-                            cy="96"
-                            r="88"
+                            cx="104"
+                            cy="104"
+                            r="96"
                             stroke="currentColor"
-                            stroke-width="8"
+                            stroke-width="4"
                             fill="transparent"
-                            class="text-background"
+                            class="text-white/5"
                         />
                         <circle
-                            cx="96"
-                            cy="96"
-                            r="88"
+                            cx="104"
+                            cy="104"
+                            r="96"
                             stroke="currentColor"
-                            stroke-width="8"
+                            stroke-width="6"
                             fill="transparent"
-                            stroke-dasharray="552"
-                            stroke-dashoffset={552 - (552 * calPercent) / 100}
+                            stroke-dasharray="603"
+                            stroke-dashoffset={603 - (603 * calPercent) / 100}
+                            stroke-linecap="round"
                             class="text-primary transition-all duration-1000 ease-out"
                         />
                     </svg>
                     <div class="absolute text-center">
-                        <h4 class="text-4xl font-bold text-white block">
-                            {(
+                        <h4
+                            class="text-5xl font-light text-theme-text-strong tracking-tighter block mb-1"
+                        >
+                            {Math.max(
+                                0,
                                 (goals.targetCalories || 2500) -
-                                (stats.calories || 0)
+                                    (stats.calories || 0),
                             ).toLocaleString()}
                         </h4>
                         <span
-                            class="text-[10px] text-muted uppercase tracking-[0.2em] font-black"
-                            >Kcal Left</span
+                            class="text-[10px] text-muted uppercase tracking-[0.3em] font-black opacity-40"
+                            >Kcal Remaining</span
                         >
                     </div>
                 </div>
-                <div class="text-center">
-                    <p class="text-lg font-bold text-white">
-                        {(stats.calories || 0).toLocaleString()}
-                        <span class="text-xs text-muted font-normal italic"
-                            >Eaten</span
+                <div class="w-full space-y-4">
+                    <div class="flex justify-between items-center px-2">
+                        <span
+                            class="text-[10px] font-bold text-muted uppercase tracking-widest opacity-60"
+                            >Consumption</span
                         >
-                    </p>
-                    <p class="text-xs text-muted">
-                        Daily Target: {(
-                            goals.targetCalories || 2500
-                        ).toLocaleString()} kcal
-                    </p>
+                        <span class="text-sm font-bold text-white"
+                            >{(stats.calories || 0).toLocaleString()}
+                            <span class="text-[10px] font-normal opacity-40"
+                                >kcal</span
+                            ></span
+                        >
+                    </div>
+                    <div class="h-px bg-white/5"></div>
+                    <div class="flex justify-between items-center px-2">
+                        <span
+                            class="text-[10px] font-bold text-muted uppercase tracking-widest opacity-60"
+                            >Metabolic Peak</span
+                        >
+                        <span class="text-sm font-bold text-white"
+                            >{(goals.targetCalories || 2500).toLocaleString()}
+                            <span class="text-[10px] font-normal opacity-40"
+                                >kcal</span
+                            ></span
+                        >
+                    </div>
                 </div>
             </div>
 
             <!-- Macros Split -->
-            <div class="card-subtle p-6 space-y-8">
-                <h3
-                    class="text-sm font-bold text-muted uppercase tracking-widest text-center border-b border-line pb-4"
+            <div
+                class="card-subtle p-8 space-y-8 bg-theme-surface-subtle/20"
+                style="border-radius: var(--card-radius)"
+            >
+                <p
+                    class="text-[10px] font-black text-muted uppercase tracking-[0.2em] text-center mb-6"
                 >
-                    Daily Macros
-                </h3>
+                    Metabolic Composition
+                </p>
 
                 <!-- Protein -->
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div class="flex justify-between items-end">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-1.5 h-1.5 rounded-full bg-blue-500"
+                            ></div>
+                            <span
+                                class="text-[10px] font-black text-white uppercase tracking-widest"
+                                >Protein</span
+                            >
+                        </div>
                         <span
-                            class="text-xs font-black text-blue-400 uppercase tracking-widest"
-                            >Protein</span
-                        >
-                        <span class="text-sm font-bold text-white"
+                            class="text-sm font-light text-theme-text-strong tracking-tight"
                             >{stats.protein}g
-                            <span class="text-[10px] text-muted font-normal"
+                            <span
+                                class="text-[10px] text-muted font-bold opacity-30"
                                 >/ {goals.targetProtein}g</span
                             ></span
                         >
                     </div>
                     <div
-                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                        class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden"
                     >
                         <div
                             class="h-full bg-blue-500 transition-all duration-1000"
@@ -320,21 +347,28 @@
                 </div>
 
                 <!-- Carbs -->
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div class="flex justify-between items-end">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-1.5 h-1.5 rounded-full bg-yellow-500"
+                            ></div>
+                            <span
+                                class="text-[10px] font-black text-white uppercase tracking-widest"
+                                >Carbs</span
+                            >
+                        </div>
                         <span
-                            class="text-xs font-black text-yellow-500 uppercase tracking-widest"
-                            >Carbs</span
-                        >
-                        <span class="text-sm font-bold text-white"
+                            class="text-sm font-light text-theme-text-strong tracking-tight"
                             >{stats.carbs}g
-                            <span class="text-[10px] text-muted font-normal"
+                            <span
+                                class="text-[10px] text-muted font-bold opacity-30"
                                 >/ {goals.targetCarbs}g</span
                             ></span
                         >
                     </div>
                     <div
-                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                        class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden"
                     >
                         <div
                             class="h-full bg-yellow-500 transition-all duration-1000"
@@ -344,21 +378,28 @@
                 </div>
 
                 <!-- Fats -->
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div class="flex justify-between items-end">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-1.5 h-1.5 rounded-full bg-red-500"
+                            ></div>
+                            <span
+                                class="text-[10px] font-black text-white uppercase tracking-widest"
+                                >Fats</span
+                            >
+                        </div>
                         <span
-                            class="text-xs font-black text-red-500 uppercase tracking-widest"
-                            >Fats</span
-                        >
-                        <span class="text-sm font-bold text-white"
+                            class="text-sm font-light text-theme-text-strong tracking-tight"
                             >{stats.fats}g
-                            <span class="text-[10px] text-muted font-normal"
+                            <span
+                                class="text-[10px] text-muted font-bold opacity-30"
                                 >/ {goals.targetFat}g</span
                             ></span
                         >
                     </div>
                     <div
-                        class="h-1.5 w-full bg-background rounded-full overflow-hidden"
+                        class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden"
                     >
                         <div
                             class="h-full bg-red-500 transition-all duration-1000"

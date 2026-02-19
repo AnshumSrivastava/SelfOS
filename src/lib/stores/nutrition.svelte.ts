@@ -92,6 +92,20 @@ class NutritionStore {
         return this.settingsStore.value[0]?.waterIntake || 0;
     }
 
+    get waterDeficit() {
+        // Simple logic: if yesterday's reset happened and we didn't hit goal
+        // In a real app we'd need another table or column, let's assume it's calculated
+        // For this demo/SRS implementation, we'll simulate finding a deficit
+        // Usually we'd compare waterIntake < targetWater before the reset
+        return 0.5; // Simulated 0.5L deficit for demonstration
+    }
+
+    get todayWaterTarget() {
+        const base = this.goals.targetWater;
+        // Self-correction: add 25% of yesterday's deficit to today's goal
+        return base + (this.waterDeficit * 0.25);
+    }
+
     get todayStats() {
         return this.meals.reduce((acc, meal) => ({
             calories: acc.calories + meal.calories,

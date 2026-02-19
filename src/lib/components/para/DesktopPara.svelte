@@ -40,8 +40,9 @@
 
 <div class="h-full flex flex-col overflow-hidden">
     <PageHeader
-        title="Projects & Areas"
-        subtitle="Organize your resources and archives."
+        title="Intelligence Architecture"
+        subtitle="PARA: Projects, Areas, Resources, Archives"
+        icon={FolderKanban}
     >
         <div class="flex items-center gap-6">
             <!-- Header actions if any -->

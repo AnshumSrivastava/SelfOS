@@ -1,12 +1,42 @@
 <script lang="ts">
-    import { Book as BookIcon, Check, Star } from "lucide-svelte";
+    import { Book as BookIcon, Check, Star, Clock } from "lucide-svelte";
     import type { Book } from "$lib/stores/library.svelte";
 
     let { book, onclick } = $props<{ book: Book; onclick: () => void }>();
+
+    const statusConfig: Record<
+        string,
+        { label: string; color: string; icon: any }
+    > = {
+        Reading: {
+            label: "Active",
+            color: "text-primary bg-primary/10 border-primary/20",
+            icon: Clock,
+        },
+        "Want to Read": {
+            label: "Next",
+            color: "text-secondary bg-secondary/10 border-secondary/20",
+            icon: BookIcon,
+        },
+        Done: {
+            label: "Archived",
+            color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
+            icon: Check,
+        },
+        Paused: {
+            label: "On Hold",
+            color: "text-muted bg-white/5 border-white/5",
+            icon: Clock,
+        },
+    };
+
+    const config = $derived(
+        statusConfig[book.status] || statusConfig["Want to Read"],
+    );
 </script>
 
 <div
-    class="group cursor-pointer"
+    class="group cursor-pointer space-y-4"
     {onclick}
     onkeydown={(e) => e.key === "Enter" && onclick()}
     tabindex="0"
@@ -14,64 +44,95 @@
 >
     <!-- Cover -->
     <div
-        class="aspect-[2/3] rounded-lg shadow-lg relative overflow-hidden mb-4 bg-surface border border-line group-hover:shadow-primary/20 transition-all duration-300 group-hover:-translate-y-2"
+        class="aspect-[2/3] rounded-3xl shadow-2xl relative overflow-hidden transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-primary/10 border border-white/5 bg-neutral-900"
     >
+        <!-- Background Bloom -->
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 z-10"
+        ></div>
         {#if book.coverUrl && book.coverUrl.startsWith("http")}
             <img
                 src={book.coverUrl}
                 alt={book.title}
-                class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
         {:else}
             <div
-                class="absolute inset-0 {book.coverUrl} opacity-20 group-hover:opacity-30 transition-opacity"
-            ></div>
+                class="absolute inset-0 flex items-center justify-center opacity-10"
+            >
+                <BookIcon size={64} />
+            </div>
         {/if}
+
+        <!-- Status Pill Overlay -->
+        <div class="absolute top-4 left-4 z-20">
+            <div
+                class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.2em] backdrop-blur-md flex items-center gap-2 border {config.color}"
+            >
+                <config.icon size={10} />
+                {config.label}
+            </div>
+        </div>
+
+        {#if book.status === "Done"}
+            <div
+                class="absolute top-4 right-4 z-20 bg-emerald-500 text-black rounded-full p-1.5 shadow-lg"
+            >
+                <Check size={12} strokeWidth={3} />
+            </div>
+        {/if}
+
+        <!-- Hover Info Overlay -->
         <div
-            class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 {book.coverUrl &&
-            book.coverUrl.startsWith('http')
-                ? 'opacity-0 group-hover:opacity-100 bg-black/60 backdrop-blur-sm'
-                : ''} transition-all duration-300"
+            class="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-8 text-center"
         >
-            <BookIcon size={32} class="mb-2 text-white/50" />
-            <h3 class="font-bold text-white line-clamp-2 text-sm leading-tight">
-                {book.title}
-            </h3>
+            <BookIcon size={24} class="mb-4 text-primary" />
             <p
-                class="text-[10px] text-muted mt-1 uppercase tracking-wider font-bold"
+                class="text-xs font-bold text-white uppercase tracking-widest leading-relaxed line-clamp-3 mb-2"
+            >
+                {book.title}
+            </p>
+            <p
+                class="text-[10px] text-muted tracking-widest font-black uppercase"
             >
                 {book.author}
             </p>
-        </div>
 
-        {#if book.status === "Completed"}
-            <div
-                class="absolute top-2 right-2 bg-primary text-black rounded-full p-1"
-            >
-                <Check size={12} />
-            </div>
-        {/if}
-    </div>
-
-    <div>
-        <div class="flex justify-between items-center mb-1">
-            <span
-                class="text-[10px] uppercase tracking-wider font-medium text-muted px-2 py-0.5 rounded-full border border-line"
-                >{book.status}</span
-            >
             {#if (book.rating || 0) > 0}
-                <div class="flex gap-0.5 text-yellow-500">
-                    {#each Array(book.rating) as _}<Star
+                <div class="flex gap-1 mt-6">
+                    {#each Array(5) as _, i}
+                        <Star
                             size={10}
-                            fill="currentColor"
-                        />{/each}
+                            class={i < book.rating
+                                ? "text-primary fill-primary"
+                                : "text-white/10"}
+                        />
+                    {/each}
                 </div>
             {/if}
         </div>
-        {#if book.status === "Reading"}
-            <p class="text-[10px] text-muted mt-1 whitespace-nowrap">
-                Updated {new Date(book.lastActivityDate).toLocaleDateString()}
+    </div>
+
+    <!-- Metadata Below -->
+    <div class="px-1 space-y-1">
+        <h3
+            class="text-sm font-bold text-white tracking-tight line-clamp-1 group-hover:text-primary transition-colors transition-all duration-300"
+        >
+            {book.title}
+        </h3>
+        <div class="flex items-center justify-between">
+            <p
+                class="text-[10px] text-muted font-bold uppercase tracking-widest"
+            >
+                {book.author}
             </p>
-        {/if}
+            {#if book.status === "Reading"}
+                <span
+                    class="text-[8px] font-black text-primary/40 uppercase tracking-[0.2em] flex items-center gap-1"
+                >
+                    <Clock size={8} /> Active
+                </span>
+            {/if}
+        </div>
     </div>
 </div>

@@ -37,21 +37,56 @@
 
     let isAdding = $state(false);
     let newHabitName = $state("");
+    let newHabitCategory = $state("Growth");
+
+    const categories = [
+        "Health",
+        "Focus",
+        "Identity",
+        "Learning",
+        "Wealth",
+        "Social",
+        "Growth",
+    ];
+
+    // Group habits by category
+    let groupedHabits = $derived.by(() => {
+        const groups: Record<string, typeof enhancedHabits> = {};
+        enhancedHabits.forEach((habit) => {
+            const cat = habit.category || "Uncategorized";
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(habit);
+        });
+        return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+    });
 
     // Calculate insights
     let insights = $derived.by(() => {
+        const total = habitsStore.habits.length;
+        const completed = habitsStore.completedCount;
         const maxStreak = Math.max(
             0,
             ...habitsStore.habits.map((h) => h.streak),
         );
-        const atRisk = habitsStore.habits.filter(
-            (h) => h.streak >= 3 && !habitsStore.isCompleted(h.id),
-        ).length;
-        const champions = habitsStore.habits.filter(
-            (h) => h.streak >= 7,
-        ).length;
 
-        return { maxStreak, atRisk, champions };
+        // Behavioral design: finding patterns
+        const morningHabits = habitsStore.habits.filter(
+            (h) =>
+                h.name.toLowerCase().includes("morning") ||
+                h.name.toLowerCase().includes("wake"),
+        );
+        const morningCompletion =
+            morningHabits.length > 0
+                ? Math.round(
+                      (morningHabits.filter((h) =>
+                          habitsStore.isCompleted(h.id),
+                      ).length /
+                          morningHabits.length) *
+                          100,
+                  )
+                : null;
+
+        return { maxStreak, total, completed, morningCompletion };
     });
 
     // Enhanced habits with status
@@ -60,20 +95,13 @@
             const isCompleted = habitsStore.isCompleted(habit.id);
             let status = "normal";
             let statusMessage = "";
-            let statusColor = "";
 
             if (habit.streak >= 21) {
-                status = "champion";
-                statusMessage = "Champion!";
-                statusColor = "text-purple-400";
+                status = "momentum";
+                statusMessage = "Automaticity reached";
             } else if (habit.streak >= 7) {
-                status = "strong";
-                statusMessage = "Strong Streak";
-                statusColor = "text-green-400";
-            } else if (habit.streak >= 3 && !isCompleted) {
-                status = "at-risk";
-                statusMessage = "At Risk!";
-                statusColor = "text-orange-400";
+                status = "rhythm";
+                statusMessage = "In Rhythm";
             }
 
             return {
@@ -81,14 +109,13 @@
                 isCompleted,
                 status,
                 statusMessage,
-                statusColor,
             };
         });
     });
 
     function addHabit() {
         if (newHabitName.trim()) {
-            habitsStore.add(newHabitName.trim());
+            habitsStore.add(newHabitName.trim(), newHabitCategory);
             newHabitName = "";
             isAdding = false;
         }
@@ -98,28 +125,22 @@
 
     const stats = $derived([
         {
-            label: "Best Streak",
+            label: "Longest Streak",
             value: insights.maxStreak,
             icon: Flame,
-            color: "text-orange-400",
-        },
-        {
-            label: "At Risk",
-            value: insights.atRisk,
-            icon: AlertTriangle,
-            color: "text-red-400",
-        },
-        {
-            label: "Champions",
-            value: insights.champions,
-            icon: Award,
-            color: "text-purple-400",
+            color: "primary",
         },
         {
             label: "Completion",
             value: `${Math.round(todayProgress)}%`,
             icon: Target,
-            color: "text-primary",
+            color: "secondary",
+        },
+        {
+            label: "Active Rituals",
+            value: insights.total,
+            icon: Award,
+            color: "info",
         },
     ]);
 </script>
@@ -172,7 +193,7 @@
         class="px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start flex-1 overflow-y-auto custom-scrollbar"
     >
         <!-- Main Content: Habits List (8 cols) -->
-        <div class="lg:col-span-8 space-y-6">
+        <div class="lg:col-span-8 space-y-12">
             {#if habitsStore.loading}
                 <div class="grid grid-cols-1 gap-4">
                     <SkeletonLoader lines={1} height="h-32" />
@@ -202,104 +223,122 @@
                     </button>
                 </div>
             {:else}
-                <div class="grid grid-cols-1 gap-[var(--space-2)]">
-                    {#each enhancedHabits as habit (habit.id)}
-                        <div
-                            class="group relative card-subtle overflow-hidden !p-5 transition-all duration-500 hover:!bg-white/2 {habit.isCompleted
-                                ? 'border-primary/20 bg-primary/5'
-                                : ''}"
-                            style="border-radius: var(--radius-subtle)"
-                        >
-                            <div class="flex items-center gap-5">
-                                <!-- Check Button -->
-                                <button
-                                    onclick={(e) => {
-                                        if (!habit.isCompleted)
-                                            fire.ignite(e.clientX, e.clientY);
-                                        habitsStore.toggle(habit.id);
-                                    }}
-                                    class="relative w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 active:scale-95 {habit.isCompleted
-                                        ? 'bg-primary border-primary text-black shadow-[0_4px_15px_rgba(var(--primary-rgb),0.3)]'
-                                        : 'border-line hover:border-primary/50 text-muted hover:text-primary'}"
+                <div class="space-y-12">
+                    {#each groupedHabits as [category, habits]}
+                        <section class="category-section">
+                            <div class="flex items-center gap-3 mb-6">
+                                <h2
+                                    class="text-sm font-bold uppercase tracking-[0.2em] text-theme-text-muted"
                                 >
-                                    {#if habit.isCompleted}
-                                        <Check size={20} strokeWidth={3} />
-                                    {:else}
-                                        <Plus size={20} class="opacity-40" />
-                                    {/if}
-                                </button>
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-3 mb-1.5">
-                                        <h3
-                                            class="text-lg font-medium text-text truncate {habit.isCompleted
-                                                ? 'opacity-40 italic'
-                                                : ''}"
-                                        >
-                                            {habit.name}
-                                        </h3>
-                                        {#if habit.statusMessage}
-                                            <span
-                                                class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full {habit.statusColor} bg-white/5 border border-current/10"
-                                            >
-                                                {habit.statusMessage}
-                                            </span>
-                                        {/if}
-                                    </div>
-                                    <div class="flex items-center gap-4">
-                                        <div
-                                            class="flex items-center gap-1.5 {habit.isCompleted
-                                                ? 'text-primary/70'
-                                                : 'text-muted'}"
-                                        >
-                                            <Flame
-                                                size={12}
-                                                class={habit.streak > 0
-                                                    ? "text-orange-400"
-                                                    : "text-muted opacity-30"}
-                                            />
-                                            <span
-                                                class="text-xs font-bold leading-none"
-                                                >{habit.streak}</span
-                                            >
-                                            <span
-                                                class="text-[9px] uppercase tracking-widest font-bold opacity-50 ml-0.5"
-                                                >streak</span
-                                            >
-                                        </div>
-                                        {#if habit.streak >= 7 && !habit.isCompleted}
-                                            <div
-                                                class="flex items-center gap-1.5 text-red-400/80"
-                                            >
-                                                <AlertTriangle size={12} />
-                                                <span
-                                                    class="text-[9px] uppercase tracking-widest font-bold"
-                                                    >At Risk</span
-                                                >
-                                            </div>
-                                        {/if}
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-2">
-                                    <button
-                                        onclick={() =>
-                                            habitsStore.remove(habit.id)}
-                                        class="p-2 text-muted hover:text-red-400 transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
+                                    {category}
+                                </h2>
+                                <div
+                                    class="flex-1 h-px bg-theme-line-soft"
+                                ></div>
                             </div>
 
-                            <!-- Success indicator -->
-                            {#if habit.isCompleted}
-                                <div
-                                    class="absolute bottom-0 left-0 h-0.5 bg-primary/30"
-                                    style="width: 100%"
-                                ></div>
-                            {/if}
-                        </div>
+                            <div class="grid grid-cols-1 gap-[var(--space-2)]">
+                                {#each habits as habit (habit.id)}
+                                    <div
+                                        class="group relative card-subtle overflow-hidden !p-5 transition-all duration-500 hover:!bg-white/2 {habit.isCompleted
+                                            ? 'border-primary/10 bg-primary/2'
+                                            : ''}"
+                                        style="border-radius: var(--radius-subtle)"
+                                    >
+                                        <div class="flex items-center gap-5">
+                                            <!-- Check Button -->
+                                            <button
+                                                onclick={(e) => {
+                                                    if (!habit.isCompleted)
+                                                        fire.ignite(
+                                                            e.clientX,
+                                                            e.clientY,
+                                                        );
+                                                    habitsStore.toggle(
+                                                        habit.id,
+                                                    );
+                                                }}
+                                                class="relative w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-300 active:scale-95 {habit.isCompleted
+                                                    ? 'bg-primary border-primary text-black shadow-[0_4px_15px_rgba(var(--primary-rgb),0.3)]'
+                                                    : 'border-line hover:border-primary/50 text-muted hover:text-primary'}"
+                                            >
+                                                {#if habit.isCompleted}
+                                                    <Check
+                                                        size={20}
+                                                        strokeWidth={3}
+                                                    />
+                                                {:else}
+                                                    <Plus
+                                                        size={20}
+                                                        class="opacity-40"
+                                                    />
+                                                {/if}
+                                            </button>
+
+                                            <div class="flex-1 min-w-0">
+                                                <div
+                                                    class="flex items-center gap-3 mb-1.5"
+                                                >
+                                                    <h3
+                                                        class="text-lg font-medium text-text truncate {habit.isCompleted
+                                                            ? 'opacity-40 line-through'
+                                                            : ''}"
+                                                    >
+                                                        {habit.name}
+                                                    </h3>
+                                                    {#if habit.statusMessage}
+                                                        <span
+                                                            class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full text-primary bg-primary/5 border border-primary/10"
+                                                        >
+                                                            {habit.statusMessage}
+                                                        </span>
+                                                    {/if}
+                                                </div>
+                                                <div
+                                                    class="flex items-center gap-4"
+                                                >
+                                                    <div
+                                                        class="flex items-center gap-1.5 {habit.isCompleted
+                                                            ? 'text-primary/70'
+                                                            : 'text-muted'}"
+                                                    >
+                                                        <Flame
+                                                            size={12}
+                                                            class={habit.streak >
+                                                            0
+                                                                ? "text-orange-400"
+                                                                : "text-muted opacity-30"}
+                                                        />
+                                                        <span
+                                                            class="text-xs font-bold leading-none"
+                                                            >{habit.streak}</span
+                                                        >
+                                                        <span
+                                                            class="text-[9px] uppercase tracking-widest font-bold opacity-50 ml-0.5"
+                                                            >streak</span
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="flex items-center gap-2"
+                                            >
+                                                <button
+                                                    onclick={() =>
+                                                        habitsStore.remove(
+                                                            habit.id,
+                                                        )}
+                                                    class="p-2 text-muted hover:text-red-400 transition-all opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {/each}
+                            </div>
+                        </section>
                     {/each}
                 </div>
             {/if}
@@ -314,30 +353,52 @@
             >
                 <h3 class="text-white mb-8 flex items-center gap-3">
                     <div class="w-1 h-5 bg-primary rounded-full"></div>
-                    Performance
+                    Ritual Health
                 </h3>
 
-                <div class="grid grid-cols-2 gap-[var(--space-2)]">
+                <div class="grid grid-cols-1 gap-[var(--space-2)]">
                     {#each stats as stat}
                         <div
-                            class="p-4 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5 transition-all hover:border-primary/20"
+                            class="p-4 rounded-[var(--radius-subtle)] bg-white/3 border border-white/5 flex items-center justify-between"
                         >
-                            <stat.icon
-                                size={14}
-                                class="{stat.color} mb-3 opacity-70"
-                            />
-                            <div class="text-2xl font-light text-text">
-                                {stat.value}
+                            <div class="flex items-center gap-3">
+                                <stat.icon
+                                    size={16}
+                                    class="text-{stat.color} opacity-70"
+                                />
+                                <div
+                                    class="text-[10px] uppercase tracking-widest text-muted font-bold"
+                                >
+                                    {stat.label}
+                                </div>
                             </div>
-                            <div
-                                class="text-[9px] uppercase tracking-widest text-muted font-bold mt-1"
-                            >
-                                {stat.label}
+                            <div class="text-xl font-light text-text">
+                                {stat.value}
                             </div>
                         </div>
                     {/each}
                 </div>
             </div>
+
+            <!-- Behavioral Nudges (Behavioral Design Replacement for Gamification) -->
+            {#if insights.morningCompletion !== null}
+                <div class="card-subtle !p-6 border-primary/10">
+                    <h4
+                        class="text-[10px] font-bold uppercase tracking-widest text-primary mb-4"
+                    >
+                        Behavioral Insight
+                    </h4>
+                    <p
+                        class="text-sm text-theme-text-secondary leading-relaxed"
+                    >
+                        Your morning momentum index is <span
+                            class="text-primary font-bold"
+                            >{insights.morningCompletion}%</span
+                        >. Completing rituals early reduces cognitive load for
+                        the rest of your day.
+                    </p>
+                </div>
+            {/if}
 
             <!-- Heatmap -->
             <div class="card-subtle">
@@ -350,14 +411,8 @@
                     <h3
                         class="text-xs font-bold uppercase tracking-widest text-muted"
                     >
-                        7-Day Consistency
+                        Consistency
                     </h3>
-                    <div
-                        class="flex items-center gap-1 text-[10px] text-primary font-bold"
-                    >
-                        <TrendingUp size={12} />
-                        ACTIVE
-                    </div>
                 </div>
                 <ConsistencyChart height="h-32" />
             </div>
@@ -369,21 +424,36 @@
     <div class="space-y-6">
         <div>
             <p class="text-muted mb-4">
-                What new behavior are you committing to today?
+                What behavior defines your ideal self today?
             </p>
-            <div class="relative">
+            <div class="space-y-4">
                 <input
                     type="text"
                     bind:value={newHabitName}
-                    placeholder="Enter habit name..."
+                    placeholder="Describe the action..."
                     class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xl text-white placeholder-muted focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
-                    onkeydown={(e) => e.key === "Enter" && addHabit()}
                 />
+
+                <div class="flex flex-col gap-2">
+                    <label
+                        class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                        for="cat">Category</label
+                    >
+                    <select
+                        id="cat"
+                        bind:value={newHabitCategory}
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-primary"
+                    >
+                        {#each categories as category}
+                            <option value={category}>{category}</option>
+                        {/each}
+                    </select>
+                </div>
             </div>
         </div>
 
         <div class="flex flex-wrap gap-2">
-            {#each ["Drink Water", "Meditation", "Read 10 pages", "Workout", "Early Wakeup"] as suggestion}
+            {#each ["Drink 3L Water", "Guided Meditation", "Read 10 pages", "Weight Training", "Deep Work Block"] as suggestion}
                 <button
                     onclick={() => (newHabitName = suggestion)}
                     class="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-xs text-muted hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
@@ -398,14 +468,14 @@
                 onclick={() => (isAdding = false)}
                 class="flex-1 py-4 bg-white/5 text-white rounded-2xl font-bold hover:bg-white/10 transition-all"
             >
-                Maybe Later
+                Cancel
             </button>
             <button
                 onclick={addHabit}
                 disabled={!newHabitName.trim()}
                 class="flex-[2] py-4 bg-primary text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
             >
-                Begin Streak
+                Begin Ritual
             </button>
         </div>
     </div>

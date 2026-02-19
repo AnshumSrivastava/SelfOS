@@ -4,10 +4,12 @@
     let {
         title,
         subtitle = "",
+        icon: Icon = undefined,
         children,
     } = $props<{
         title: string;
         subtitle?: string;
+        icon?: any;
         children?: import("svelte").Snippet;
     }>();
 </script>
@@ -17,6 +19,13 @@
 >
     <!-- Left: Title -->
     <div class="flex items-center gap-4">
+        {#if Icon}
+            <div
+                class="p-2 rounded-lg bg-theme-surface-subtle border border-theme-line text-theme-primary"
+            >
+                <Icon size={20} />
+            </div>
+        {/if}
         <div>
             <h1
                 class="text-xl font-medium tracking-tight text-theme-text-strong"

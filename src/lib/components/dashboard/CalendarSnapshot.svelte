@@ -2,8 +2,6 @@
     import {
         Calendar as CalendarIcon,
         Clock,
-        MapPin,
-        AlertCircle,
         Video,
         ExternalLink,
         Navigation,
@@ -34,66 +32,62 @@
         eventDate.setHours(h, m, 0, 0);
 
         const diff = eventDate.getTime() - now.getTime();
-        if (diff < 0) return "Started";
+        if (diff < 0) return "Active Now";
 
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-        if (hours > 0) return `In ${hours}h ${mins}m`;
-        return `In ${mins}m`;
+        if (hours > 0) return `${hours}h ${mins}m`;
+        return `${mins}m`;
     }
 </script>
 
-<div class="card-subtle p-6 flex flex-col h-full overflow-hidden">
-    <div class="flex items-center justify-between mb-8">
-        <div class="flex items-center gap-3">
-            <div class="p-2 rounded-lg bg-rose-400/10 text-rose-400">
-                <CalendarIcon size={20} />
-            </div>
-            <h2 class="text-xl font-semibold text-white">Daily Timeline</h2>
+<div class="space-y-4">
+    <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+            <Clock size={14} class="text-primary/60" />
+            <h3
+                class="text-[10px] font-black text-muted uppercase tracking-[0.2em]"
+            >
+                Temporal Sequence
+            </h3>
         </div>
         <span
-            class="text-[9px] font-bold uppercase tracking-[0.2em] text-muted"
+            class="text-[9px] font-black text-primary/40 uppercase tracking-[0.1em]"
+            >{todayEvents.length} Committed</span
         >
-            {todayEvents.length} Sessions
-        </span>
     </div>
 
-    <div class="flex-1 space-y-5">
+    <div class="space-y-6">
         {#if todayEvents.length === 0}
             <div
-                class="h-full flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-line rounded-3xl opacity-40 bg-surface/30"
+                class="p-6 rounded-3xl border border-dashed border-white/5 text-center"
             >
-                <Clock size={32} class="mb-3 text-rose-400/50" />
                 <p
-                    class="text-[11px] font-bold uppercase tracking-widest text-white"
+                    class="text-[9px] font-black text-muted/30 uppercase tracking-widest"
                 >
-                    Timeline Clear
-                </p>
-                <p class="text-[10px] text-muted mt-1">
-                    No scheduled commitments
+                    Chronos Unbound
                 </p>
             </div>
         {:else}
             {#each todayEvents as event, i}
                 <div
                     transition:fade={{ delay: i * 50 }}
-                    class="relative pl-6 border-l-2 border-rose-400/20 group hover:border-rose-400 transition-all"
+                    class="relative pl-6 border-l border-white/5 group hover:border-primary/30 transition-all"
                 >
-                    <!-- Dot on the timeline -->
                     <div
-                        class="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full border border-rose-400 bg-background group-hover:scale-125 transition-transform shadow-[0_0_8px_rgba(251,113,133,0.3)]"
+                        class="absolute -left-[3.5px] top-1.5 w-[6px] h-[6px] rounded-full bg-white/10 group-hover:bg-primary transition-all"
                     ></div>
 
-                    <div class="flex flex-col gap-2">
+                    <div class="space-y-1">
                         <div class="flex items-center justify-between gap-4">
-                            <h3
-                                class="text-sm font-bold text-white group-hover:text-rose-400 transition-colors truncate"
+                            <h4
+                                class="text-sm font-bold text-white group-hover:text-primary transition-colors truncate"
                             >
                                 {event.title}
-                            </h3>
+                            </h4>
                             <span
-                                class="text-[9px] font-mono text-rose-400/60 font-bold whitespace-nowrap"
+                                class="text-[10px] font-black font-mono text-primary/60"
                             >
                                 {event.startTime
                                     ? getTimeUntil(event.startTime)
@@ -102,67 +96,24 @@
                         </div>
 
                         <div
-                            class="flex items-center gap-4 text-[10px] font-bold text-muted uppercase tracking-tighter"
+                            class="flex items-center gap-3 text-[9px] font-black text-muted uppercase tracking-tighter"
                         >
-                            <span
-                                class="flex items-center gap-1.5 text-white/70"
-                            >
-                                <Clock size={11} class="text-rose-400/60" />
-                                {event.startTime || "All Day"}
+                            <span class="flex items-center gap-1">
+                                {event.startTime || "00:00"}
                             </span>
                             {#if event.location}
                                 <span
-                                    class="flex items-center gap-1.5 truncate max-w-[120px]"
+                                    class="flex items-center gap-1 truncate max-w-[100px]"
                                 >
-                                    {#if isVideoCall(event.location)}
-                                        <Video
-                                            size={11}
-                                            class="text-blue-400/60"
-                                        />
-                                        <span class="text-blue-400/80"
-                                            >Digital</span
-                                        >
-                                    {:else}
-                                        <Navigation
-                                            size={11}
-                                            class="text-emerald-400/60"
-                                        />
-                                        <span class="text-emerald-400/80"
-                                            >Physical</span
-                                        >
-                                    {/if}
+                                    {isVideoCall(event.location)
+                                        ? "Digital"
+                                        : "Physical"}
                                 </span>
                             {/if}
                         </div>
-
-                        {#if isVideoCall(event.location)}
-                            <a
-                                href={event.location}
-                                target="_blank"
-                                class="mt-1 flex items-center gap-2 text-[10px] text-primary hover:underline font-bold uppercase tracking-tight"
-                            >
-                                <ExternalLink size={10} />
-                                Join Meeting
-                            </a>
-                        {/if}
                     </div>
                 </div>
             {/each}
         {/if}
-    </div>
-
-    <div
-        class="mt-8 pt-6 border-t border-line/50 flex items-center justify-between"
-    >
-        <button
-            class="text-[10px] font-bold text-muted hover:text-white uppercase tracking-widest transition-colors"
-        >
-            Month View
-        </button>
-        <button
-            class="text-[10px] font-bold text-rose-400 hover:text-rose-300 uppercase tracking-widest transition-colors"
-        >
-            Add Event
-        </button>
     </div>
 </div>

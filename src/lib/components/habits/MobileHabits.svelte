@@ -21,14 +21,36 @@
 
     let isAdding = $state(false);
     let newHabitName = $state("");
+    let newHabitCategory = $state("Growth");
+
+    const categoriesList = [
+        "Health",
+        "Focus",
+        "Identity",
+        "Learning",
+        "Wealth",
+        "Social",
+        "Growth",
+    ];
 
     function addHabit() {
         if (newHabitName.trim()) {
-            habitsStore.add(newHabitName.trim());
+            habitsStore.add(newHabitName.trim(), newHabitCategory);
             newHabitName = "";
             isAdding = false;
         }
     }
+
+    // Grouping logic for mobile
+    let groupedHabits = $derived.by(() => {
+        const groups: Record<string, typeof habitsStore.habits> = {};
+        habitsStore.habits.forEach((habit) => {
+            const cat = habit.category || "Uncategorized";
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(habit);
+        });
+        return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+    });
 
     let fire: StreakFire;
     import { onMount } from "svelte";
@@ -49,74 +71,96 @@
 {/snippet}
 
 <div class="page-container relative pb-28">
-    <MobileHeader title="Habits" action={headerAction} />
+    <MobileHeader title="Rituals" action={headerAction} />
     <StreakFire bind:this={fire} />
 
     <div class="px-6 mt-6">
         <!-- Habits List -->
-        <div class="space-y-3 mb-6">
+        <div class="space-y-8 mb-6">
             {#if habitsStore.loading}
                 <SkeletonLoader lines={4} height="h-16" />
+            {:else if habitsStore.habits.length === 0}
+                <div class="py-12 text-center text-muted">
+                    <p>No rituals defined yet.</p>
+                </div>
             {:else}
-                {#each habitsStore.habits as habit (habit.id)}
-                    {@const isCompleted = habitsStore.isCompleted(habit.id)}
-                    <div
-                        class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
-                    >
-                        <button
-                            onclick={(e) => {
-                                if (!isCompleted) {
-                                    fire?.ignite(e.clientX, e.clientY);
-                                }
-                                habitsStore.toggle(habit.id);
-                            }}
-                            class="flex items-center gap-3 flex-1 text-left"
+                {#each groupedHabits as [category, habits]}
+                    <div class="category-group">
+                        <h3
+                            class="text-[10px] font-bold uppercase tracking-widest text-muted mb-3 px-1"
                         >
-                            <div
-                                class="w-6 h-6 rounded border-2 {isCompleted
-                                    ? 'bg-emerald-500 border-emerald-500'
-                                    : 'border-line'} flex items-center justify-center transition-colors"
-                            >
-                                {#if isCompleted}
-                                    <Check
-                                        size={14}
-                                        class="text-black"
-                                        strokeWidth={3}
-                                    />
-                                {/if}
-                            </div>
-                            <span
-                                class="text-base font-bold {isCompleted
-                                    ? 'text-muted line-through'
-                                    : 'text-white'}"
-                            >
-                                {habit.name}
-                            </span>
-                        </button>
+                            {category}
+                        </h3>
+                        <div class="space-y-3">
+                            {#each habits as habit (habit.id)}
+                                {@const isCompleted = habitsStore.isCompleted(
+                                    habit.id,
+                                )}
+                                <div
+                                    class="card-subtle flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden"
+                                >
+                                    <button
+                                        onclick={(e) => {
+                                            if (!isCompleted) {
+                                                fire?.ignite(
+                                                    e.clientX,
+                                                    e.clientY,
+                                                );
+                                            }
+                                            habitsStore.toggle(habit.id);
+                                        }}
+                                        class="flex items-center gap-3 flex-1 text-left"
+                                    >
+                                        <div
+                                            class="w-6 h-6 rounded border-2 {isCompleted
+                                                ? 'bg-primary border-primary'
+                                                : 'border-line'} flex items-center justify-center transition-colors"
+                                        >
+                                            {#if isCompleted}
+                                                <Check
+                                                    size={14}
+                                                    class="text-black"
+                                                    strokeWidth={3}
+                                                />
+                                            {/if}
+                                        </div>
+                                        <span
+                                            class="text-base font-bold {isCompleted
+                                                ? 'opacity-40 line-through'
+                                                : 'text-white'}"
+                                        >
+                                            {habit.name}
+                                        </span>
+                                    </button>
 
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="flex items-center gap-1.5 text-xs text-muted"
-                            >
-                                <Flame
-                                    size={12}
-                                    class={habit.streak > 10
-                                        ? "text-orange-500"
-                                        : ""}
-                                />
-                                <span class="font-mono">{habit.streak}</span>
-                            </div>
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center gap-1.5 text-xs text-muted"
+                                        >
+                                            <Flame
+                                                size={12}
+                                                class={habit.streak > 0
+                                                    ? "text-orange-500"
+                                                    : "opacity-20"}
+                                            />
+                                            <span class="font-mono"
+                                                >{habit.streak}</span
+                                            >
+                                        </div>
 
-                            <button
-                                onclick={(e) => {
-                                    e.stopPropagation();
-                                    habitsStore.remove(habit.id);
-                                }}
-                                class="text-muted hover:text-red-500 p-1 active:scale-90"
-                                aria-label="Delete Habit"
-                            >
-                                <Trash2 size={16} />
-                            </button>
+                                        <button
+                                            onclick={(e) => {
+                                                e.stopPropagation();
+                                                habitsStore.remove(habit.id);
+                                            }}
+                                            class="text-muted/60 p-1 active:scale-90"
+                                            aria-label="Delete Habit"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            {/each}
                         </div>
                     </div>
                 {/each}
@@ -151,7 +195,7 @@
             transition:slide={{ duration: 300, axis: "y" }}
         >
             <div class="flex justify-between items-center mb-8">
-                <h3 class="text-xl font-bold text-white">New Habit</h3>
+                <h3 class="text-xl font-bold text-white">New Ritual</h3>
                 <button
                     onclick={() => (isAdding = false)}
                     class="w-10 h-10 rounded-full bg-surface text-muted hover:text-white transition-all flex items-center justify-center"
@@ -160,13 +204,37 @@
                 </button>
             </div>
 
-            <input
-                type="text"
-                bind:value={newHabitName}
-                placeholder="What habit do you want to build?"
-                class="input w-full mb-8"
-                onkeydown={(e) => e.key === "Enter" && addHabit()}
-            />
+            <div class="space-y-6 mb-8">
+                <div class="form-group flex flex-col gap-2">
+                    <label
+                        class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                        for="m-name">Description</label
+                    >
+                    <input
+                        id="m-name"
+                        type="text"
+                        bind:value={newHabitName}
+                        placeholder="What habit are you building?"
+                        class="input w-full"
+                    />
+                </div>
+
+                <div class="form-group flex flex-col gap-2">
+                    <label
+                        class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                        for="m-cat">Category</label
+                    >
+                    <select
+                        id="m-cat"
+                        bind:value={newHabitCategory}
+                        class="input w-full"
+                    >
+                        {#each categoriesList as category}
+                            <option value={category}>{category}</option>
+                        {/each}
+                    </select>
+                </div>
+            </div>
 
             <div class="flex gap-4">
                 <button
@@ -180,7 +248,7 @@
                     disabled={!newHabitName.trim()}
                     class="btn btn-primary flex-1 py-3 font-bold"
                 >
-                    Create Habit
+                    Create Ritual
                 </button>
             </div>
         </div>

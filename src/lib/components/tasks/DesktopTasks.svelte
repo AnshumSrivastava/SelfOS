@@ -18,11 +18,12 @@
         Check,
     } from "lucide-svelte";
     import { onMount } from "svelte";
-    import { tasksStore } from "$lib/stores/tasks.svelte";
+    import { tasksStore, type Task } from "$lib/stores/tasks.svelte";
     import { projectsStore } from "$lib/stores/projects.svelte";
-    import { fade, slide } from "svelte/transition";
+    import { fade, slide, scale } from "svelte/transition";
     import TaskCard from "./QuestCard.svelte";
     import SkeletonLoader from "$lib/components/ui/SkeletonLoader.svelte";
+    import Modal from "$lib/components/ui/Modal.svelte";
 
     let isLoading = $derived(tasksStore.loading);
     let tasks = $derived(tasksStore.tasks);
@@ -34,6 +35,10 @@
     let filter = $state("all");
     let isAdding = $state(false);
     let isProcessing = $state(false);
+    let retypeTarget = $state<Task | null>(null);
+    let isRetypeOpen = $state(false);
+    let retypeValue = $state("");
+    let retypeError = $state("");
 
     let newTask = $state({
         title: "",
@@ -44,21 +49,21 @@
     });
 
     let filteredTasks = $derived.by(() => {
-        let tasks = tasksStore.tasks;
+        let tasksList = tasksStore.tasks;
         switch (filter) {
             case "active":
-                tasks = tasks.filter((t) => t.status !== "completed");
+                tasksList = tasksList.filter((t) => t.status !== "completed");
                 break;
             case "completed":
-                tasks = tasks.filter((t) => t.status === "completed");
+                tasksList = tasksList.filter((t) => t.status === "completed");
                 break;
             case "high":
-                tasks = tasks.filter(
+                tasksList = tasksList.filter(
                     (t) => t.priority === "high" && t.status !== "completed",
                 );
                 break;
             case "scheduled":
-                tasks = tasks.filter(
+                tasksList = tasksList.filter(
                     (t) => t.scheduled && t.status !== "completed",
                 );
                 break;
@@ -69,17 +74,16 @@
                     urgencyLabel: "Today",
                     urgencyColor: "text-orange-400",
                 }));
-            case "overdue":
-                return tasksStore.overdueTasks.map((t) => ({
-                    ...t,
-                    urgency: 100,
-                    urgencyLabel: "Overdue",
-                    urgencyColor: "text-red-400",
-                }));
             default:
-                tasks = tasks.filter((t) => t.status !== "completed");
+                // Default: filter out stale tasks from the main list so they only show in the "Requires Attention" section
+                const staleIds = new Set(
+                    tasksStore.staleTasks.map((t) => t.id),
+                );
+                tasksList = tasksList.filter(
+                    (t) => t.status !== "completed" && !staleIds.has(t.id),
+                );
         }
-        return tasks
+        return tasksList
             .map((task) => {
                 let urgency = 0;
                 if (task.priority === "high") urgency += 20;
@@ -94,7 +98,8 @@
         const highPriority = tasksStore.tasks.filter(
             (t) => t.priority === "high" && t.status !== "completed",
         ).length;
-        return { overdue, dueToday, highPriority };
+        const staleCount = tasksStore.staleTasks.length;
+        return { overdue, dueToday, highPriority, staleCount };
     });
 
     async function handleAddTask() {
@@ -118,6 +123,19 @@
             console.error("[DesktopTasks] Failed to add tasks:", error);
         } finally {
             isProcessing = false;
+        }
+    }
+
+    async function handleRetype() {
+        if (!retypeTarget) return;
+        retypeError = "";
+        try {
+            await tasksStore.retypeTask(retypeTarget.id, retypeValue);
+            isRetypeOpen = false;
+            retypeTarget = null;
+            retypeValue = "";
+        } catch (e: any) {
+            retypeError = e.message || "Failed to carry over task.";
         }
     }
 </script>
@@ -314,11 +332,65 @@
                     <SkeletonLoader lines={1} height="h-24" />
                     <SkeletonLoader lines={1} height="h-24" />
                 </div>
-            {:else if filteredTasks.length === 0}
+            {:else if filteredTasks.length === 0 && tasksStore.staleTasks.length === 0}
                 <div class="text-center py-12 text-neutral-500">
                     <CheckSquare size={48} class="mx-auto mb-4 opacity-50" />
                     <p class="text-lg font-medium">No tasks found</p>
                 </div>
+            {/if}
+
+            <!-- Requires Attention Section (Stale Tasks) -->
+            {#if tasksStore.staleTasks.length > 0 && filter === "all"}
+                <section class="space-y-4 mb-10">
+                    <div class="flex items-center gap-3 px-1">
+                        <AlertCircle size={14} class="text-orange-400" />
+                        <h3
+                            class="text-[10px] font-black text-orange-400/80 uppercase tracking-[0.2em]"
+                        >
+                            Requires Attention ({tasksStore.staleTasks.length})
+                        </h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        {#each tasksStore.staleTasks as task (task.id)}
+                            <div
+                                class="card-subtle !p-5 border-orange-400/10 bg-orange-400/2 flex items-center justify-between group"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-orange-400/10 flex items-center justify-center text-orange-400"
+                                    >
+                                        <Clock size={16} />
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-white">
+                                            {task.title}
+                                        </h4>
+                                        <p
+                                            class="text-[10px] text-muted uppercase font-bold tracking-wider"
+                                        >
+                                            Unfinished from {task.scheduled ||
+                                                task.deadline ||
+                                                "yesterday"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onclick={() => {
+                                        retypeTarget = task;
+                                        retypeValue = "";
+                                        retypeError = "";
+                                        isRetypeOpen = true;
+                                    }}
+                                    class="px-4 py-2 rounded-xl bg-orange-400 text-black text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform"
+                                >
+                                    Carry Over
+                                </button>
+                            </div>
+                        {/each}
+                    </div>
+                    <div class="flex-1 h-px bg-theme-line-soft"></div>
+                </section>
             {/if}
             {#each filteredTasks as task (task.id)}
                 <TaskCard
@@ -360,3 +432,67 @@
         </div>
     </div>
 </div>
+
+<Modal bind:isOpen={isRetypeOpen} title="Intentional Carry-Over">
+    <div class="space-y-6">
+        <div
+            class="p-6 rounded-2xl bg-orange-400/5 border border-orange-400/10"
+        >
+            <p
+                class="text-xs text-orange-400 font-bold uppercase tracking-widest mb-2"
+            >
+                Intentionality Requirement
+            </p>
+            <p class="text-sm text-theme-text-secondary leading-relaxed">
+                To carry over <span class="text-white font-bold"
+                    >"{retypeTarget?.title}"</span
+                >, you must manually retype the title below. Friction is the
+                antidote to procrastination.
+            </p>
+        </div>
+
+        <div class="space-y-2">
+            <label
+                class="text-[10px] font-bold uppercase tracking-widest text-muted"
+                for="retype-input">Type exact title to confirm</label
+            >
+            <input
+                id="retype-input"
+                type="text"
+                bind:value={retypeValue}
+                onpaste={(e) => e.preventDefault()}
+                onkeydown={(e) => e.key === "Enter" && handleRetype()}
+                placeholder="Type title here..."
+                class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg text-white placeholder-muted focus:outline-none focus:border-orange-400 transition-all font-mono"
+                autocomplete="off"
+            />
+            {#if retypeError}
+                <p
+                    class="text-[10px] text-red-400 font-bold uppercase tracking-wider px-2"
+                    in:scale
+                >
+                    {retypeError}
+                </p>
+            {/if}
+        </div>
+
+        <div class="flex gap-4">
+            <button
+                onclick={() => {
+                    retypeTarget = null;
+                    retypeValue = "";
+                }}
+                class="flex-1 py-4 bg-white/5 text-white rounded-2xl font-bold hover:bg-white/10 transition-all"
+            >
+                Not Today
+            </button>
+            <button
+                onclick={handleRetype}
+                disabled={retypeValue.trim() !== retypeTarget?.title.trim()}
+                class="flex-[2] py-4 bg-orange-400 text-black rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:grayscale transition-all shadow-lg shadow-orange-400/20"
+            >
+                Confirm Carry Over
+            </button>
+        </div>
+    </div>
+</Modal>

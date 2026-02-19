@@ -11,6 +11,8 @@ export type Task = {
     deadline: string | null;
     scheduled: string | null;
     goalId: string | null;
+    retypedFromId?: string | null;
+    originalDate?: string | null;
     createdAt: string;
     completedAt?: string | null;
 };
@@ -69,6 +71,15 @@ class TasksStore {
         return this.tasks.filter(t => t.status !== 'completed' && t.deadline && t.deadline < today);
     }
 
+    get staleTasks() {
+        const today = new Date().toISOString().split('T')[0];
+        // Unfinished tasks from PREVIOUS days that weren't completed or retyped today
+        return this.tasks.filter(t =>
+            t.status !== 'completed' &&
+            ((t.scheduled && t.scheduled < today) || (t.deadline && t.deadline < today))
+        );
+    }
+
     async add(task: Omit<Task, "id" | "createdAt" | "status" | "completedAt">) {
         try {
             return await this.store.insert({
@@ -81,6 +92,8 @@ class TasksStore {
                 status: "pending",
                 deadline: task.deadline || null,
                 scheduled: task.scheduled || null,
+                retypedFromId: task.retypedFromId || null,
+                originalDate: task.originalDate || null,
                 completedAt: null,
             } as any);
         } catch (error) {
@@ -88,6 +101,41 @@ class TasksStore {
             throw error;
         }
     }
+
+    async retypeTask(originalId: string, typedTitle: string) {
+        const original = this.tasks.find(t => t.id === originalId);
+        if (!original) throw new Error("Task not found");
+
+        if (typedTitle.trim() !== original.title.trim()) {
+            throw new Error("Title mismatch. You must type the exactly matching title to carry it over.");
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+
+        // 1. Create new task for today
+        await this.add({
+            title: original.title,
+            description: original.description,
+            link: original.link,
+            goalId: original.goalId,
+            projectId: original.projectId,
+            priority: original.priority,
+            deadline: original.deadline ? today : null,
+            scheduled: today,
+            retypedFromId: original.id,
+            originalDate: original.scheduled || original.deadline || today
+        });
+
+        // 2. Mark original as completed (or retyped)
+        // For SRS compliance we'll mark it completed but with a flag if we had one. 
+        // For now, simple complete is fine if we link via retypedFromId.
+        await this.update(original.id, {
+            status: 'completed',
+            completedAt: new Date().toISOString()
+        });
+    }
+
+    // ... (rest of class)
 
     // Helper functions for parsing
     private isYouTubePlaylistUrl(text: string): boolean {

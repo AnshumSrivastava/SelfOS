@@ -83,11 +83,27 @@ export class FocusStore {
     }
 
     sessionComplete = $state(false);
+    todayFocusMinutes = $state(0);
 
     setDuration(minutes: number) {
         this.pause();
         this.timeLeft = minutes * 60;
         // If mode is custom, we might want to track that, but for now just updating time is enough
+    }
+
+    async fetchTodayStats() {
+        if (!auth.isAuthenticated) return;
+        const today = new Date().toISOString().split('T')[0];
+
+        const { data, error } = await supabase
+            .from('focus_sessions')
+            .select('duration')
+            .eq('user_id', auth.user?.id)
+            .gte('date', today);
+
+        if (!error && data) {
+            this.todayFocusMinutes = data.reduce((acc: number, s: any) => acc + (s.duration || 0), 0);
+        }
     }
 
     async logSession(subject: string) {
@@ -107,6 +123,7 @@ export class FocusStore {
             console.error("Error logging focus session:", error);
         } else {
             console.log(`Session logged to Supabase: ${subject}`);
+            this.todayFocusMinutes += duration;
         }
 
         this.sessionComplete = false;

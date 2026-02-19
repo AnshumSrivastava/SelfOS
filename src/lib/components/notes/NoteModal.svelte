@@ -1,18 +1,9 @@
 <script lang="ts">
-    import {
-        X,
-        Save,
-        Trash2,
-        Folder,
-        ArrowLeft,
-        Hash,
-        Eye,
-        EyeOff,
-    } from "lucide-svelte";
-    import { fade, fly } from "svelte/transition";
+    import { Save, Trash2, Folder, Hash, Eye, EyeOff, X } from "lucide-svelte";
     import { notesStore, type Note } from "$lib/stores/notes.svelte";
     import { marked } from "marked";
     import { confirmState } from "$lib/stores/confirm.svelte";
+    import Modal from "$lib/components/ui/Modal.svelte";
 
     let { isOpen = $bindable(false), note = $bindable(null) } = $props<{
         isOpen: boolean;
@@ -40,7 +31,7 @@
 
     function saveNote() {
         if (!title.trim() && !content.trim()) {
-            close();
+            isOpen = false;
             return;
         }
 
@@ -61,7 +52,7 @@
                 isFavorite: false,
             });
         }
-        close();
+        isOpen = false;
     }
 
     async function deleteNote() {
@@ -73,25 +64,7 @@
             ))
         ) {
             notesStore.deleteNote(note.id);
-            close();
-        }
-    }
-
-    function close() {
-        isOpen = false;
-        setTimeout(() => {
-            note = null;
-            title = "";
-            content = "";
-            tags = [];
-            newTag = "";
-            isPreview = false;
-        }, 300);
-    }
-
-    function handleKeydown(e: KeyboardEvent) {
-        if (e.key === "Escape") {
-            saveNote();
+            isOpen = false;
         }
     }
 
@@ -147,7 +120,7 @@
         });
     }
 
-    async function handlePreviewClick(e: MouseEvent) {
+    async function handlePreviewClick(e: MouseEvent | KeyboardEvent) {
         const target = e.target as HTMLElement;
         const link = target.closest(".internal-link") as HTMLElement;
         if (!link) return;
@@ -256,159 +229,145 @@
     }
 </script>
 
-<svelte:window onkeydown={isOpen ? handleKeydown : undefined} />
-
-{#if isOpen}
-    <div
-        class="fixed inset-0 z-[100] bg-[#0A0A0A] flex flex-col"
-        transition:fly={{ y: 20, duration: 300 }}
-    >
-        <!-- Minimal Header -->
+<Modal bind:isOpen title={note ? "Refine Note" : "Capture Insight"} size="lg">
+    <div class="space-y-6">
+        <!-- Header Actions -->
         <div
-            class="flex items-center justify-between p-4 shrink-0 transition-opacity duration-200 opacity-50 hover:opacity-100 group"
+            class="flex items-center justify-between pb-4 border-b border-white/5"
         >
             <div class="flex items-center gap-3">
                 <button
-                    onclick={saveNote}
-                    class="p-2 -ml-2 rounded-full hover:bg-neutral-800 text-gray-400 hover:text-white transition-colors"
-                    title="Save & Close (Esc)"
-                >
-                    <ArrowLeft size={24} />
-                </button>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <button
-                    class="p-2 text-gray-400 hover:bg-neutral-800 hover:text-white rounded-lg transition-colors"
+                    class="p-2 rounded-xl bg-white/5 text-muted hover:text-white transition-colors"
                     onclick={() => (isPreview = !isPreview)}
                     title={isPreview ? "Edit" : "Preview Markdown"}
                 >
                     {#if isPreview}
-                        <EyeOff size={20} />
+                        <EyeOff size={18} />
                     {:else}
-                        <Eye size={20} />
+                        <Eye size={18} />
                     {/if}
                 </button>
+            </div>
 
+            <div class="flex items-center gap-2">
                 {#if note}
                     <button
-                        class="p-2 text-red-900/50 hover:bg-red-900/80 hover:text-red-200 rounded-lg transition-colors"
+                        class="p-2 text-muted hover:text-red-400 rounded-xl transition-colors"
                         onclick={deleteNote}
                         title="Delete note"
                     >
                         <Trash2 size={18} />
                     </button>
                 {/if}
+                <button
+                    onclick={saveNote}
+                    class="btn btn-primary px-6 h-10 flex items-center gap-2"
+                >
+                    <Save size={16} /> Archive
+                </button>
             </div>
         </div>
 
-        <!-- Body -->
-        <div class="flex-1 overflow-y-auto pb-32">
-            <div class="max-w-3xl mx-auto p-6 md:p-12 space-y-6">
-                <!-- Title -->
-                <input
-                    type="text"
-                    bind:value={title}
-                    placeholder="Untitled Note"
-                    class="w-full bg-transparent text-4xl md:text-5xl font-bold text-white placeholder:text-neutral-800 focus:outline-none"
-                />
+        <div class="space-y-6">
+            <!-- Title -->
+            <input
+                type="text"
+                bind:value={title}
+                placeholder="Untitled Thought"
+                class="w-full bg-transparent text-3xl font-light text-theme-text-strong tracking-tighter placeholder:text-muted/20 focus:outline-none"
+            />
 
-                <!-- Tags Input -->
-                <div
-                    class="flex flex-wrap items-center justify-start gap-2 min-h-[32px]"
-                >
-                    {#each tags as tag}
-                        <span
-                            class="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-neutral-800 text-white shadow-sm border border-neutral-700/50 group transition-all hover:border-neutral-600"
+            <!-- Tags -->
+            <div class="flex flex-wrap items-center gap-2 min-h-[32px]">
+                {#each tags as tag}
+                    <span
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-white/5 text-muted border border-white/5 hover:border-primary/30 transition-all"
+                    >
+                        #{tag}
+                        <button
+                            onclick={() => removeTag(tag)}
+                            class="hover:text-red-400 transition-colors"
+                            ><X size={12} /></button
                         >
-                            #{tag}
-                            <button
-                                onclick={() => removeTag(tag)}
-                                class="group-hover:text-red-400 text-transparent transition-colors"
-                                ><X size={14} /></button
-                            >
-                        </span>
-                    {/each}
-                    <div class="relative flex items-center group/input">
-                        <Hash
-                            size={14}
-                            class="absolute left-2.5 text-neutral-500 pointer-events-none group-focus-within/input:text-primary transition-colors"
-                        />
-                        <input
-                            type="text"
-                            bind:value={newTag}
-                            onkeydown={addTag}
-                            oninput={() => (showSuggestions = true)}
-                            onfocus={() => (showSuggestions = true)}
-                            onblur={() =>
-                                setTimeout(
-                                    () => (showSuggestions = false),
-                                    200,
-                                )}
-                            placeholder="Add tag..."
-                            class="bg-transparent text-sm text-neutral-300 placeholder:text-neutral-600 focus:outline-none pl-7 w-24 focus:w-32 transition-all border-b border-transparent focus:border-neutral-700 pb-0.5"
-                        />
+                    </span>
+                {/each}
+                <div class="relative flex items-center group/input">
+                    <Hash
+                        size={12}
+                        class="absolute left-3 text-muted/40 pointer-events-none group-focus-within/input:text-primary transition-colors"
+                    />
+                    <input
+                        type="text"
+                        bind:value={newTag}
+                        onkeydown={addTag}
+                        oninput={() => (showSuggestions = true)}
+                        onfocus={() => (showSuggestions = true)}
+                        onblur={() =>
+                            setTimeout(() => (showSuggestions = false), 200)}
+                        placeholder="Tag context..."
+                        class="bg-transparent text-[10px] font-bold text-muted placeholder:text-muted/20 focus:outline-none pl-8 w-24 focus:w-32 transition-all"
+                    />
 
-                        {#if showSuggestions && filteredSuggestions.length > 0}
-                            <div
-                                class="absolute top-full left-0 mt-2 w-48 bg-[#1A1A1A] border border-neutral-800 rounded-lg shadow-xl overflow-hidden z-50"
-                            >
-                                {#each filteredSuggestions as suggestion}
-                                    <button
-                                        class="w-full text-left px-3 py-2 text-sm text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
-                                        onclick={() =>
-                                            selectSuggestion(suggestion)}
-                                    >
-                                        <Hash size={12} class="opacity-50" />
-                                        {suggestion}
-                                    </button>
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
-                </div>
-
-                <!-- Editor / Preview -->
-                {#if isPreview}
-                    {#key renderedContent}
-                        <!-- svelte-ignore a11y_click_events_have_key_events -->
-                        <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    {#if showSuggestions && filteredSuggestions.length > 0}
                         <div
-                            class="prose prose-invert prose-xl max-w-none text-gray-200 leading-relaxed prose-ul:list-disc prose-ol:list-decimal prose-li:marker:text-gray-500 pl-4 prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
-                            onclick={handlePreviewClick}
+                            class="absolute top-full left-0 mt-3 w-48 bg-[#151515] border border-white/5 rounded-xl shadow-2xl overflow-hidden z-50 p-1"
                         >
-                            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-                            {@html renderedContent}
+                            {#each filteredSuggestions as suggestion}
+                                <button
+                                    class="w-full text-left px-3 py-2 text-[10px] font-bold text-muted uppercase tracking-widest hover:bg-primary hover:text-black rounded-lg transition-all flex items-center gap-2"
+                                    onclick={() => selectSuggestion(suggestion)}
+                                >
+                                    <Hash size={10} />
+                                    {suggestion}
+                                </button>
+                            {/each}
                         </div>
-                    {/key}
+                    {/if}
+                </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="min-h-[400px]">
+                {#if isPreview}
+                    <div
+                        class="prose prose-invert prose-lg max-w-none text-muted leading-relaxed prose-a:text-primary"
+                        onclick={handlePreviewClick}
+                        onkeydown={(e) =>
+                            e.key === "Enter" && handlePreviewClick(e as any)}
+                        role="button"
+                        tabindex="0"
+                    >
+                        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+                        {@html renderedContent}
+                    </div>
                 {:else}
                     <textarea
                         bind:value={content}
                         onkeydown={handleTextareaKeydown}
-                        placeholder="Start writing..."
-                        class="w-full min-h-[calc(100vh-300px)] bg-transparent text-xl md:text-2xl text-gray-200 resize-none focus:outline-none leading-relaxed placeholder:text-neutral-800"
+                        placeholder="Deep dive into the architecture of this idea..."
+                        class="w-full min-h-[400px] bg-transparent text-lg text-theme-text-strong font-light resize-none focus:outline-none leading-relaxed placeholder:text-muted/10 custom-scrollbar"
                     ></textarea>
                 {/if}
             </div>
         </div>
     </div>
-{/if}
+</Modal>
 
 <style>
     /* Force list styles since Tailwind/Typography plugin might be missing or overridden */
     :global(.prose ul) {
         list-style-type: disc !important;
         padding-left: 1.5em !important;
-        margin-top: 1em;
-        margin-bottom: 1em;
     }
     :global(.prose ol) {
         list-style-type: decimal !important;
         padding-left: 1.5em !important;
-        margin-top: 1em;
-        margin-bottom: 1em;
     }
-    :global(.prose li) {
-        margin-bottom: 0.25em;
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
     }
 </style>

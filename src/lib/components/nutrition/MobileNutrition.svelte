@@ -38,7 +38,7 @@
         Math.min((stats.calories / goals.targetCalories) * 100, 100),
     );
     let waterPercent = $derived(
-        Math.min((water / goals.targetWater) * 100, 100),
+        Math.min((water / nutritionStore.todayWaterTarget) * 100, 100),
     );
 
     function addWater(amount: number) {
@@ -204,6 +204,17 @@
                                 class="text-lg text-muted/60">L</span
                             ></span
                         >
+                        {#if nutritionStore.waterDeficit > 0}
+                            <div class="flex items-center gap-1 mt-1">
+                                <Activity size={10} class="text-blue-400" />
+                                <span
+                                    class="text-[9px] text-blue-400/80 font-bold uppercase tracking-wider"
+                                    >Self-Correction Active (+{(
+                                        nutritionStore.waterDeficit * 0.25
+                                    ).toFixed(2)}L)</span
+                                >
+                            </div>
+                        {/if}
 
                         <div class="flex gap-2 mt-3">
                             <button

@@ -7,12 +7,14 @@ import { syncStore } from './sync.svelte';
 
 export type Habit = {
     id: string;
+    userId?: string;
     name: string;
     description?: string;
     color?: string;
+    icon?: string;
     frequency?: string;
     streak: number;
-    completed_dates?: string[];
+    category?: string;
     last_completed?: string;
     created_at?: string;
     updated_at?: string;
@@ -122,16 +124,17 @@ class HabitsStore {
         }
     }
 
-    async add(name: string) {
+    async add(name: string, category?: string) {
         if (!auth.isAuthenticated) {
             this.#log('Failed to add habit: User not authenticated', null, 'error');
             throw new Error("You must be logged in to add habits");
         }
 
-        this.#log(`Attempting to add habit: ${name}`);
+        this.#log(`Attempting to add habit: ${name} (${category})`);
         try {
             const result = await this.store.insert({
                 name,
+                category,
                 streak: 0,
                 frequency: 'daily',
                 color: '#00ff9d'

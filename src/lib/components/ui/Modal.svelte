@@ -2,7 +2,12 @@
     import { X } from "lucide-svelte";
     import { fade, scale } from "svelte/transition";
 
-    let { isOpen = $bindable(false), title, children } = $props();
+    let {
+        isOpen = $bindable(false),
+        title,
+        children,
+        size = "standard", // standard (max-w-md), lg (max-w-3xl)
+    } = $props();
 
     function close() {
         isOpen = false;
@@ -19,7 +24,7 @@
 
 {#if isOpen}
     <div
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         transition:fade={{ duration: 200 }}
         role="button"
         tabindex="0"
@@ -29,7 +34,10 @@
         }}
     >
         <div
-            class="bg-[#111] border border-neutral-800 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+            class="bg-[#111] border border-neutral-800 rounded-2xl w-full shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] {size ===
+            'lg'
+                ? 'max-w-4xl'
+                : 'max-w-md'}"
             transition:scale={{ start: 0.95, duration: 200 }}
             role="dialog"
             aria-modal="true"
@@ -41,7 +49,9 @@
             <div
                 class="flex items-center justify-between p-6 border-b border-neutral-800"
             >
-                <h3 class="text-xl font-bold text-white">{title}</h3>
+                <h3 class="text-xl font-bold text-white tracking-tight">
+                    {title}
+                </h3>
                 <button
                     onclick={close}
                     class="p-1 text-neutral-400 hover:text-white transition-colors rounded-lg hover:bg-neutral-800"

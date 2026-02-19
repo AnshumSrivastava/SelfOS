@@ -348,26 +348,24 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-[var(--space-2)]">
             <!-- Incoming Payments (Receiving) -->
             <div
-                class="card-subtle relative overflow-hidden group !p-5"
-                style="border-radius: var(--radius-subtle)"
+                class="card-subtle relative overflow-hidden group !p-6"
+                style="border-radius: var(--card-radius)"
             >
-                <div
-                    class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"
-                >
-                    <ArrowUpRight size={56} />
-                </div>
                 <div class="relative z-10">
                     <p
-                        class="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2"
+                        class="text-[10px] text-muted font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2"
                     >
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"
-                        ></span> Receiving
+                        <span
+                            class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                        ></span> Inflow
                     </p>
-                    <div class="text-2xl font-light text-text">
+                    <div
+                        class="text-3xl font-light text-theme-text-strong tracking-tighter"
+                    >
                         {formatCurrency(financeStore.totalReceivingPending)}
                     </div>
                     <p
-                        class="text-[10px] text-muted mt-2 uppercase tracking-tight"
+                        class="text-[10px] text-muted mt-2 font-bold uppercase tracking-widest opacity-60"
                     >
                         {financeStore.incomeReminders.length} expected
                     </p>
@@ -376,81 +374,88 @@
 
             <!-- Bills (Paying) -->
             <div
-                class="card-subtle relative overflow-hidden group !p-5"
-                style="border-radius: var(--radius-subtle)"
+                class="card-subtle relative overflow-hidden group !p-6"
+                style="border-radius: var(--card-radius)"
             >
-                <div
-                    class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"
-                >
-                    <ArrowDownRight size={56} />
-                </div>
                 <div class="relative z-10">
                     <p
-                        class="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2"
+                        class="text-[10px] text-muted font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2"
                     >
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"
-                        ></span> Bills Due
+                        <span class="w-1.5 h-1.5 rounded-full bg-orange-400"
+                        ></span> Obligations
                     </p>
-                    <div class="text-2xl font-light text-text">
+                    <div
+                        class="text-3xl font-light text-theme-text-strong tracking-tighter"
+                    >
                         {formatCurrency(financeStore.totalBillsDue)}
                     </div>
                     <p
-                        class="text-[10px] text-muted mt-2 uppercase tracking-tight"
+                        class="text-[10px] text-muted mt-2 font-bold uppercase tracking-widest opacity-60"
                     >
-                        {financeStore.expenseReminders.length} due
+                        {financeStore.expenseReminders.length} due soon
                     </p>
                 </div>
             </div>
 
             <!-- Monthly Summary -->
             <div
-                class="md:col-span-2 card-subtle flex flex-col justify-between !p-5"
-                style="border-radius: var(--radius-subtle)"
+                class="md:col-span-2 card-subtle flex flex-col justify-between !p-6 bg-theme-surface-subtle/30"
+                style="border-radius: var(--card-radius)"
             >
-                <div>
-                    <p
-                        class="text-[10px] text-muted font-bold uppercase tracking-widest mb-4"
-                    >
-                        Monthly Cash Flow
-                    </p>
-                    <div class="flex items-center gap-12">
-                        <div>
-                            <p
-                                class="text-[10px] text-muted mb-1 uppercase tracking-tight"
-                            >
-                                Income
-                            </p>
-                            <p class="text-xl font-medium text-emerald-500">
-                                {formatCurrency(financeStore.income)}
-                            </p>
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p
+                            class="text-[10px] text-muted font-black uppercase tracking-[0.2em] mb-4"
+                        >
+                            Monthly Momentum
+                        </p>
+                        <div class="flex items-center gap-12">
+                            <div>
+                                <p
+                                    class="text-[10px] text-muted mb-1 font-bold uppercase tracking-widest opacity-60"
+                                >
+                                    Income
+                                </p>
+                                <p
+                                    class="text-2xl font-medium text-emerald-500 tracking-tight"
+                                >
+                                    {formatCurrency(financeStore.income)}
+                                </p>
+                            </div>
+                            <div class="h-10 w-px bg-white/5"></div>
+                            <div>
+                                <p
+                                    class="text-[10px] text-muted mb-1 font-bold uppercase tracking-widest opacity-60"
+                                >
+                                    Expenses
+                                </p>
+                                <p
+                                    class="text-2xl font-medium text-white/90 tracking-tight"
+                                >
+                                    {formatCurrency(financeStore.expense)}
+                                </p>
+                            </div>
                         </div>
-                        <div class="h-8 w-px bg-white/5"></div>
-                        <div>
-                            <p
-                                class="text-[10px] text-muted mb-1 uppercase tracking-tight"
-                            >
-                                Spent
-                            </p>
-                            <p class="text-xl font-medium text-red-500/80">
-                                {formatCurrency(financeStore.expense)}
-                            </p>
-                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p
+                            class="text-[10px] text-muted font-black uppercase tracking-[0.2em] mb-2"
+                        >
+                            Efficiency
+                        </p>
+                        <p
+                            class="text-3xl font-light text-theme-primary tracking-tighter"
+                        >
+                            {financeStore.savingsRate}%
+                        </p>
                     </div>
                 </div>
                 <div class="mt-4">
                     <div
-                        class="flex justify-between text-[10px] uppercase tracking-widest text-muted mb-2"
-                    >
-                        <span>Savings Rate</span>
-                        <span class="text-text"
-                            >{financeStore.savingsRate}%</span
-                        >
-                    </div>
-                    <div
                         class="h-1 w-full bg-white/5 rounded-full overflow-hidden"
                     >
                         <div
-                            class="h-full bg-emerald-500/80 transition-all duration-1000 ease-out"
+                            class="h-full bg-theme-primary transition-all duration-1000 ease-out"
                             style="width: {financeStore.savingsRate}%"
                         ></div>
                     </div>
